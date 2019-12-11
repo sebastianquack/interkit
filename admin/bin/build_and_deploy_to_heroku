@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -x
+bin/build_and_copy
+git add ../api/public/admin
+git commit -m "admin production build"
+cd .. && git subtree push --prefix api heroku master && cd admin

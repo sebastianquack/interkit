@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -x
+bin/build_and_copy
+git add ../api/public/player
+git commit -m "player production build"
+cd .. && git subtree push --prefix api heroku master && cd players

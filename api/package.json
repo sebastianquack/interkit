@@ -1,0 +1,26 @@
+{
+    "name": "testresthapi",
+    "version": "1.0.0",
+    "private": true,
+    "main": "server.js",
+    "license": "MIT",
+    "dependencies": {
+        "@hapi/inert": "^5.2.0",
+        "aws-sdk": "^2.480.0",
+        "bcryptjs": "^2.4.3",
+        "dotenv-safe": "^6.0.0",
+        "hapi": "^17.6.0",
+        "hapi-auth-jwt2": "^8.6.1",
+        "hapi-require-https": "^3.0.1",
+        "mongoose": "^5.2.13",
+        "path": "^0.12.7",
+        "rest-hapi": "^1.9.0"
+    },
+    "devDependencies": {
+        "nodemon": "^1.18.4"
+    },
+    "scripts": {
+        "dev": "nodemon ./server.js localhost 9000",
+        "start": "node ./server.js"
+    }
+}

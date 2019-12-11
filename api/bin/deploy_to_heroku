@@ -1,0 +1,1 @@
+cd .. && git subtree push --prefix api heroku master && cd api
