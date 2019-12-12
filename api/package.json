@@ -14,7 +14,9 @@
         "hapi-require-https": "^3.0.1",
         "mongoose": "^5.2.13",
         "path": "^0.12.7",
-        "rest-hapi": "^1.9.0"
+        "rest-hapi": "^1.9.0",
+        "socket.io": "^2.3.0",
+        "vm2": "^3.8.4"
     },
     "devDependencies": {
         "nodemon": "^1.18.4"

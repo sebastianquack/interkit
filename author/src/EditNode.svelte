@@ -23,7 +23,7 @@
     editor2 = CodeMirror.fromTextArea(editorTextArea2, {
       lineNumbers: true
     });  
-    editor2.on("change", ()=>{scriptNodeEdit.responseScript = editor1.getValue()})
+    editor2.on("change", ()=>{scriptNodeEdit.responseScript = editor2.getValue()})
   });
 
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);

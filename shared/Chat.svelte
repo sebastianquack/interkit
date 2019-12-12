@@ -1,8 +1,41 @@
 <script>
-  import { beforeUpdate, afterUpdate } from 'svelte';
+  import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
+
+  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
+
+  export let currentNodeId;
 
   let div;
   let autoscroll;
+
+  let comments = [];
+
+  onMount(() => {
+    joinRoom(currentNodeId);
+    listenForMessages((message)=>{
+      console.log(message);
+
+      setTimeout(() => {
+        comments = comments.concat({
+          author: 'eliza',
+          text: '...',
+          placeholder: true
+        });
+
+        setTimeout(() => {
+          comments = comments.filter(comment => !comment.placeholder).concat({
+            author: 'eliza',
+            text: message.message
+          });
+        }, 500 + Math.random() * 500);
+      }, 200 + Math.random() * 200);
+    })
+  })
+
+  onDestroy(() => {
+    leaveRoom(currentNodeId);
+    stopListening();
+  })
 
   beforeUpdate(() => {
     autoscroll = div && (div.offsetHeight + div.scrollTop) > (div.scrollHeight - 20);
@@ -11,10 +44,6 @@
   afterUpdate(() => {
     if (autoscroll) div.scrollTo(0, div.scrollHeight);
   });
-
-  let comments = [
-    { author: 'eliza', text: "hello" } // todo: api call here 
-  ];
 
   function handleKeydown(event) {
     if (event.which === 13) {
@@ -27,23 +56,7 @@
       });
 
       event.target.value = '';
-
-      const reply = "aha"; // todo: api call here 
-
-      setTimeout(() => {
-        comments = comments.concat({
-          author: 'eliza',
-          text: '...',
-          placeholder: true
-        });
-
-        setTimeout(() => {
-          comments = comments.filter(comment => !comment.placeholder).concat({
-            author: 'eliza',
-            text: reply
-          });
-        }, 500 + Math.random() * 500);
-      }, 200 + Math.random() * 200);
+      emitMessage(text);
     }
   }
 </script>

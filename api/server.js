@@ -5,6 +5,8 @@ let Auth = require("./plugins/auth.plugin.js");
 const Path = require('path');
 const Inert = require('@hapi/inert');
 
+const SocketApi = require('./src/socketApi.js');
+
 if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
 }
@@ -116,6 +118,9 @@ async function api() {
       }
     })
 
+
+    SocketApi.init(server.listener);
+
     await server.start()
     
     let userModel = RestHapi.models.user;
@@ -126,6 +131,7 @@ async function api() {
       Log.log('seeding admin user')
       RestHapi.create(userModel, {username: "admin", password: process.env.ADMIN_PASSWORD}, Log)  
     }
+    
     
     console.log("Server ready", server.info)
 

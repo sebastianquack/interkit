@@ -54,7 +54,9 @@
 
   <button on:click={closeNode}>back</button>
 
-  <Chat/>
+  <Chat
+    currentNodeId={currentNode._id}
+  />
 
 {/if}
 
