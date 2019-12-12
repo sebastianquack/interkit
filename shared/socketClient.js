@@ -1,9 +1,12 @@
 import * as io from '../author/node_modules/socket.io-client';
 
-let socket = null;
-let socketURL = "http://localhost:9000"
+import { getConfig } from './util.js';
 
-export const initSocket = () => {
+let socket = null;
+
+export const initSocket = async () => {
+
+  let socketURL = await getConfig("socketURL");
 
   socket = io(socketURL);
 
