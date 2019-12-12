@@ -70,20 +70,6 @@ async function api() {
 
     server.route({
         method: 'GET',
-        path: '/player/{param*}',
-        handler: {
-            directory: {
-                path: './player',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-    server.route({
-        method: 'GET',
         path: '/{param*}',
         handler: {
             directory: {

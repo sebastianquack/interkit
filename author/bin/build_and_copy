@@ -4,4 +4,4 @@ set -x
 npm run build
 trash -rf ../api/public/author
 mkdir ../api/public/author
-mv ./public/* ../api/public/author*
+cp ./public/* ../api/public/author*

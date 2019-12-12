@@ -4,4 +4,4 @@ set -x
 npm run build
 trash -rf ../api/public/player
 mkdir ../api/public/player
-mv ./public/* ../api/public/player*
+cp ./public/* ../api/public/player*
