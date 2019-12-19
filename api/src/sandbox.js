@@ -17,9 +17,6 @@ module.exports.processMessage = async function(msg, script, callback) {
     timeout: 1000, // timeout for script exeuction
     sandbox: {
       input: msg,
-      player: {
-        justArrived: !msg ? true : false
-      },
       api: {
         output: (msg, name="robot") => { result.outputs.push({message: msg, name: name}); },
         moveTo: (room) => { result.moveTo = room; }

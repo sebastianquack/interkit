@@ -80,41 +80,49 @@ async function handleScript(io, socket, currentNode, msg) {
       socket.emit('message', {system: true, message: result.error});
     }
     if(result.outputs) {
+
+      for(let i = 0; i < result.outputs.length; i++) {
+        io.in(socket.room).emit('message', result.outputs[i]);    
+      }
+
       if(result.moveTo) {
         if(!msg) {
           console.log("move on enter is not allowed");          
           socket.emit('message', {system: true, message: "preventing automatic move on entry"});
           return;
         }
-        let newNode = await db.findNodeByName(result.moveTo);
-        if(newNode) {
+        
+        let newNodes = await RestHapi.list(RestHapi.models.scriptNode, {name: result.moveTo}, Log)
+        // todo: add board as second search condition here
+        console.log(newNodes);
+        
+        if(newNodes.docs.length == 1) {
+          let newNode = newNodes.docs[0];
           console.log("moving player to room " + newNode.name);
-          if(newNode.id != currentNode.id) {
+          if(newNode._id != currentNode._id) {
             await socket.leave(socket.room);
 
             // inform others in the old room 
             io.in(socket.room).emit('message', {system: true, message: "a human left to " + newNode.name});   
 
-            socket.room = newNode.id;
-            await socket.join(newNode.id);
+            socket.room = newNode._id;
+            await socket.join(newNode._id);
             // inform sender of new room
+            console.log("emit moveTo message");
             socket.emit('message', {system: true, moveTo: newNode});
             socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
             // inform others in the new room 
             socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
 
-            handleScript(io, socket, newNode, null);
+            handleScript(io, socket, newNode.initScript, null);
           } 
         } else {
           console.log("node " + result.moveTo + " not found");
           socket.emit('message', {system: true, message: "node " + result.moveTo + " not found"});      
         }
       }
-      for(let i = 0; i < result.outputs.length; i++) {
-        io.in(socket.room).emit('message', result.outputs[i]);    
-      }
-      
+ 
     }
   });
 

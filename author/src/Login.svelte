@@ -1,8 +1,8 @@
 <script>
   
   import { token } from './stores.js';
-  let username;
-  let password;
+  let username = "admin"
+  let password = "password";
 
   async function submit() {
     const response = await fetch("/api/login", {
@@ -20,21 +20,8 @@
     }
   }
 
-  function logout() {
-    console.log("logout");
-    token.set(null);
-  }
-
 </script>
 
-{#if !$token}
-
 <input bind:value={username} type="text"/><br/>
-<input bind:value={password} type="text"/><br/>
+<input bind:value={password} type="password"/><br/>
 <button on:click={submit}>login</button>
-
-{:else}
-
-<button on:click={logout}>logout</button>
-
-{/if}

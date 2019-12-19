@@ -59,3 +59,12 @@ button:active {
 button:focus {
 	border-color: #666;
 }
+
+.edit-headline h2 {
+  display: inline-block;
+  padding-right: 5px;
+}
+
+.CodeMirror {
+    height: auto !important;
+}

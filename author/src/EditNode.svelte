@@ -1,33 +1,57 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick, beforeUpdate } from 'svelte';
   import { token } from './stores.js';
   import CodeMirror from 'codemirror';
   import 'codemirror/lib/codemirror.css';
+  import 'codemirror/mode/javascript/javascript.js';
 
-  export let scriptNode;
-  export let update;
+  export let currentNodeId;
+  export let setCurrentNodeId;
+  export let reloadBoardData;
   
-  let scriptNodeEdit = {...scriptNode};
-
-  let editorTextArea1;
-  let editorTextArea2;
+  let scriptNode = {};
+  let scriptNodeEdit = {};
+    
+  let textArea1;
+  let textArea2;
   let editor1;
   let editor2;
-  
-  onMount(() => {
-    editor1 = CodeMirror.fromTextArea(editorTextArea1, {
-      lineNumbers: true
+
+  let editTitle = false;
+   
+  const loadNoad = async (id) => {
+    const res = await fetch("/api/scriptNode/" + currentNodeId);
+    const json = await res.json();
+    console.log(json);
+    scriptNode = json;
+    scriptNodeEdit = {...json};   
+
+    if(editor1) editor1.toTextArea();
+    if(editor2) editor2.toTextArea();
+    
+    await tick();
+    
+    editor1 = CodeMirror.fromTextArea(textArea1, {
+      lineNumbers: true,
+      mode:  "javascript"
     });
     editor1.on("change", ()=>{scriptNodeEdit.initScript = editor1.getValue()})
 
-    editor2 = CodeMirror.fromTextArea(editorTextArea2, {
-      lineNumbers: true
+    editor2 = CodeMirror.fromTextArea(textArea2, {
+      lineNumbers: true,
+      mode:  "javascript"
     });  
-    editor2.on("change", ()=>{scriptNodeEdit.responseScript = editor2.getValue()})
-  });
+    editor2.on("change", ()=>{
+      scriptNodeEdit.responseScript = editor2.getValue()
+    })    
+  }
 
-  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
-  
+  // run whenever currentNodeId prop changes
+  $: {
+     console.log('currentNodeId changed', currentNodeId);
+     loadNoad(currentNodeId);
+  }
+
   async function save() {
     console.log("save");
     const response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
@@ -41,23 +65,49 @@
     });
     if(response.ok) {
       const newNode = await response.json();
+      scriptNode = {...newNode};
       scriptNodeEdit = {...newNode};
-      update(newNode);
+      editTitle = false;
+      reloadBoardData();
     }
   }
 
+  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
+  
   onDestroy(()=> {
     editor1.toTextArea();
     editor2.toTextArea();
   })
 
+  const deleteNode = async ()=> {
+    if(confirm("really?")) {
+      await fetch("/api/scriptNode/" + currentNodeId, {
+        method: "DELETE",
+        headers: {'authorization': $token},
+      });
+      setCurrentNodeId(null);
+      reloadBoardData();
+    }
+  }
 
 </script>
 
-
-<h2>edit script node</h2>
-<input bind:value={scriptNodeEdit.name}><br/>
-<textarea bind:this={editorTextArea1} bind:value={scriptNodeEdit.initScript}></textarea><br/>
-<textarea bind:this={editorTextArea2} bind:value={scriptNodeEdit.responseScript}></textarea><br/>
+{#if !editTitle}
+  <div class="edit-headline">
+    <h2>{scriptNodeEdit.name}</h2>
+    <button on:click="{()=>{editTitle=true}}">edit</button>
+  </div>
+{:else}
+  <input bind:value={scriptNodeEdit.name}><br/>
+{/if}
+<textarea bind:this={textArea1} bind:value={scriptNodeEdit.initScript}></textarea><br/>
+<textarea bind:this={textArea2} bind:value={scriptNodeEdit.responseScript}></textarea><br/>
 
 {#if changed} <button on:click={save}>save</button> {/if}
+
+
+<br/>
+<button on:click={deleteNode}>delete script node</button>
+
+
+
