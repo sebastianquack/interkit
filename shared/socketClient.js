@@ -24,23 +24,48 @@ export const initSocket = async () => {
 
 }
 
+const doubleTry = (action) => {
+  if(socket)
+    action();
+  else {
+    console.log("no socket");
+    setTimeout(()=>{
+      console.log("trying second time");
+      if(socket) 
+        action();
+      else 
+        console.log("no socket, giving up");
+    }, 2000);
+  }
+}
+
 export const joinRoom = (room) => {
-  socket.emit('joinRoom', room); // ask server to put us in a room
+  doubleTry(()=>{
+    socket.emit('joinRoom', room); // ask server to put us in a room
+  });
 }
 
 export const leaveRoom = (room) => {
-  socket.emit('leaveRoom', room); // ask server to remove us from a room
+  doubleTry(()=>{
+    socket.emit('leaveRoom', room); // ask server to remove us from a room
+  });
 }
 
 export const listenForMessages = (callback) => {
-  socket.on('message', callback);
+  doubleTry(()=>{
+    socket.on('message', callback);
+  });
 }
 
 export const stopListening = () => {
-  socket.off('message');
+  doubleTry(()=>{
+    socket.off('message');
+  });
 }
 
 export const emitMessage = (msg) => {
-  socket.emit('message', {message: msg});
+  doubleTry(()=>{
+    socket.emit('message', {message: msg});
+  });
 }
 

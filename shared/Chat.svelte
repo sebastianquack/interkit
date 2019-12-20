@@ -89,7 +89,7 @@
   }
 </script>
 
-<div class="chat">
+<div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
   <div class="scrollable" bind:this={div}>
     {#each comments as comment}
       <article class={comment.author}>
@@ -114,9 +114,16 @@
   .chat {
     position: absolute;
     top: 0;
-    bottom: 50px;
     left: 0;
     right: 0;
+  }
+
+  .chat-authoring {
+    bottom: 50px;
+  }
+
+  .chat-player {
+    bottom: 0;
   }
 
   .scrollable {
@@ -157,7 +164,8 @@
 
   .input-container {
     width: 100%;
-    padding: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
     position: absolute;
     bottom: 0px;
     left: 0px;

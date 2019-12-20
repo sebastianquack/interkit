@@ -5,6 +5,8 @@
   import 'codemirror/lib/codemirror.css';
   import 'codemirror/mode/javascript/javascript.js';
 
+  import { getConfig } from '../../shared/util.js';
+
   export let currentNodeId;
   export let setCurrentNodeId;
   export let reloadBoardData;
@@ -90,6 +92,12 @@
     }
   }
 
+  let playerURL;
+
+  onMount(async ()=>{
+    playerURL = await getConfig("playerURL");
+  }) 
+
 </script>
 
 {#if !editTitle}
@@ -107,7 +115,15 @@
 
 
 <br/>
-<button on:click={deleteNode}>delete script node</button>
+<button on:click={deleteNode}>delete script node</button><br>
+<a target="_blank" href="{playerURL}?node={scriptNodeEdit.name}">external player link</a>
+
+<style>
+  a {
+    font-size: 80%;
+    color: gray;
+  }
+</style>
 
 
 
