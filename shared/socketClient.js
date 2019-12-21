@@ -65,7 +65,9 @@ export const stopListening = () => {
 
 export const emitMessage = (msg) => {
   doubleTry(()=>{
-    socket.emit('message', {message: msg});
+    socket.emit('message', {
+      message: msg
+    });
   });
 }
 

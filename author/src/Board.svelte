@@ -11,7 +11,7 @@
   export let currentBoardData;
   export let setCurrentBoardData;
 
-  export let setCurrentNodeId;  
+  export let setEditNodeId;  
   
   let boards = [];
   let editMode = false;
@@ -41,7 +41,7 @@
 
   const closeBoard = ()=>{
     setCurrentBoardData(null);  
-    setCurrentNodeId(null);
+    setEditNodeId(null);
     editMode = false;
   }
 
@@ -160,12 +160,12 @@
 
   <NodeGraph
     nodes={currentBoardData.scriptNodes}
-    {setCurrentNodeId}
+    {setEditNodeId}
   />
   
   <br>
   {#if !currentBoardData.new}
-    <button id="add-node" on:click={addNode}>add script node</button>    
+    <button id="add-node" on:click={addNode}>add node</button>    
   {/if}
   
 {/if}

@@ -3,7 +3,7 @@
   import { token } from './stores.js';  
   
   export let nodes = [];
-  export let setCurrentNodeId;
+  export let setEditNodeId;
 
   const saveNodePosition = async (id, x, y)=> {
     await fetch("/api/scriptNode/" + id, {
@@ -32,30 +32,34 @@
   let connections = [];
   $: {
     connections = [];
-    for(let j = 0; j < nodes.length; j++) {
+    if(nodes) {
+      for(let j = 0; j < nodes.length; j++) {
 
-      let fromX = nodes[j].posX + rectWidth / 2;
-      let fromY = nodes[j].posY + rectHeight / 2;
-      nodes[j].connectionIds.forEach((id)=>{
-        let i = getNodeIndexById(id);
-        if(i > -1) {
-          let to = nodes[i];
-          let toX = to.posX + rectWidth / 2;
-          let toY = to.posY + rectHeight / 2;
-          let dx = toX - fromX;
-          let dy = toY - fromY;
-          let l = Math.sqrt((dx * dx) + (dy * dy));
-          let shorter = 1.0 - (70.0/l);
-          let toXs = fromX + dx * shorter;
-          let toYs = fromY + dy * shorter;
-          connections.push({
-            fromX,
-            fromY,
-            toX: toXs,
-            toY: toYs
-          })
-        }
-      });
+        let fromX = nodes[j].posX + rectWidth / 2;
+        let fromY = nodes[j].posY + rectHeight / 2;
+        nodes[j].connectionIds.forEach((id)=>{
+          let i = getNodeIndexById(id);
+          if(i > -1) {
+            let to = nodes[i];
+            let toX = to.posX + rectWidth / 2;
+            let toY = to.posY + rectHeight / 2;
+            let dx = toX - fromX;
+            let dy = toY - fromY;
+            let l = Math.sqrt((dx * dx) + (dy * dy));
+            let shorter = 1.0 - (70.0/l);
+            let toXs = fromX + dx * shorter;
+            let toYs = fromY + dy * shorter;
+            connections.push({
+              fromX,
+              fromY,
+              toX: toXs,
+              toY: toYs
+            })
+          }
+        });
+      }
+    } else {
+      nodes = [];
     }
   }
 
@@ -112,7 +116,7 @@
           }}
         on:click={()=>{
             if(Date.now() - dragStart < 250)
-              setCurrentNodeId(node._id)
+              setEditNodeId(node._id)
           }}
       >
         <rect

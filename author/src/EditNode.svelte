@@ -7,8 +7,9 @@
 
   import { getConfig } from '../../shared/util.js';
 
-  export let currentNodeId;
-  export let setCurrentNodeId;
+  export let editNodeId;
+  export let setEditNodeId;
+  export let setPlayerNodeId;
   export let reloadBoardData;
   
   let scriptNode = {};
@@ -22,7 +23,7 @@
   let editTitle = false;
    
   const loadNoad = async (id) => {
-    const res = await fetch("/api/scriptNode/" + currentNodeId);
+    const res = await fetch("/api/scriptNode/" + editNodeId);
     const json = await res.json();
     console.log(json);
     scriptNode = json;
@@ -48,10 +49,10 @@
     })    
   }
 
-  // run whenever currentNodeId prop changes
+  // run whenever editNodeId prop changes
   $: {
-     console.log('currentNodeId changed', currentNodeId);
-     loadNoad(currentNodeId);
+     console.log('editNodeId changed', editNodeId);
+     loadNoad(editNodeId);
   }
 
   async function save() {
@@ -83,11 +84,11 @@
 
   const deleteNode = async ()=> {
     if(confirm("really?")) {
-      await fetch("/api/scriptNode/" + currentNodeId, {
+      await fetch("/api/scriptNode/" + editNodeId, {
         method: "DELETE",
         headers: {'authorization': $token},
       });
-      setCurrentNodeId(null);
+      setEditNodeId(null);
       reloadBoardData();
     }
   }
@@ -115,13 +116,15 @@
 
 
 <br/>
-<button on:click={deleteNode}>delete script node</button><br>
-<a target="_blank" href="{playerURL}?node={scriptNodeEdit.name}">external player link</a>
+<button on:click={()=>{setPlayerNodeId(scriptNodeEdit._id)}}>play node</button>
+<button on:click={deleteNode}>delete node</button><br>
+<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a>
 
 <style>
   a {
     font-size: 80%;
     color: gray;
+    padding-left: 1px;
   }
 </style>
 

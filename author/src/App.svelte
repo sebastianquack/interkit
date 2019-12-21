@@ -15,8 +15,11 @@
      initSocket();
   });
 
-  let currentNodeId = null;
-  const setCurrentNodeId = (nodeId)=>{currentNodeId = nodeId};
+  let editNodeId = null;
+  const setEditNodeId = (nodeId)=>{editNodeId = nodeId};
+
+  let playerNodeId = null;
+  const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId};
 
   let currentBoardId = null;
   const setCurrentBoardId = (boardId)=>{currentBoardId = boardId}
@@ -41,24 +44,27 @@
       {setCurrentBoardId}
       {currentBoardData}
       {setCurrentBoardData}
-      {currentNodeId}
-      {setCurrentNodeId}
+      {editNodeId}
+      {setEditNodeId}
     />
   </div>
   
   <div id="top-right" class="area">
-    {#if currentNodeId}
+    {#if editNodeId}
     <EditNode
-      currentNodeId={currentNodeId}
-      {setCurrentNodeId}
+      {editNodeId}
+      {setEditNodeId}
+      {setPlayerNodeId}
       {reloadBoardData}
     />
     {/if}
   </div>
   <div id="bottom-right" class="area">
-    {#if currentNodeId}
+    {#if playerNodeId}
     <Chat
-      currentNodeId={currentNodeId}
+      {playerNodeId}
+      {setPlayerNodeId}
+      {setEditNodeId}
       authoring={true}
     />
     {/if}

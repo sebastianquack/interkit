@@ -92,7 +92,10 @@ async function handleScript(io, socket, currentNode, msg) {
           return;
         }
         
-        let newNodes = await RestHapi.list(RestHapi.models.scriptNode, {name: result.moveTo}, Log)
+        let newNodes = await RestHapi.list(RestHapi.models.scriptNode, {
+          name: result.moveTo,
+          board: currentNode.board
+        }, Log)
         // todo: add board as second search condition here
         console.log(newNodes);
         

@@ -4,23 +4,32 @@
   import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
 
   export let authoring;
-  export let currentNodeId;
-  let nodeIdBackup;
-
-  let journeyNode = null;
+  export let playerNodeId;
+  export let setEditNodeId;
+  export let setPlayerNodeId;
+  
+  let currentPlayerNode = null;
+  let moving = false;
 
   let div;
   let autoscroll;
-
   let comments = [];
 
-  const init = (nodeId)=> {
+  const init = async (nodeId)=> {
+
+    let response = await fetch("/api/scriptNode/" + nodeId);
+    currentPlayerNode = await response.json();
+    console.log("currentPlayerNode", currentPlayerNode);
+
     joinRoom(nodeId);
     listenForMessages((message)=>{
       console.log(message);
 
       if(message.moveTo) {
-        journeyNode = message.moveTo;
+        moving = true;
+        currentPlayerNode = message.moveTo;
+        setPlayerNodeId(message.moveTo._id);
+        moving = false;
       }
 
       if(message.message) {
@@ -45,15 +54,18 @@
   }
 
   $: {
-    console.log("currentNodeId changed");
-    stopListening();
-    if(nodeIdBackup) leaveRoom(nodeIdBackup);
-    init(currentNodeId)
-    nodeIdBackup = currentNodeId;
+    if(!currentPlayerNode || (playerNodeId != currentPlayerNode._id && !moving)) {
+      console.log("playerNodeId changed through prop");
+      if(currentPlayerNode) {
+        stopListening();
+        leaveRoom(currentPlayerNode._id);    
+      }
+      init(playerNodeId);
+    }
   }
 
   onDestroy(() => {
-    leaveRoom(currentNodeId);
+    leaveRoom(currentPlayerNode._id);
     stopListening();
   })
 
@@ -81,10 +93,10 @@
   }
 
   const reEnter = ()=> {
-    leaveRoom(currentNodeId);
+    leaveRoom(currentPlayerNode._id);
     comments = [];
     setTimeout(()=>{
-      joinRoom(currentNodeId);  
+      joinRoom(currentPlayerNode._id);  
     }, 50);
   }
 </script>
@@ -105,8 +117,11 @@
 </div>
 
 {#if authoring}
-  <div class="chat-debug">{journeyNode ? journeyNode.name : ""}</div>
-  <button id="re-enter" on:click={reEnter}>re-enter script node</button>
+  <div class="chat-debug">{currentPlayerNode ? currentPlayerNode.name : ""}</div>
+  <div class="author-buttons">
+    <button on:click={reEnter}>re-enter node</button>
+    <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit node</button>
+  </div>
 {/if}
 
 
@@ -183,7 +198,7 @@
     font-size: 10px;
   }
 
-  #re-enter {
+  .author-buttons {
     position: absolute;
     bottom: 10px;
     right: 10px;
