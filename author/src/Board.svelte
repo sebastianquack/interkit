@@ -23,7 +23,7 @@
   }
   
   const loadBoardData = async ()=>{
-    console.log("reloading board data", currentBoardId);
+    //console.log("reloading board data", currentBoardId);
     editMode = false;
     if(currentBoardId) {
       const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
@@ -109,8 +109,8 @@
     let newNode = {
       name: "new" + Math.floor(Math.random() * 1000),
       board: currentBoardData._id,
-      initScript: "",
-      responseScript: "",
+      script: "",
+      multiPlayer: false,
       posX: 100,
       posY: 100
     }
@@ -175,7 +175,7 @@
 
   button, input, h2, select {
     position: relative;
-    z-index: 1
+    z-index: 1;
   }
 
   #add-node {

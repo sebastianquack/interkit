@@ -87,6 +87,7 @@ async function api() {
       version: "1.0.0",
       apiPath: 'custom_endpoints',
       authStrategy: Auth.strategy,
+      loglevel: 'WARNING',
       mongo: {
         URI: process.env.MONGODB_URI
       }
@@ -110,9 +111,10 @@ async function api() {
     await server.start()
     
     let userModel = RestHapi.models.user;
-    let Log = RestHapi.getLogger('seed')
+    const Log = RestHapi.getLogger('seed');
+    Log.log('test log level')
     let adminUser = await RestHapi.list(userModel, {$where: {username: "admin"}}, Log)
-    console.log(adminUser);
+    //console.log(adminUser);
     if(adminUser.docs.length == 0) {
       Log.log('seeding admin user')
       RestHapi.create(userModel, {username: "admin", password: process.env.ADMIN_PASSWORD}, Log)  

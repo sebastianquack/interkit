@@ -15,55 +15,49 @@
   let scriptNode = {};
   let scriptNodeEdit = {};
     
-  let textArea1;
-  let textArea2;
-  let editor1;
-  let editor2;
-
+  let textArea;
+  let editor;
+  
   let editTitle = false;
    
   const loadNoad = async (id) => {
     const res = await fetch("/api/scriptNode/" + editNodeId);
     const json = await res.json();
-    console.log(json);
+    //console.log(json);
     scriptNode = json;
-    scriptNodeEdit = {...json};   
+    scriptNodeEdit = {...json};
 
-    if(editor1) editor1.toTextArea();
-    if(editor2) editor2.toTextArea();
+    if(typeof scriptNodeEdit.multiPlayer) {
+      scriptNodeEdit.multiPlayer = false;
+    }   
+
+    if(editor) editor.toTextArea();
     
     await tick();
     
-    editor1 = CodeMirror.fromTextArea(textArea1, {
+    editor = CodeMirror.fromTextArea(textArea, {
       lineNumbers: true,
       mode:  "javascript"
     });
-    editor1.on("change", ()=>{scriptNodeEdit.initScript = editor1.getValue()})
+    editor.on("change", ()=>{scriptNodeEdit.script = editor.getValue()})
 
-    editor2 = CodeMirror.fromTextArea(textArea2, {
-      lineNumbers: true,
-      mode:  "javascript"
-    });  
-    editor2.on("change", ()=>{
-      scriptNodeEdit.responseScript = editor2.getValue()
-    })    
   }
 
   // run whenever editNodeId prop changes
   $: {
-     console.log('editNodeId changed', editNodeId);
+     //console.log('editNodeId changed', editNodeId);
      loadNoad(editNodeId);
   }
 
   async function save() {
-    console.log("save");
+    //console.log("save", scriptNodeEdit);
     const response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
       method: 'PUT',
       headers: {'authorization': $token},
       body: JSON.stringify({
         name: scriptNodeEdit.name, 
-        initScript: editor1.getValue(),
-        responseScript: editor2.getValue(),
+        script: editor.getValue(),
+        multiPlayer: scriptNodeEdit.multiPlayer
       })
     });
     if(response.ok) {
@@ -78,8 +72,7 @@
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
   
   onDestroy(()=> {
-    editor1.toTextArea();
-    editor2.toTextArea();
+    editor.toTextArea();
   })
 
   const deleteNode = async ()=> {
@@ -109,8 +102,8 @@
 {:else}
   <input bind:value={scriptNodeEdit.name}><br/>
 {/if}
-<textarea bind:this={textArea1} bind:value={scriptNodeEdit.initScript}></textarea><br/>
-<textarea bind:this={textArea2} bind:value={scriptNodeEdit.responseScript}></textarea><br/>
+<textarea bind:this={textArea} bind:value={scriptNodeEdit.script}></textarea><br/>
+<label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/>
 
 {#if changed} <button on:click={save}>save</button> {/if}
 
@@ -125,6 +118,10 @@
     font-size: 80%;
     color: gray;
     padding-left: 1px;
+  }
+
+  label {
+    display: inline-block;
   }
 </style>
 

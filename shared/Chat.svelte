@@ -1,7 +1,8 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-
   import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
+
+  import ItemBubble from './ItemBubble.svelte';
 
   export let authoring;
   export let playerNodeId;
@@ -9,55 +10,58 @@
   export let setPlayerNodeId;
   
   let currentPlayerNode = null;
-  let moving = false;
-
+  
   let div;
   let autoscroll;
-  let comments = [];
+  let items = [];
+  let inputValue;
 
   const init = async (nodeId)=> {
 
+    inputValue = "";
+
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentPlayerNode = await response.json();
-    console.log("currentPlayerNode", currentPlayerNode);
+    console.log("init currentPlayerNode", currentPlayerNode._id);
 
     joinRoom(nodeId);
+
     listenForMessages((message)=>{
-      console.log(message);
+      console.log("message received", message);
 
       if(message.moveTo) {
-        moving = true;
-        currentPlayerNode = message.moveTo;
         setPlayerNodeId(message.moveTo._id);
-        moving = false;
       }
 
-      if(message.message) {
+      if(message.text) {
 
-        setTimeout(() => {
-          comments = comments.concat({
-            author: 'server',
-            text: '...',
-            placeholder: true
-          });
+        let isSystemMessage = message.system || message.label == "system";
+        let showPlaceholder = !(isSystemMessage || message.option);
 
+        items.push({...message, 
+          side: isSystemMessage ? "system" : "left",
+          placeholder: showPlaceholder,
+        });
+        items.sort((a,b)=>a.timestamp-b.timestamp);
+        items = items;
+
+        if(showPlaceholder)
           setTimeout(() => {
-            comments = comments.filter(comment => !comment.placeholder).concat({
-              author: 'server',
-              text: message.message
+            items.forEach((comment, index)=> {
+              if(items[index].placeholder) {
+                items[index].placeholder = false;
+              }
             });
-          }, 500 + Math.random() * 500);
-        }, 200 + Math.random() * 200);
-
+          }, 500);
       }
     })    
   }
 
   $: {
-    if(!currentPlayerNode || (playerNodeId != currentPlayerNode._id && !moving)) {
-      console.log("playerNodeId changed through prop");
+    if(!currentPlayerNode || 
+       (currentPlayerNode && (playerNodeId != currentPlayerNode._id))) {
+      console.log("playerNodeId changed", currentPlayerNode ? currentPlayerNode._id : "null", playerNodeId);
       if(currentPlayerNode) {
-        stopListening();
         leaveRoom(currentPlayerNode._id);    
       }
       init(playerNodeId);
@@ -77,41 +81,55 @@
     if (autoscroll) div.scrollTo(0, div.scrollHeight);
   });
 
-  function handleKeydown(event) {
+  const submitInput = ()=>{
+    if (!inputValue) return;
+
+    items = items.concat({
+      side: 'right',
+      text: inputValue
+    });
+
+    emitMessage(inputValue);
+    inputValue = "";
+  }
+
+  const handleKeydown = (event)=>{
     if (event.which === 13) {
-      const text = event.target.value;
-      if (!text) return;
-
-      comments = comments.concat({
-        author: 'user',
-        text
-      });
-
-      event.target.value = '';
-      emitMessage(text);
+      submitInput();
     }
+  }
+
+  const autoType = (item) => {
+    inputValue = item.text;
+    setTimeout(()=>{
+      submitInput();
+      items = items.filter((i)=>!i.option);
+    }, 500);
   }
 
   const reEnter = ()=> {
     leaveRoom(currentPlayerNode._id);
-    comments = [];
+    items = [];
     setTimeout(()=>{
-      joinRoom(currentPlayerNode._id);  
+      init(currentPlayerNode._id);  
     }, 50);
   }
+
+
 </script>
 
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
   <div class="scrollable" bind:this={div}>
-    {#each comments as comment}
-      <article class={comment.author}>
-        <span>{comment.text}</span>
-      </article>
+    {#each items as item}
+      <ItemBubble 
+        {item}
+        onClick={()=>{autoType(item)}}
+      />
     {/each}
   </div>
 
   <div class="input-container">
-    <input on:keydown={handleKeydown}>
+    <input bind:value={inputValue} on:keydown={handleKeydown}>
   </div>
 
 </div>
@@ -150,31 +168,6 @@
     left: 0;
     right: 0;
     padding: 5px;
-  }
-
-  article {
-    margin: 0.5em 0;
-  }
-
-  .user {
-    text-align: right;
-  }
-
-  span {
-    padding: 0.5em 1em;
-    display: inline-block;
-  }
-
-  .server span {
-    background-color: #eee;
-    border-radius: 1em 1em 1em 0;
-  }
-
-  .user span {
-    background-color: #0074D9;
-    color: white;
-    border-radius: 1em 1em 0 1em;
-    word-break: break-all;
   }
 
   .input-container {

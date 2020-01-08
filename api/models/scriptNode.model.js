@@ -9,11 +9,11 @@ module.exports = function (mongoose) {
       type: Types.String,
       required: true,
     },
-    initScript: {
+    script: {
       type: Types.String,
     },
-    responseScript: {
-      type: Types.String,
+    multiPlayer: {
+      type: Types.Boolean,
     },
     connectionIds: {
       type: [Types.ObjectId]
@@ -30,18 +30,18 @@ module.exports = function (mongoose) {
     }
   });
 
-  // scan responseScript for moveTo commands and update connections for this node
+  // scan script for moveTo commands and update connections for this node
   const updateConnections = async (payload) => {
     
     console.log("payload", payload);
 
-    if(typeof payload.responseScript !== "undefined") {
+    if(typeof payload.script !== "undefined") {
 
       let connectedNodeNames = [];
       let connectedNodeIds = [];
 
       let regex1 = /(?:api\.moveTo\(\")(.+)(?:\"\))/g    
-      while ((array1 = regex1.exec(payload.responseScript)) !== null) {
+      while ((array1 = regex1.exec(payload.script)) !== null) {
         connectedNodeNames.push(array1[1]);
       } 
       console.log("found connections: ", connectedNodeNames);

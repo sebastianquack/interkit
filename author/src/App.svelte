@@ -22,7 +22,7 @@
   const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId};
 
   let currentBoardId = null;
-  const setCurrentBoardId = (boardId)=>{currentBoardId = boardId}
+  const setCurrentBoardId = (boardId)=>{currentBoardId = boardId};
 
   let currentBoardData = null;
   const setCurrentBoardData = (boardData)=>{

@@ -108,7 +108,7 @@
   {#each nodes as node, index}
       <g
         on:mousedown={()=>{
-            console.log("mousedown", node._id);
+            //console.log("mousedown", node._id);
             dragging = node._id;
             dragStart = Date.now();
             offsetX = mouseX - node.posX;

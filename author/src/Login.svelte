@@ -10,7 +10,7 @@
       body: JSON.stringify({username, password})
     });
     const json = await response.json();
-    console.log(json);
+    //console.log(json);
     if(json.token) {
       token.set(json.token);  
     } else {

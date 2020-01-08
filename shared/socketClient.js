@@ -1,8 +1,9 @@
 import * as io from '../author/node_modules/socket.io-client';
 
-import { getConfig } from './util.js';
+import { getConfig, findOrCreatePlayer } from './util.js';
 
 let socket = null;
+let playerId;
 
 export const initSocket = async () => {
 
@@ -14,8 +15,10 @@ export const initSocket = async () => {
     console.log("socket disconnect");
   });
   
-  socket.on('connect', function(){
+  socket.on('connect', async function(){
     console.log("socket connect");
+
+    playerId = await findOrCreatePlayer();    
   });
     
   socket.on('reconnect_attempt', () => {
@@ -24,7 +27,8 @@ export const initSocket = async () => {
 
 }
 
-const doubleTry = (action) => {
+// if socket isn't available yet, try again once after timeout - todo optimize
+const reTry = (action) => {
   if(socket)
     action();
   else {
@@ -39,34 +43,43 @@ const doubleTry = (action) => {
   }
 }
 
+// ask server to put us in a room
 export const joinRoom = (room) => {
-  doubleTry(()=>{
-    socket.emit('joinRoom', room); // ask server to put us in a room
+  //console.log("joinRoom");
+  reTry(()=>{
+    socket.emit('joinRoom', {
+      room, 
+      playerId
+    }); 
   });
 }
 
 export const leaveRoom = (room) => {
-  doubleTry(()=>{
+  reTry(()=>{
+    socket.off('message');
     socket.emit('leaveRoom', room); // ask server to remove us from a room
   });
 }
 
 export const listenForMessages = (callback) => {
-  doubleTry(()=>{
+  //console.log("listenForMessages");
+  reTry(()=>{
+    socket.off('message');
     socket.on('message', callback);
   });
 }
 
 export const stopListening = () => {
-  doubleTry(()=>{
+  reTry(()=>{
     socket.off('message');
   });
 }
 
-export const emitMessage = (msg) => {
-  doubleTry(()=>{
+export const emitMessage = (message) => {
+  reTry(()=>{
     socket.emit('message', {
-      message: msg
+      message,
+      playerId
     });
   });
 }

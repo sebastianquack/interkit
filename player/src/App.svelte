@@ -3,7 +3,8 @@
   import Chat from '../../shared/Chat.svelte';
   import { initSocket } from '../../shared/socketClient.js';
 
-  let currentNodeId = null;
+  let playerNodeId = null;
+  const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId}; 
   let loading = true;
 
   onMount(async () => {
@@ -11,7 +12,7 @@
 
     let searchParams = new URLSearchParams(window.location.search);
     if(searchParams.get("node")) {
-      currentNodeId = searchParams.get("node");
+      playerNodeId = searchParams.get("node");
     }
     loading = false;
   });
@@ -20,7 +21,7 @@
 
 {#if !loading}
 
-  {#if !currentNodeId}
+  {#if !playerNodeId}
 
     <h1>player view</h1>
     <p>for now, you need a direct url to a node to play</p>
@@ -28,7 +29,8 @@
   {:else}
     <div class="chat-container">
       <Chat
-        {currentNodeId}
+        {playerNodeId}
+        {setPlayerNodeId}
       />
     </div>
 
