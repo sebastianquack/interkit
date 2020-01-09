@@ -11,21 +11,25 @@
   export let setEditNodeId;
   export let setPlayerNodeId;
   export let reloadBoardData;
+  export let currentBoardData;
   
   let scriptNode = {};
   let scriptNodeEdit = {};
-    
+  let startingNodeEdit;
+
   let textArea;
   let editor;
   
   let editTitle = false;
-   
+ 
   const loadNoad = async (id) => {
     const res = await fetch("/api/scriptNode/" + editNodeId);
     const json = await res.json();
     //console.log(json);
     scriptNode = json;
     scriptNodeEdit = {...json};
+
+    startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
 
     if(typeof scriptNodeEdit.multiPlayer) {
       scriptNodeEdit.multiPlayer = false;
@@ -49,28 +53,60 @@
      loadNoad(editNodeId);
   }
 
+  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
+  $: startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id);
+  
   async function save() {
-    //console.log("save", scriptNodeEdit);
-    const response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
-      method: 'PUT',
-      headers: {'authorization': $token},
-      body: JSON.stringify({
-        name: scriptNodeEdit.name, 
-        script: editor.getValue(),
-        multiPlayer: scriptNodeEdit.multiPlayer
-      })
-    });
-    if(response.ok) {
-      const newNode = await response.json();
-      scriptNode = {...newNode};
-      scriptNodeEdit = {...newNode};
-      editTitle = false;
-      reloadBoardData();
+
+    if(startingNodeChanged) {
+      let response;
+      console.log("startingNodeEdit", startingNodeEdit);
+      
+      if(startingNodeEdit) {
+        response = await fetch("/api/board/" + currentBoardData._id, {
+        method: "PUT",
+        headers: {'authorization': $token},
+        body: JSON.stringify({
+          startingNode: scriptNodeEdit._id,
+          })
+        });
+        
+      } else {
+        response = await fetch("/api/board/" + currentBoardData._id + "/removeStartingNode", {
+        method: "PUT",
+        headers: {'authorization': $token}
+        });
+      }
+
+      if(response.ok) {
+        let json = await response.json();
+        console.log(json);
+        reloadBoardData();
+      }  
     }
+    
+    if(changed) {
+      //console.log("save", scriptNodeEdit);
+      response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
+        method: 'PUT',
+        headers: {'authorization': $token},
+        body: JSON.stringify({
+          name: scriptNodeEdit.name, 
+          script: editor.getValue(),
+          multiPlayer: scriptNodeEdit.multiPlayer
+        })
+      });
+      if(response.ok) {
+        const newNode = await response.json();
+        scriptNode = {...newNode};
+        scriptNodeEdit = {...newNode};
+        editTitle = false;
+        reloadBoardData();
+      }  
+    }
+    
   }
 
-  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
-  
   onDestroy(()=> {
     editor.toTextArea();
   })
@@ -104,8 +140,9 @@
 {/if}
 <textarea bind:this={textArea} bind:value={scriptNodeEdit.script}></textarea><br/>
 <label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/>
+<label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br/>
 
-{#if changed} <button on:click={save}>save</button> {/if}
+{#if changed || startingNodeChanged} <button on:click={save}>save</button> {/if}
 
 
 <br/>

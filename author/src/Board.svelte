@@ -74,7 +74,9 @@
         method: "POST",
         headers: {'authorization': $token},
         body: JSON.stringify([{
-          name: currentBoardData.name 
+          name: currentBoardData.name,
+          description: currentBoardData.description,
+          listed: currentBoardData.listed,
         }])
       });
       if(response.ok) {
@@ -89,12 +91,15 @@
         headers: {'authorization': $token},
         body: JSON.stringify({
           _id: currentBoardData._id,
-          name: currentBoardData.name 
+          name: currentBoardData.name,
+          description: currentBoardData.description,
+          listed: currentBoardData.listed,
         })
       });
       if(response.ok) {
         let json = await response.json();
         console.log(json);
+        json.scriptNodes = currentBoardData.scriptNodes;
         setCurrentBoardData(json);
         editMode = false;
       }
@@ -122,7 +127,7 @@
       if(response.ok) {
         let json = await response.json();
         console.log(json);
-        setCurrentNodeId(json._id);
+        setEditNodeId(json._id);
         loadBoardData();
       }
   }
@@ -147,21 +152,24 @@
 
   {#if editMode}
     <h2>edit board</h2>
-    <input bind:value={currentBoardData.name} type="text"/>
+    <input bind:value={currentBoardData.name} type="text"/><br>
+    <textarea bind:value={currentBoardData.description}></textarea><br>
+    <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br/>
     <button on:click={saveBoard}>save</button>
     <button on:click={loadBoardData}>cancel</button><br>
     <br>
   {:else}
     <div class="edit-headline">
-      <h2>{currentBoardData.name}</h2>
+      <h2>{currentBoardData.name} <small>({currentBoardData.listed ? "listed" : "unlisted"})</small></h2>
+      <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
+      
       <button on:click="{()=>{editMode=true}}">edit</button>
     </div>
+    <NodeGraph
+      nodes={currentBoardData.scriptNodes}
+      {setEditNodeId}
+    />
   {/if}
-
-  <NodeGraph
-    nodes={currentBoardData.scriptNodes}
-    {setEditNodeId}
-  />
   
   <br>
   {#if !currentBoardData.new}
@@ -176,6 +184,20 @@
   button, input, h2, select {
     position: relative;
     z-index: 1;
+  }
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: inline-block;
+  }
+
+  h2 small {
+    font-weight: normal;
+    font-size: 10px;
+    color: gray;
   }
 
   #add-node {

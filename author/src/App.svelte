@@ -56,6 +56,7 @@
       {setEditNodeId}
       {setPlayerNodeId}
       {reloadBoardData}
+      {currentBoardData}
     />
     {/if}
   </div>
