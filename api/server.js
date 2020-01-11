@@ -5,7 +5,7 @@ let Auth = require("./plugins/auth.plugin.js");
 const Path = require('path');
 const Inert = require('@hapi/inert');
 
-const SocketApi = require('./src/socketApi.js');
+const SocketServer = require('./src/socketServer.js');
 
 if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
@@ -106,7 +106,7 @@ async function api() {
     })
 
 
-    SocketApi.init(server.listener);
+    SocketServer.init(server.listener);
 
     await server.start()
     

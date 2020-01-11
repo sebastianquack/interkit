@@ -9,7 +9,7 @@ module.exports = function (mongoose) {
     value: {
       type: Types.String,
     },
-    varScope: {
+    scope: {
       type: Types.String,
       required: true,
       enum: ['player','playerNode', 'node', 'board'],

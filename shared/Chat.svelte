@@ -30,7 +30,7 @@
       console.log("message received", message);
 
       if(message.moveTo) {
-        setPlayerNodeId(message.moveTo._id);
+        setPlayerNodeId(message.moveTo);
       }
 
       if(message.text) {

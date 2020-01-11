@@ -87,7 +87,7 @@
     
     if(changed) {
       //console.log("save", scriptNodeEdit);
-      response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
+      let response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
         method: 'PUT',
         headers: {'authorization': $token},
         body: JSON.stringify({

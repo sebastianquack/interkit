@@ -27,18 +27,18 @@ export const initSocket = async () => {
 
 }
 
-// if socket isn't available yet, try again once after timeout - todo optimize
+// if socket or playerId isn't available yet, try again once after timeout - todo optimize
 const reTry = (action) => {
-  if(socket)
+  if(socket && playerId)
     action();
   else {
-    console.log("no socket");
+    console.log("no socket or playerId");
     setTimeout(()=>{
       console.log("trying second time");
       if(socket) 
         action();
       else 
-        console.log("no socket, giving up");
+        console.log("no socket or playerId, giving up");
     }, 2000);
   }
 }

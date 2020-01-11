@@ -136,8 +136,8 @@ async function handleScript(io, socket, currentNode, playerId, hook, msg=null) {
             socket.room = newNode._id;
             await socket.join(newNode._id);
             // inform sender of new room
-            console.log("emit moveTo message");
-            emitMessage(socket, null, {system: true, moveTo: newNode});
+            console.log("emit moveTo message", newNode);
+            emitMessage(socket, {system: true, moveTo: newNode._id});
             //socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
             // inform others in the new room 

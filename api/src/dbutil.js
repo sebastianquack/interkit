@@ -11,11 +11,15 @@ const makeQuery = (scope, refs, key) => {
   };
   if(refs.playerId) where.player = mongoose.Types.ObjectId(refs.playerId);
   if(refs.boardId) where.board = mongoose.Types.ObjectId(refs.boardId);
+  if(refs.nodeId) where.node = mongoose.Types.ObjectId(refs.nodeId);
   return where;
 }
 
 const checkRefs = (scope, refs) => {
-  return scope == "player" && refs.playerId || scope == "board" && refs.boardId
+  return scope == "player" && refs.playerId 
+          || scope == "board" && refs.boardId
+          || scope == "node" && refs.nodeId
+          || scope == "playerNode" && refs.nodeId && refs.playerId
 }
 
 exports.setVar = async (scope, refs, key, value) => {
@@ -31,17 +35,32 @@ exports.setVar = async (scope, refs, key, value) => {
     // create
     if(variable.docs.length == 0) {
       
-      RestHapi.create(RestHapi.models.variable, {...where, value}, Log);  
+      await RestHapi.create(RestHapi.models.variable, {...where, value}, Log);  
 
     // update
     } else {
 
-      RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
+      await RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
         value: value 
       }, Log);  
 
     }
 
+  }
+}
+
+exports.getVars = async (scope, refs) => {
+  if(checkRefs(scope, refs)) {
+    let where = makeQuery(scope, refs, undefined);
+    delete where.key;
+    let variables = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
+
+    let varObj = {};
+    if(variables.docs.length)
+      variables.docs.forEach((v)=>{
+        varObj[v.key] = v.value;
+      })
+    return varObj;
   }
 }
 
