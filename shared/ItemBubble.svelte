@@ -22,6 +22,10 @@ article {
 
 .system {
   text-align: center;
+  margin-left: 25%;
+  margin-right: 25%;
+  background-color: #efefef;
+  border-radius: 3px;
 }
 
 .system span {

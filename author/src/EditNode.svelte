@@ -133,22 +133,21 @@
 {#if !editTitle}
   <div class="edit-headline">
     <h2>{scriptNodeEdit.name}</h2>
-    <button on:click="{()=>{editTitle=true}}">edit</button>
+    <button on:click="{()=>{editTitle=true}}">✎</button>
+    <button on:click={()=>{setPlayerNodeId(scriptNodeEdit._id)}}>play</button>
   </div>
 {:else}
   <input bind:value={scriptNodeEdit.name}><br/>
+  <button on:click="{()=>{editTitle=false}}">cancel</button>
 {/if}
 <textarea bind:this={textArea} bind:value={scriptNodeEdit.script}></textarea><br/>
 <label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/>
-<label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br/>
+<label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br>
 
-{#if changed || startingNodeChanged} <button on:click={save}>save</button> {/if}
+{#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
 
-
-<br/>
-<button on:click={()=>{setPlayerNodeId(scriptNodeEdit._id)}}>play node</button>
-<button on:click={deleteNode}>delete node</button><br>
-<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a>
+<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a><br>
+<button on:click={deleteNode}>delete</button><br>
 
 <style>
   a {

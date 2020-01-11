@@ -99,12 +99,25 @@
     }
   }
 
+  let autoTyping = false;
+
   const autoType = (item) => {
-    inputValue = item.text;
+    if(autoTyping) return;
+    autoTyping = true;
+    let delay = 70;
+    const type = (text, delay) => {
+      let character = text.substr(0,1);
+      let remaining = text.substr(1);
+      inputValue += character;
+      if (remaining != "") setTimeout(()=>{type(remaining, delay)}, delay);
+    }
+    type(item.text, delay);
+
     setTimeout(()=>{
       submitInput();
+      autoTyping = false;
       items = items.filter((i)=>!i.option);
-    }, 500);
+    }, delay * (item.text.length+5));
   }
 
   const reEnter = ()=> {
@@ -137,8 +150,8 @@
 {#if authoring}
   <div class="chat-debug">{currentPlayerNode ? currentPlayerNode.name : ""}</div>
   <div class="author-buttons">
-    <button on:click={reEnter}>re-enter node</button>
-    <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit node</button>
+    <button on:click={reEnter}>clear & re-enter</button>
+    <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit code</button>
   </div>
 {/if}
 

@@ -12,6 +12,9 @@
   export let setCurrentBoardData;
 
   export let setEditNodeId;  
+  export let editNodeId;
+
+  export let playerNodeId;
   
   let boards = [];
   let editMode = false;
@@ -160,14 +163,18 @@
     <br>
   {:else}
     <div class="edit-headline">
-      <h2>{currentBoardData.name} <small>({currentBoardData.listed ? "listed" : "unlisted"})</small></h2>
+      <h2>{currentBoardData.name} <small>{currentBoardData.listed ? "listed" : "unlisted"}</small></h2>
       <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
       
-      <button on:click="{()=>{editMode=true}}">edit</button>
+      <button on:click="{()=>{editMode=true}}">✎</button>
     </div>
     <NodeGraph
+      {currentBoardData}
       nodes={currentBoardData.scriptNodes}
+      {editNodeId}
       {setEditNodeId}
+      {playerNodeId}
+      {currentBoardData}
     />
   {/if}
   

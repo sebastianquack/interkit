@@ -46,6 +46,7 @@
       {setCurrentBoardData}
       {editNodeId}
       {setEditNodeId}
+      {playerNodeId}
     />
   </div>
   

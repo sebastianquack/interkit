@@ -136,7 +136,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msg=null) {
             socket.room = newNode._id;
             await socket.join(newNode._id);
             // inform sender of new room
-            console.log("emit moveTo message", newNode);
+            console.log("emit moveTo message");
             emitMessage(socket, {system: true, moveTo: newNode._id});
             //socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
@@ -145,7 +145,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msg=null) {
               socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
             }*/
 
-            handleScript(io, socket, newNode, playerId, "onArrive");
+            //handleScript(io, socket, newNode, playerId, "onArrive");
           } 
         } else {
           console.log("node " + result.moveTo + " not found");

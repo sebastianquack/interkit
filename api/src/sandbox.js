@@ -21,7 +21,8 @@ module.exports.run = async function(node, playerId, hook, msg, callback) {
     board: await db.getVars("board", {boardId: node.board}),
   }
 
-  console.log(varCache);
+  // default values
+  if(!varCache.board.narrator) varCache.board.narrator = "narrator";
 
   const vm = new VM({
     timeout: 1000, // timeout for script exeuction

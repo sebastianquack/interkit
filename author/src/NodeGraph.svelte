@@ -4,6 +4,10 @@
   
   export let nodes = [];
   export let setEditNodeId;
+  export let editNodeId;
+
+  export let playerNodeId;
+  export let currentBoardData;
 
   const saveNodePosition = async (id, x, y)=> {
     await fetch("/api/scriptNode/" + id, {
@@ -25,7 +29,7 @@
   let offsetX;
   let offsetY;
   let rectWidth = 100;
-  let rectHeight = 66;
+  let rectHeight = 70;
   let dragging = null;
   let dragStart;
 
@@ -132,6 +136,28 @@
         >
           {node.name}
         </text>
+        <text 
+          class="script-node-attribute"
+          x={node.posX+10}
+          y={node.posY+35}
+        >
+          {#if editNodeId == node._id}editing{/if}
+        </text>
+        <text 
+          class="script-node-attribute"
+          x={node.posX+10}
+          y={node.posY+48}
+        >
+          {#if playerNodeId == node._id}playing{/if}
+        </text>
+        <text 
+          class="script-node-attribute"
+          x={node.posX+10}
+          y={node.posY+61}
+        >
+          {#if currentBoardData.startingNode == node._id}starting node{/if}
+        </text>
+
       </g>
 
       />
@@ -168,6 +194,13 @@ rect {
     user-select: none;
     z-index: 1;
   }
+
+.script-node-attribute {
+  fill: gray;
+  font-size: 10px;
+  user-select: none;
+  z-index: 1;
+}
 
 g:hover {
   cursor: pointer;
