@@ -1,8 +1,9 @@
 <script>
 
   import { onMount } from 'svelte';
+  
   import { token } from './stores.js';  
-
+  import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
   
   export let currentBoardId;
@@ -52,7 +53,8 @@
     let newBoard = {
       new: true,
       name: "",
-      scriptNodes: []
+      scriptNodes: [],
+      library: ""
     }
     setCurrentBoardData(newBoard);
     editMode = true;
@@ -80,6 +82,7 @@
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
+          library: currentBoardData.library
         }])
       });
       if(response.ok) {
@@ -97,6 +100,7 @@
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
+          library: currentBoardData.library
         })
       });
       if(response.ok) {
@@ -158,6 +162,8 @@
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br/>
+    <label>code library (executed every time a node runs):</label><br>
+    <CodeEditor bind:code={currentBoardData.library}></CodeEditor><br>
     <button on:click={saveBoard}>save</button>
     <button on:click={loadBoardData}>cancel</button><br>
     <br>

@@ -81,3 +81,8 @@ exports.getVar = async (scope, refs, key) => {
     }
   }
 }
+
+exports.getBoard = async (boardId) => {
+  let board = await RestHapi.find(RestHapi.models.board, boardId, null, Log);
+  return board;
+}

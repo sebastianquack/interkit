@@ -21,8 +21,10 @@ module.exports = function (mongoose) {
     startingNode: {
       type: Types.ObjectId,
       ref: "scriptNode"
+    },
+    library: {
+      type: Types.String
     } 
-
   });
   
   Schema.statics = {

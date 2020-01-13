@@ -61,8 +61,9 @@ module.exports.run = async function(node, playerId, hook, msg, callback) {
     }  
   });
 
+  let board = await db.getBoard(node.board);
 
-  let runScript = node.script;
+  let runScript = board.library + " ; " + node.script;
   let msgProcessed = msg ? msg.trim().toLowerCase() : "";
 
   // expand script to execute appropriate hook
