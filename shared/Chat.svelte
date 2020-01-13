@@ -6,7 +6,7 @@
 
   export let authoring;
   export let playerNodeId;
-  export let setEditNodeId;
+  export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let setPlayerNodeId;
   
   let currentPlayerNode = null;
@@ -31,6 +31,7 @@
 
       if(message.moveTo) {
         setPlayerNodeId(message.moveTo);
+        setEditNodeId(message.moveTo);
       }
 
       if(message.text) {

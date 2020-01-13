@@ -1,0 +1,13 @@
+cd .. 
+
+cd author && bin/build_and_copy && cd ..
+cd player && bin/build_and_copy && cd ..
+cd admin && bin/build_and_copy && cd ..
+
+git add ./api/public/author
+git add ./api/public/player
+git add ./api/public/admin
+
+git commit -m "production build"
+
+git subtree push --prefix api heroku master && cd api

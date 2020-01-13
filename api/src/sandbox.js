@@ -57,16 +57,18 @@ module.exports.run = async function(node, playerId, hook, msg, callback) {
       },
       output: (text, label=varCache.board.narrator) => { result.outputs.push({text, label}); },
       option: (text) => { result.outputs.push({text, option: true}); },       
-      moveTo: (room) => { result.moveTo = room; } 
+      moveTo: (room) => { result.moveTo = room; },
     }  
   });
 
+
   let runScript = node.script;
+  let msgProcessed = msg ? msg.trim().toLowerCase() : "";
 
   // expand script to execute appropriate hook
   switch(hook) {
     case "onMessage":
-      runScript += `; if(typeof onMessage === "function") onMessage("${msg}");`; 
+      runScript += `; if(typeof onMessage === "function") onMessage("${msgProcessed}");`; 
       break;
     case "onArrive":
       runScript += `; if(typeof onArrive === "function") onArrive();`; 

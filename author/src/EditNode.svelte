@@ -146,7 +146,7 @@
 
 {#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
 
-<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a><br>
+<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a>
 <button on:click={deleteNode}>delete</button><br>
 
 <style>
@@ -154,6 +154,8 @@
     font-size: 80%;
     color: gray;
     padding-left: 1px;
+    margin-bottom: 10px;
+    display: block;
   }
 
   label {

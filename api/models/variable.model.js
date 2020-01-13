@@ -7,7 +7,7 @@ module.exports = function (mongoose) {
       required: true,
     },
     value: {
-      type: Types.String,
+      type: Types.Mixed,
     },
     scope: {
       type: Types.String,
