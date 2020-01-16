@@ -161,7 +161,7 @@
     <h2>edit board</h2>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
-    <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br/>
+    <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
     <CodeEditor bind:code={currentBoardData.library}></CodeEditor><br>
     <button on:click={saveBoard}>save</button>

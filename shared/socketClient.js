@@ -75,10 +75,10 @@ export const stopListening = () => {
   });
 }
 
-export const emitMessage = (message) => {
+export const emitMessage = (msgData) => {
   reTry(()=>{
     socket.emit('message', {
-      message,
+      ...msgData,
       playerId
     });
   });

@@ -4,6 +4,7 @@
   import { initSocket } from '../../shared/socketClient.js';
 
   let playerNodeId = null;
+  let directURL = false;
   let loading = true;
   let stories = [];
   let currentStory = null;
@@ -14,6 +15,7 @@
     let searchParams = new URLSearchParams(window.location.search);
     if(searchParams.get("node")) {
       playerNodeId = searchParams.get("node");
+      directURL = true;
     }
 
     const res = await fetch("/api/board?$where=" + JSON.stringify({"listed": true}));
@@ -46,12 +48,14 @@
 
   {:else}
 
-    <div class="top-menu">
-      <span>{currentStory ? currentStory.name : ""}</span>
-      <button on:click={()=>{setPlayerNodeId(null)}}>exit</button>
-    </div>
+    {#if !directURL}
+      <div class="top-menu">
+        <span>{currentStory ? currentStory.name : ""}</span>
+        <button on:click={()=>{setPlayerNodeId(null)}}>exit</button>
+      </div>
+    {/if}
 
-    <div class="chat-container">
+    <div class="chat-container {directURL ? 'chat-container-no-menu' : ''}">
       <Chat
         {playerNodeId}
         {setPlayerNodeId}
@@ -97,6 +101,10 @@
     left: 0;
     right: 0;
     box-sizing: border-box;
+  }
+
+  .chat-container-no-menu {
+    top: 0px;
   }
 
 </style>

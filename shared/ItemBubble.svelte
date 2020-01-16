@@ -6,7 +6,7 @@
 
 <article class={item.option ? "option" : item.side} on:click={()=>{if(item.option) onClick()}}>
     {#if item.side == "left" && !item.option}<label class="bubble-supertitle">{item.label}</label>{/if}
-    <span>{item.placeholder ? "..." : item.text}</span>        
+    <span>{item.placeholder ? "..." : item.message}</span>        
 </article>
 
 
@@ -47,6 +47,9 @@ span {
   padding: 0.5em 1em;
   display: inline-block;
   user-select: none;
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
 }
 
 .left span {

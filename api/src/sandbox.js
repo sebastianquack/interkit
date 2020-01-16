@@ -1,7 +1,7 @@
 const {VM} = require('vm2');
 const db = require('./dbutil.js');
 
-module.exports.run = async function(node, playerId, hook, msg, callback) {
+module.exports.run = async function(node, playerId, hook, msgData, callback) {
   let sentResponse = false;
 
   let t = setTimeout(()=>{
@@ -24,6 +24,14 @@ module.exports.run = async function(node, playerId, hook, msg, callback) {
   // default values
   if(!varCache.board.narrator) varCache.board.narrator = "narrator";
 
+  let input = {};
+  if(msgData) {
+    input = msgData;
+    input.raw = input.message;
+    if(input.message)
+      input.message = msgData.message ? msgData.message.trim().toLowerCase() : "";
+  }
+  
   const vm = new VM({
     timeout: 1000, // timeout for script exeuction
     sandbox: {
@@ -55,21 +63,21 @@ module.exports.run = async function(node, playerId, hook, msg, callback) {
           db.setVar("board", {boardId: node.board}, key, value); 
         },
       },
-      output: (text, label=varCache.board.narrator) => { result.outputs.push({text, label}); },
-      option: (text) => { result.outputs.push({text, option: true}); },       
+      output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
+      option: (message) => { result.outputs.push({message, option: true}); },       
       moveTo: (room) => { result.moveTo = room; },
+      input: input
     }  
   });
 
   let board = await db.getBoard(node.board);
 
   let runScript = board.library + " ; " + node.script;
-  let msgProcessed = msg ? msg.trim().toLowerCase() : "";
-
+  
   // expand script to execute appropriate hook
   switch(hook) {
     case "onMessage":
-      runScript += `; if(typeof onMessage === "function") onMessage("${msgProcessed}");`; 
+      runScript += `; if(typeof onMessage === "function") onMessage();`; 
       break;
     case "onArrive":
       runScript += `; if(typeof onArrive === "function") onArrive();`; 

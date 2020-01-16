@@ -3,6 +3,7 @@
   import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
 
   import ItemBubble from './ItemBubble.svelte';
+  import QRScanner from './QRScanner.svelte';
 
   export let authoring;
   export let playerNodeId;
@@ -34,7 +35,7 @@
         setEditNodeId(message.moveTo);
       }
 
-      if(message.text) {
+      if(message.message) {
 
         let isSystemMessage = message.system || message.label == "system";
         let showPlaceholder = !(isSystemMessage || message.option);
@@ -87,10 +88,10 @@
 
     items = items.concat({
       side: 'right',
-      text: inputValue
+      message: inputValue
     });
 
-    emitMessage(inputValue);
+    emitMessage({message: inputValue});
     inputValue = "";
   }
 
@@ -112,13 +113,24 @@
       inputValue += character;
       if (remaining != "") setTimeout(()=>{type(remaining, delay)}, delay);
     }
-    type(item.text, delay);
+    type(item.message, delay);
 
     setTimeout(()=>{
       submitInput();
       autoTyping = false;
       items = items.filter((i)=>!i.option);
-    }, delay * (item.text.length+5));
+    }, delay * (item.message.length+5));
+  }
+
+  const sendQRCode = (code) => {
+    let item = {
+      side: 'right',
+      message: "[QR code scanned]",
+      QRCode: code
+    }
+    items = items.concat(item);
+    emitMessage({message: item.message, QRCode: code});
+    inputValue = "";
   }
 
   const reEnter = ()=> {
@@ -129,23 +141,63 @@
     }, 50);
   }
 
+  let attachmentMenuOpen = false;
+  const openAttachmentMenu = ()=> {
+    console.log("open attachment");
+    attachmentMenuOpen = true;
+  }
+  const closeAttachmentMenu = ()=>{
+    attachmentMenuOpen = false;
+  }
+
+  let QRScannerOpen = false
+  const openQRScanner = ()=> {
+    QRScannerOpen = true;
+  }
+  const closeQRScanner = ()=> {
+    QRScannerOpen = false;
+    closeAttachmentMenu();
+  }
+
 
 </script>
 
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
-  <div class="scrollable" bind:this={div}>
-    {#each items as item}
-      <ItemBubble 
-        {item}
-        onClick={()=>{autoType(item)}}
+
+    <div class="scrollable" bind:this={div}>
+      {#each items as item}
+        <ItemBubble 
+          {item}
+          onClick={()=>{autoType(item)}}
+        />
+      {/each}
+    </div>
+
+    {#if !attachmentMenuOpen}
+      <div class="input-container">
+        <button class="open-attachment" on:click={openAttachmentMenu}>📎</button>
+        <input bind:value={inputValue} on:keydown={handleKeydown}>
+      </div>
+    {:else}
+      <div class="input-container">
+        <button on:click={openQRScanner}>QR Scanner</button>
+        <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
+      </div>  
+    {/if}
+
+  {#if QRScannerOpen}
+    <div class="qr-scanner-container">
+      <button class="close-qr" on:click={closeQRScanner}>close</button>
+      <QRScanner
+        onScan={(code)=>{
+          closeQRScanner();
+          sendQRCode(code);
+        }}
       />
-    {/each}
-  </div>
+    </div>
 
-  <div class="input-container">
-    <input bind:value={inputValue} on:keydown={handleKeydown}>
-  </div>
-
+  {/if}
+  
 </div>
 
 {#if authoring}
@@ -158,6 +210,10 @@
 
 
 <style>
+  button:hover {
+    cursor: pointer;
+  }
+
   .chat {
     position: absolute;
     top: 0;
@@ -192,10 +248,35 @@
     bottom: 0px;
     left: 0px;
     box-sizing: border-box;
+    display: flex;
+  }
+
+  .input-container button {
+    margin-right: 5px;
+  }
+
+  .close-attachment {
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 
   input {
-    width: 100%;
+    flex: auto;
+  }
+
+  .qr-scanner-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .close-qr {
+    position: absolute;
+    top: 5px;
+    right: 5px;
   }
 
   .chat-debug {
@@ -207,8 +288,8 @@
 
   .author-buttons {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 5px;
+    right: 5px;
     width: auto;
     margin-bottom: 0px;
   }

@@ -89,20 +89,20 @@ exports.init = (listener) => {
       // echo input to other players in multiplayer mode
       if(currentNode.multiPlayer && data.message) {
         let name = await db.getVar("player", {playerId: data.playerId}, "name");
-        emitMessage(socket.broadcast.in(socket.room), {text: data.message, label: name ? name : "unknown player"});
+        emitMessage(socket.broadcast.in(socket.room), {message: data.message, label: name ? name : "unknown player"});
       }
-      handleScript(io, socket, currentNode, data.playerId, "onMessage", data.message);
+      handleScript(io, socket, currentNode, data.playerId, "onMessage", data);
     });
   
   });
 
 } 
 
-async function handleScript(io, socket, currentNode, playerId, hook, msg=null) {
+async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
-  sandbox.run(currentNode, playerId, hook, msg, async (result)=>{
+  sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
     if(result.error) {
-      emitMessage(socket, {text: result.error, system: true});
+      emitMessage(socket, {message: result.error, system: true});
     }
     if(result.outputs) {
 
