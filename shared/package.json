@@ -1,0 +1,7 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "dependencies": {
+    "jsqr": "1.2.0"
+  }
+}
