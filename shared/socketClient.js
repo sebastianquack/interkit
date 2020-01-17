@@ -76,6 +76,7 @@ export const stopListening = () => {
 }
 
 export const emitMessage = (msgData) => {
+  console.log("emitting", msgData);
   reTry(()=>{
     socket.emit('message', {
       ...msgData,

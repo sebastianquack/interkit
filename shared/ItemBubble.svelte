@@ -6,7 +6,15 @@
 
 <article class={item.option ? "option" : item.side} on:click={()=>{if(item.option) onClick()}}>
     {#if item.side == "left" && !item.option}<label class="bubble-supertitle">{item.label}</label>{/if}
-    <span>{item.placeholder ? "..." : item.message}</span>        
+    <span>
+      {item.placeholder ? "..." : (item.message ? item.message : "")}
+      {#if item.imgSrc && item.imgLink} 
+        <a href={item.imgLink} target="_blank"><img alt="static map of location" src={item.imgSrc}/></a>
+      {/if}
+      {#if item.imgSrc && !item.imgLink} 
+        <img alt="static map of location" src={item.imgSrc}/>
+      {/if}
+    </span>        
 </article>
 
 
@@ -50,6 +58,11 @@ span {
   max-width: 100%;
   word-wrap: break-word;
   box-sizing: border-box;
+}
+
+span img {
+  width: 100px;
+  padding-top: 5px;
 }
 
 .left span {

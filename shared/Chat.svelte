@@ -1,6 +1,7 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
   import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
+  import { getConfig } from './util.js';
 
   import ItemBubble from './ItemBubble.svelte';
   import QRScanner from './QRScanner.svelte';
@@ -16,6 +17,7 @@
   let autoscroll;
   let items = [];
   let inputValue;
+  let googleMapsAPIKey;
 
   const init = async (nodeId)=> {
 
@@ -57,6 +59,8 @@
           }, 500);
       }
     })    
+
+    googleMapsAPIKey = await getConfig("googleMapsAPIKey");
   }
 
   $: {
@@ -159,6 +163,39 @@
     closeAttachmentMenu();
   }
 
+  const getGPSLocation = ()=>{
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position)=>{
+        console.log("gps", position.coords);
+
+        let mapUrl = "https://www.google.com/maps/@"+position.coords.latitude+","+position.coords.longitude+",18z";
+        let mapImgUrl = 
+          "https://maps.googleapis.com/maps/api/staticmap?center="
+          +position.coords.latitude+","+position.coords.longitude
+          +"&zoom=18&size=150x150"
+          +"&markers=size:small%7Ccolor:blue%7C"+position.coords.latitude+","+position.coords.longitude
+          +"&key="+googleMapsAPIKey;
+        
+        let item = {
+          side: 'right',
+          imgSrc: mapImgUrl,
+          imgLink: mapUrl,
+        }
+
+        items = items.concat(item);
+        emitMessage({message: item.message, GPSLocation: {
+          // cannot seem to send the coords object directly... don't know why
+          lat: position.coords.latitude, 
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        }});
+        inputValue = "";
+      });
+    } else {
+      alert("geolocation not supported");
+    }
+    closeAttachmentMenu();
+  }
 
 </script>
 
@@ -180,7 +217,8 @@
       </div>
     {:else}
       <div class="input-container">
-        <button on:click={openQRScanner}>QR Scanner</button>
+        <button on:click={openQRScanner}>QR Code</button>
+        <button on:click={getGPSLocation}>GPS Location</button>
         <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
       </div>  
     {/if}
