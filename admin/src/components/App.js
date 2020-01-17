@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { 
   Admin, 
   DeleteButton, 
@@ -17,7 +17,7 @@ import {
   FileField,
   ReferenceInput,
   SelectInput,
-  LongTextInput   
+  LongTextInput,
 } from 'react-admin';
 
 import { dataProvider } from '../helpers/dataProvider.js';
@@ -82,6 +82,62 @@ const VarForm =
 const VarEdit = props => <Edit {...props}>{VarForm}</Edit>;
 const VarCreate = props => <Create {...props}>{VarForm}</Create>;
 
+const FileList = props =>
+  <List {...props} bulkActionButtons={false}>
+    <Datagrid rowClick="edit">
+        <TextField source="filename" />
+    </Datagrid>
+  </List>;
+
+const FileToolbar = props => 
+  <Toolbar {...props}>
+    <DeleteButton undoable={false} record={props.data} />
+  </Toolbar>
+          
+
+class FileEdit extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      baseURL: ""
+    };
+    console.log(props);
+  }
+
+  async componentDidMount() {
+    let baseUrl = ""
+    let result = await fetch("/api/config?key=fileServerURL");
+    let json = await result.json();
+    if(json.docs.length)
+      baseUrl = json.docs[0].value;
+
+    result = await fetch("/api/file/" + this.props.id);
+    json = await result.json();
+    console.log(json);
+    if(json)
+      this.setState({url: baseUrl+json.filename});    
+  }
+
+  render() {
+    return(
+    <Edit {...this.props} >
+      <SimpleForm toolbar={<FileToolbar />}>
+        <TextField source="filename" />
+        <a href={this.state.url}>link</a>
+      </SimpleForm>
+    </Edit>)
+  }
+}
+
+const FileCreate = props => 
+  <Create {...props}>
+    <SimpleForm>
+      <FileInput source="files" multiple={true}>
+        <FileField source="filename" title="title" />
+      </FileInput>
+    </SimpleForm>
+  </Create>
+
 
 const App = () => 
   <Admin dataProvider={dataProvider} authProvider={authProvider}>
@@ -90,6 +146,7 @@ const App = () =>
     <Resource name="scriptNode" list={NodeList} edit={NodeEdit} create={NodeCreate}/>
     <Resource name="player" list={ListGuesser} edit={PlayerEdit} create={PlayerCreate}/>
     <Resource name="variable" list={ListGuesser} edit={VarEdit} create={VarCreate}/>
+    <Resource name="file" list={ListGuesser} edit={FileEdit} create={FileCreate}/>
   </Admin>
 
 export default App;

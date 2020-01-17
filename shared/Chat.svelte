@@ -5,6 +5,7 @@
 
   import ItemBubble from './ItemBubble.svelte';
   import QRScanner from './QRScanner.svelte';
+  import Camera from './Camera.svelte';
 
   export let authoring;
   export let playerNodeId;
@@ -155,11 +156,18 @@
   }
 
   let QRScannerOpen = false
-  const openQRScanner = ()=> {
-    QRScannerOpen = true;
-  }
+  const openQRScanner = ()=> { QRScannerOpen = true; }
   const closeQRScanner = ()=> {
     QRScannerOpen = false;
+    closeAttachmentMenu();
+  }
+
+  let cameraOpen = false
+  const openCamera = ()=> {
+    cameraOpen = true;
+  }
+  const closeCamera = ()=> {
+    cameraOpen = false;
     closeAttachmentMenu();
   }
 
@@ -197,6 +205,16 @@
     closeAttachmentMenu();
   }
 
+  const sendImage = (imageURL) => {
+    let item = {
+      side: 'right',
+      imgSrc: imageURL
+    }
+    items = items.concat(item);
+    emitMessage({imageURL});
+    inputValue = "";
+  }
+
 </script>
 
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
@@ -217,6 +235,7 @@
       </div>
     {:else}
       <div class="input-container">
+        <button on:click={openCamera}>Camera</button>
         <button on:click={openQRScanner}>QR Code</button>
         <button on:click={getGPSLocation}>GPS Location</button>
         <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
@@ -233,7 +252,18 @@
         }}
       />
     </div>
+  {/if}
 
+  {#if cameraOpen}
+    <div class="qr-scanner-container">
+      <button class="close-qr" on:click={closeCamera}>close</button>
+      <Camera
+        onUpload={(imageURL)=>{
+          closeCamera();
+          sendImage(imageURL);
+        }}
+      />
+    </div>
   {/if}
   
 </div>
