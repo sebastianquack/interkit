@@ -85,7 +85,7 @@
   .area {
     box-sizing: border-box;
     position: absolute;
-    padding: 5px;
+    padding: 10px;
   }
 
   #left {

@@ -65,6 +65,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
       output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
       option: (message) => { result.outputs.push({message, option: true}); },       
+      image: (filename, label=varCache.board.narrator) => { result.outputs.push({mediatype: "image", filename: filename, label})},
+      audio: (filename, label=varCache.board.narrator) => { result.outputs.push({mediatype: "audio", filename: filename, label})},
       moveTo: (room) => { result.moveTo = room; },
       input: input
     }  

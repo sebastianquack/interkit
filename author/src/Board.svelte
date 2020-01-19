@@ -5,7 +5,8 @@
   import { token } from './stores.js';  
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
-  
+  import AttachmentManager from './AttachmentManager.svelte'; 
+
   export let currentBoardId;
   export let setCurrentBoardId;
 
@@ -138,6 +139,9 @@
         loadBoardData();
       }
   }
+  
+  let attachmentManagerOpen = false;
+  
   onMount(loadBoardList);
     
 </script>
@@ -153,6 +157,7 @@
 
 {#if currentBoardData}
 
+  
   {#if !currentBoardData.new}
     <button on:click={deleteBoard}>delete board</button> 
   {/if}
@@ -171,22 +176,31 @@
     <div class="edit-headline">
       <h2>{currentBoardData.name} <small>{currentBoardData.listed ? "listed" : "unlisted"}</small></h2>
       <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
-      
-      <button on:click="{()=>{editMode=true}}">✎</button>
+      {#if !attachmentManagerOpen}<button on:click="{()=>{editMode=true}}">✎</button>{/if}
     </div>
-    <NodeGraph
-      {currentBoardData}
-      nodes={currentBoardData.scriptNodes}
-      {editNodeId}
-      {setEditNodeId}
-      {playerNodeId}
-      {currentBoardData}
-    />
+
+    {#if !attachmentManagerOpen}
+      <NodeGraph
+        {currentBoardData}
+        nodes={currentBoardData.scriptNodes}
+        {editNodeId}
+        {setEditNodeId}
+        {playerNodeId}
+        {currentBoardData}
+      />
+    {:else}
+      <AttachmentManager
+        boardId={currentBoardData._id}
+      />
+    {/if}
   {/if}
   
   <br>
   {#if !currentBoardData.new}
-    <button id="add-node" on:click={addNode}>add node</button>    
+    {#if !attachmentManagerOpen} <button id="add-node" on:click={addNode}>add node</button> {/if}   
+    <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>
+      {!attachmentManagerOpen ? "📎" : "close"} 
+    </button> 
   {/if}
   
 {/if}
@@ -217,6 +231,13 @@
     position: absolute;
     bottom: 10px;
     right: 10px;
+    margin-bottom: 0px;
+  }
+
+  #toggle-attachment-manager {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
     margin-bottom: 0px;
   }
 

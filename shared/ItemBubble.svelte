@@ -14,6 +14,11 @@
       {#if item.imgSrc && !item.imgLink} 
         <img alt="static map of location" src={item.imgSrc}/>
       {/if}
+      {#if item.audioSrc} 
+         <audio controls>
+          <source src={item.audioSrc} type="audio/mpeg">
+        </audio> 
+      {/if}
     </span>        
 </article>
 

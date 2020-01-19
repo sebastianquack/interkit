@@ -20,6 +20,8 @@
   let inputValue;
   let googleMapsAPIKey;
 
+  let fileServerURL;
+
   const init = async (nodeId)=> {
 
     inputValue = "";
@@ -27,6 +29,9 @@
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentPlayerNode = await response.json();
     console.log("init currentPlayerNode", currentPlayerNode._id);
+
+    fileServerURL = await getConfig("fileServerURL");
+    console.log(fileServerURL);
 
     joinRoom(nodeId);
 
@@ -36,6 +41,23 @@
       if(message.moveTo) {
         setPlayerNodeId(message.moveTo);
         setEditNodeId(message.moveTo);
+      }
+
+      if(message.mediatype) {
+        let item = {
+          ...message,
+          side: "left"
+        }
+        if(message.mediatype == "image") {
+          item.imgSrc = fileServerURL + message.filename;
+        }
+        if(message.mediatype == "audio") {
+          item.audioSrc = fileServerURL + message.filename;
+        }
+        items.push(item);
+        items.sort((a,b)=>a.timestamp-b.timestamp);
+        items = items; 
+        console.log(items);  
       }
 
       if(message.message) {

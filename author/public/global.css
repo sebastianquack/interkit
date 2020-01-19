@@ -60,6 +60,10 @@ button:focus {
 	border-color: #666;
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 .edit-headline h2 {
   display: inline-block;
   padding-right: 5px;
