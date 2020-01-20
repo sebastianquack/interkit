@@ -138,6 +138,22 @@ const FileCreate = props =>
     </SimpleForm>
   </Create>
 
+const MessageForm = 
+    <SimpleForm>
+        <TextInput source="message" />
+        <TextInput source="label" />
+        <TextInput source="attachment" />
+        <TextInput source="sender" />
+        <TextInput source="recipients" />
+        <TextInput source="board" />
+        <TextInput source="node" />
+        <TextInput source="timestamp" />
+        <TextInput source="seen" />
+    </SimpleForm>
+const MessageEdit = props => <Edit {...props}>{MessageForm}</Edit>;
+const MessageCreate = props => <Create {...props}>{MessageForm}</Create>;
+
+
 
 const App = () => 
   <Admin dataProvider={dataProvider} authProvider={authProvider}>
@@ -147,6 +163,8 @@ const App = () =>
     <Resource name="player" list={ListGuesser} edit={PlayerEdit} create={PlayerCreate}/>
     <Resource name="variable" list={ListGuesser} edit={VarEdit} create={VarCreate}/>
     <Resource name="file" list={ListGuesser} edit={FileEdit} create={FileCreate}/>
+    <Resource name="message" list={ListGuesser} edit={MessageEdit} create={MessageCreate}/>
+    <Resource name="nodeLog" list={ListGuesser}/>
   </Admin>
 
 export default App;

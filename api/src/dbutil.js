@@ -86,3 +86,24 @@ exports.getBoard = async (boardId) => {
   let board = await RestHapi.find(RestHapi.models.board, boardId, null, Log);
   return board;
 }
+
+exports.logMessage = async (data) => {
+  console.log("logMessage", data);
+  await RestHapi.create(RestHapi.models.message, data, Log);  
+}
+
+exports.logPlayerToNode = async (playerId, node) => {
+  console.log("logPlayerToNode", playerId, node._id);
+  let query = {
+    player: mongoose.Types.ObjectId(playerId),  
+    board: node.board,
+  }
+  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
+
+  if(nodeLogItem.docs.length == 0) {
+    await RestHapi.create(RestHapi.models.nodeLog, {...query, node: mongoose.Types.ObjectId(node._id)}, Log);   
+  } else {
+    await RestHapi.update(RestHapi.models.nodeLog, nodeLogItem.docs[0]._id, {node: mongoose.Types.ObjectId(node._id)}, Log);   
+  }
+  
+}

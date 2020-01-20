@@ -1,8 +1,7 @@
 module.exports = function (mongoose) {
   let modelName = "player";
   let Types = mongoose.Schema.Types;
-  let Schema = new mongoose.Schema({
-    
+  let Schema = new mongoose.Schema({  
   });
   
   Schema.statics = {

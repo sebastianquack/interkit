@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage } from './socketClient.js';
+  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage, getPlayerId } from './socketClient.js';
   import { getConfig } from './util.js';
 
   import ItemBubble from './ItemBubble.svelte';
@@ -11,6 +11,7 @@
   export let playerNodeId;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let setPlayerNodeId;
+  export let loadHistory = false;
   
   let currentPlayerNode = null;
   
@@ -21,6 +22,7 @@
   let googleMapsAPIKey;
 
   let fileServerURL;
+  let historyLoaded = false;
 
   const init = async (nodeId)=> {
 
@@ -33,26 +35,58 @@
     fileServerURL = await getConfig("fileServerURL");
     console.log(fileServerURL);
 
-    joinRoom(nodeId);
+    let joinNode = nodeId;
+    let execOnArrive = true;
+
+    // if loadHistory -> pass into items
+    if(loadHistory && !historyLoaded) {
+      let playerId = getPlayerId();
+      let query = {
+        board: currentPlayerNode.board,
+        recipients: playerId,
+      }
+      let response = await fetch("/api/message?$sort=timestamp&$where=" +  JSON.stringify(query));
+      let historyItems = await response.json();
+      console.log(historyItems.docs);
+      historyItems.docs.forEach(item=>{
+        let i = parseItem(item);
+        if(i) items.push(i);
+      });
+      items = items;
+      historyLoaded = true;
+
+      // find where player is now on this board
+      response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentPlayerNode.board);
+      let lastNode = await response.json();
+      console.log("lastNode", lastNode);
+      if(lastNode.docs.length) {
+        joinNode = lastNode.docs[0].node;
+        execOnArrive = false;
+      }
+    }
+
+    joinRoom(joinNode, execOnArrive);
 
     listenForMessages((message)=>{
       console.log("message received", message);
 
-      if(message.moveTo) {
-        setPlayerNodeId(message.moveTo);
-        setEditNodeId(message.moveTo);
+      let item = {...message};
+
+      if(!item.attachment) item.attachment = {};
+      if(!item.params) item.params = {};
+
+      if(item.params.moveTo) {
+        setPlayerNodeId(item.params.moveTo);
+        setEditNodeId(item.params.moveTo);
       }
 
-      if(message.mediatype) {
-        let item = {
-          ...message,
-          side: "left"
+      if(item.attachment.mediatype) {
+        item.side = "left";
+        if(item.attachment.mediatype == "image") {
+          item.attachment.imgSrc = fileServerURL + item.attachment.filename;
         }
-        if(message.mediatype == "image") {
-          item.imgSrc = fileServerURL + message.filename;
-        }
-        if(message.mediatype == "audio") {
-          item.audioSrc = fileServerURL + message.filename;
+        if(item.attachment.mediatype == "audio") {
+          item.attachment.audioSrc = fileServerURL + item.attachment.filename;
         }
         items.push(item);
         items.sort((a,b)=>a.timestamp-b.timestamp);
@@ -63,9 +97,9 @@
       if(message.message) {
 
         let isSystemMessage = message.system || message.label == "system";
-        let showPlaceholder = !(isSystemMessage || message.option);
+        let showPlaceholder = !(isSystemMessage || message.params.option);
 
-        items.push({...message, 
+        items.push({...item, 
           side: isSystemMessage ? "system" : "left",
           placeholder: showPlaceholder,
         });
@@ -97,6 +131,28 @@
     }
   }
 
+  const parseItem = (rawItem) => {
+    if(!rawItem.attachment) rawItem.attachment = {};
+    if(!rawItem.params) rawItem.params = {};
+
+    if(rawItem.system && rawItem.params.moveTo) return null;
+    if(rawItem.params.option) return null;
+
+    if(rawItem.attachment.mediatype == "image") {
+      rawItem.attachment.imgSrc = fileServerURL + rawItem.attachment.filename;
+    }
+    if(rawItem.attachment.mediatype == "audio") {
+      rawItem.attachment.audioSrc = fileServerURL + rawItem.attachment.filename;
+    }
+
+    let isSystemMessage = rawItem.system || rawItem.label == "system";
+        
+    return {
+      ...rawItem,
+      side: rawItem.sender == getPlayerId() ? "right" : (isSystemMessage ? "system" : "left"),
+    }
+  }
+
   onDestroy(() => {
     leaveRoom(currentPlayerNode._id);
     stopListening();
@@ -115,7 +171,9 @@
 
     items = items.concat({
       side: 'right',
-      message: inputValue
+      message: inputValue,
+      attachment: {},
+      params: {}
     });
 
     emitMessage({message: inputValue});
@@ -145,18 +203,18 @@
     setTimeout(()=>{
       submitInput();
       autoTyping = false;
-      items = items.filter((i)=>!i.option);
+      items = items.filter((i)=>!(i.params && i.params.option));
     }, delay * (item.message.length+5));
   }
 
   const sendQRCode = (code) => {
     let item = {
-      side: 'right',
       message: "[QR code scanned]",
-      QRCode: code
+      attachment: {QRCode: code},
+      params: {}
     }
-    items = items.concat(item);
-    emitMessage({message: item.message, QRCode: code});
+    items = items.concat({...item, side: "right"});
+    emitMessage(item);
     inputValue = "";
   }
 
@@ -207,18 +265,19 @@
           +"&key="+googleMapsAPIKey;
         
         let item = {
-          side: 'right',
-          imgSrc: mapImgUrl,
-          imgLink: mapUrl,
+          attachment: {
+            mediatype: "GPS",
+            imgSrc: mapImgUrl,
+            imgLink: mapUrl,  
+            lat: position.coords.latitude, 
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          },
+          params: {},
         }
 
-        items = items.concat(item);
-        emitMessage({message: item.message, GPSLocation: {
-          // cannot seem to send the coords object directly... don't know why
-          lat: position.coords.latitude, 
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        }});
+        items = items.concat({...item, side: "right"});
+        emitMessage(item);
         inputValue = "";
       });
     } else {
@@ -227,13 +286,18 @@
     closeAttachmentMenu();
   }
 
-  const sendImage = (imageURL) => {
+  const sendImage = async (filename) => {
+    let fileServerURL = await getConfig("fileServerURL");
     let item = {
-      side: 'right',
-      imgSrc: imageURL
+      attachment: {
+        mediatype: "image",
+        imgSrc: fileServerURL + filename,  
+        filename: filename
+      },
+      params: {}
     }
-    items = items.concat(item);
-    emitMessage({imageURL});
+    items = items.concat({...item, side: "right"});
+    emitMessage(item);
     inputValue = "";
   }
 
@@ -280,9 +344,9 @@
     <div class="qr-scanner-container">
       <button class="close-qr" on:click={closeCamera}>close</button>
       <Camera
-        onUpload={(imageURL)=>{
+        onUpload={async (imageURL)=>{
           closeCamera();
-          sendImage(imageURL);
+          await sendImage(imageURL);
         }}
       />
     </div>

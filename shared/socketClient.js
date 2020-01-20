@@ -5,6 +5,10 @@ import { getConfig, findOrCreatePlayer } from './util.js';
 let socket = null;
 let playerId;
 
+export const getPlayerId = () => {
+  return playerId;
+}
+
 export const initSocket = async () => {
 
   let socketURL = await getConfig("socketURL");
@@ -44,12 +48,13 @@ const reTry = (action) => {
 }
 
 // ask server to put us in a room
-export const joinRoom = (room) => {
+export const joinRoom = (room, execOnArrive=true) => {
   //console.log("joinRoom");
   reTry(()=>{
     socket.emit('joinRoom', {
       room, 
-      playerId
+      playerId,
+      execOnArrive
     }); 
   });
 }
@@ -80,7 +85,7 @@ export const emitMessage = (msgData) => {
   reTry(()=>{
     socket.emit('message', {
       ...msgData,
-      playerId
+      sender: playerId
     });
   });
 }

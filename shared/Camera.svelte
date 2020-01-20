@@ -104,8 +104,7 @@ const send = async ()=> {
   const json = await res.json();  
   console.log("new file created", json);
 
-  let fileServerURL = await getConfig("fileServerURL");
-  onUpload(fileServerURL + fileName);
+  await onUpload(fileName);
 }
 
 onMount(init);

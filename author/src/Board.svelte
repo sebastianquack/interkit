@@ -2,6 +2,8 @@
 
   import { onMount } from 'svelte';
   
+  import { getConfig } from '../../shared/util.js';
+
   import { token } from './stores.js';  
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
@@ -20,11 +22,13 @@
   
   let boards = [];
   let editMode = false;
+  let playerURL;
 
   const loadBoardList = async ()=>{
     const res = await fetch("/api/board");
     const json = await res.json();
     boards = json.docs;
+    playerURL = await getConfig("playerURL");
   }
   
   const loadBoardData = async ()=>{
@@ -141,7 +145,7 @@
   }
   
   let attachmentManagerOpen = false;
-  
+
   onMount(loadBoardList);
     
 </script>
@@ -174,7 +178,11 @@
     <br>
   {:else}
     <div class="edit-headline">
-      <h2>{currentBoardData.name} <small>{currentBoardData.listed ? "listed" : "unlisted"}</small></h2>
+      <h2>{currentBoardData.name} 
+        <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
+        <a target="_blank" href="{playerURL}?board={currentBoardData._id}">external player link</a>
+      </h2>
+      
       <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
       {#if !attachmentManagerOpen}<button on:click="{()=>{editMode=true}}">✎</button>{/if}
     </div>
@@ -207,6 +215,14 @@
 
 
 <style>
+  a {
+    color: gray;
+    padding-left: 1px;
+    margin-bottom: 10px;
+    position: relative;
+    font-size: 10px;
+    font-weight: normal;
+  }
 
   button, input, h2, select {
     position: relative;

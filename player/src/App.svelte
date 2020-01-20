@@ -13,8 +13,10 @@
     initSocket();
 
     let searchParams = new URLSearchParams(window.location.search);
-    if(searchParams.get("node")) {
-      playerNodeId = searchParams.get("node");
+    if(searchParams.get("board")) {
+      let res = await fetch("/api/board/" + searchParams.get("board"));
+      let json = await res.json();
+      playerNodeId = json.startingNode;
       directURL = true;
     }
 
@@ -59,6 +61,7 @@
       <Chat
         {playerNodeId}
         {setPlayerNodeId}
+        loadHistory={true}
       />
     </div>
 

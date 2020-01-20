@@ -5,8 +5,6 @@
   import 'codemirror/lib/codemirror.css';
   import 'codemirror/mode/javascript/javascript.js';
 
-  import { getConfig } from '../../shared/util.js';
-
   export let editNodeId;
   export let setEditNodeId;
   export let setPlayerNodeId;
@@ -31,7 +29,7 @@
 
     startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
 
-    if(typeof scriptNodeEdit.multiPlayer) {
+    if(typeof scriptNodeEdit.multiPlayer == "undefined") {
       scriptNodeEdit.multiPlayer = false;
     }   
 
@@ -122,12 +120,6 @@
     }
   }
 
-  let playerURL;
-
-  onMount(async ()=>{
-    playerURL = await getConfig("playerURL");
-  }) 
-
 </script>
 
 {#if !editTitle}
@@ -146,18 +138,10 @@
 
 {#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
 
-<a target="_blank" href="{playerURL}?node={scriptNodeEdit._id}">external player link</a>
 <button on:click={deleteNode}>delete</button><br>
 
 <style>
-  a {
-    font-size: 80%;
-    color: gray;
-    padding-left: 1px;
-    margin-bottom: 10px;
-    display: block;
-  }
-
+  
   label {
     display: inline-block;
   }

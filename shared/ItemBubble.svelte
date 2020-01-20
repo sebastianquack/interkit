@@ -3,24 +3,27 @@
   export let onClick;
 </script>
 
+{#if item.params && item.attachment}
 
-<article class={item.option ? "option" : item.side} on:click={()=>{if(item.option) onClick()}}>
-    {#if item.side == "left" && !item.option}<label class="bubble-supertitle">{item.label}</label>{/if}
+<article class={item.params.option ? "option" : item.side} on:click={()=>{if(item.params.option) onClick()}}>
+    {#if item.side == "left" && !item.params.option}<label class="bubble-supertitle">{item.label}</label>{/if}
     <span>
       {item.placeholder ? "..." : (item.message ? item.message : "")}
-      {#if item.imgSrc && item.imgLink} 
-        <a href={item.imgLink} target="_blank"><img alt="static map of location" src={item.imgSrc}/></a>
+      {#if item.attachment.imgSrc && item.attachment.imgLink} 
+        <a href={item.attachment.imgLink} target="_blank"><img alt={item.attachment.alt} src={item.attachment.imgSrc}/></a>
       {/if}
-      {#if item.imgSrc && !item.imgLink} 
-        <img alt="static map of location" src={item.imgSrc}/>
+      {#if item.attachment.imgSrc && !item.attachment.imgLink} 
+        <img alt={item.attachment.alt} src={item.attachment.imgSrc}/>
       {/if}
-      {#if item.audioSrc} 
+      {#if item.attachment.audioSrc} 
          <audio controls>
-          <source src={item.audioSrc} type="audio/mpeg">
+          <source src={item.attachment.audioSrc} type="audio/mpeg">
         </audio> 
       {/if}
     </span>        
 </article>
+
+{/if}
 
 
 <style>

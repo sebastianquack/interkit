@@ -11,20 +11,26 @@ Log.logLevel = 'WARNING';
 let io = null;
 
 const emitMessage = (emitter, data) => {
-  console.log("emitting", data);
-  emitter.emit('message', {...data, timestamp: Date.now()});         
+  let msgData = {...data, timestamp: Date.now()};
+  if(!msgData.params) msgData.params = {};
+  
+  emitter.emit('message', msgData);         
+  db.logMessage(msgData);
 }
 
-async function joinRoom(io, socket, room, playerId) {
-  console.log("joining " + room);
-  await socket.join(room);
+async function joinRoom(io, socket, data) {
+  console.log("joining " + data.room);
+  await socket.join(data.room);
   
   // inform others in the new room 
-  socket.room = room;
+  socket.room = data.room;
+  socket.playerId = data.playerId;
   
   console.log("trying to find this room in db");
-  let id = mongoose.Types.ObjectId(room);
+  let id = mongoose.Types.ObjectId(data.room);
   let newNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
+
+  await db.logPlayerToNode(data.playerId, newNode);
   
   //console.log(newNode);
   if(newNode) {
@@ -32,11 +38,45 @@ async function joinRoom(io, socket, room, playerId) {
     /*if(newNode.multiPlayer) {
       socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived"});
     }*/
-    handleScript(io, socket, newNode, playerId, "onArrive");
+    if(data.execOnArrive)
+      handleScript(io, socket, newNode, data.playerId, "onArrive");
   } else {
-    console.log("room " + room + " not found!");
+    console.log("room " + data.room + " not found!");
   }
   
+}
+
+const getPlayerIdsForRoom = async (roomName) => {
+  let playerIds = [];
+  
+  let clients = io.sockets.adapter.rooms[roomName].sockets;   
+  for (let clientId in clients ) {
+     //this is the socket of each client in the room.
+     let clientSocket = io.sockets.connected[clientId];
+     playerIds.push(clientSocket.playerId);
+  }
+
+  console.log("playerIds", playerIds);
+
+  //get users who are not currently connected but 
+  //who's last node on this board is this node
+  console.log("checking nodelog");
+
+  let id = mongoose.Types.ObjectId(roomName);
+  let node = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)  
+  let offlinePlayers = await RestHapi.list(RestHapi.models.nodeLog, {
+    board: node.board,
+    node: node._id,
+  }, Log);
+  offlinePlayers.docs.forEach((record)=>{
+    if(playerIds.indexOf(record.player.toString()) == -1) {
+      playerIds.push(record.player.toString());
+    }
+  })
+  
+  console.log("playerIds", playerIds);
+
+  return playerIds;
 }
 
 exports.init = (listener) => {
@@ -59,7 +99,7 @@ exports.init = (listener) => {
       // check if room needs to be changed
       if(socket.room != data.room) {
         try {
-          joinRoom(io, socket, data.room, data.playerId);
+          joinRoom(io, socket, data);
         } catch(error) {
           console.log(error);
         }
@@ -78,20 +118,30 @@ exports.init = (listener) => {
       
       socket.leave(room);
       socket.room = null;
+      socket.playerId = null;
     });
 
     socket.on("message", async (data)=>{
-      console.log("socket message", data);
+      console.log("socket message received", data);
 
       let id = mongoose.Types.ObjectId(socket.room);
       let currentNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
 
       // echo input to other players in multiplayer mode
-      if(currentNode.multiPlayer && data.message) {
-        let name = await db.getVar("player", {playerId: data.playerId}, "name");
-        emitMessage(socket.broadcast.in(socket.room), {message: data.message, label: name ? name : "unknown player"});
+      if(currentNode.multiPlayer && (data.message || data.attachment)) {
+        let name = await db.getVar("player", {playerId: data.sender}, "name");
+        emitMessage(socket.broadcast.in(socket.room), 
+          {...data, 
+            label: name ? name : "unknown player", 
+            recipients: await getPlayerIdsForRoom(socket.room),
+            node: currentNode._id, 
+            board: currentNode.board
+          });
+      } else {
+        // save incoming message
+        db.logMessage({...data, recipients: [data.sender], node: currentNode._id, board: currentNode.board});
       }
-      handleScript(io, socket, currentNode, data.playerId, "onMessage", data);
+      handleScript(io, socket, currentNode, data.sender, "onMessage", data);
     });
   
   });
@@ -100,17 +150,26 @@ exports.init = (listener) => {
 
 async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
+  let node = currentNode._id;
+  let board = currentNode.board;
+
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
     if(result.error) {
-      emitMessage(socket, {message: result.error, system: true});
+      emitMessage(socket, {
+        message: result.error, 
+        system: true, 
+        recipients: [playerId],
+        node, board
+      });
     }
     if(result.outputs) {
 
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
-          emitMessage(io.in(socket.room), result.outputs[i]);
+          emitMessage(io.in(socket.room), {
+            ...result.outputs[i], recipients: await getPlayerIdsForRoom(socket.room), node, board});
         } else {
-          emitMessage(socket, result.outputs[i]); 
+          emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board}); 
         }
       }
 
@@ -137,7 +196,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
             await socket.join(newNode._id);
             // inform sender of new room
             console.log("emit moveTo message");
-            emitMessage(socket, {system: true, moveTo: newNode._id});
+            emitMessage(socket, {system: true, params: {moveTo: newNode._id}, recipients: [playerId], node, board});
             //socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
             // inform others in the new room 
@@ -149,7 +208,12 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
           } 
         } else {
           console.log("node " + result.moveTo + " not found");
-          emitMessage(socket, {text: "node " + result.moveTo + " not found", system: true});
+          emitMessage(socket, {
+            message: "node " + result.moveTo + " not found", 
+            system: true, 
+            recipients: [playerId],
+            node, board
+          });
         }
       }
  
