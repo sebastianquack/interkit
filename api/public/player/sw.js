@@ -1,10 +1,13 @@
 self.addEventListener('install', (event) => {
-  console.log("install", JSON.stringify(event));
+  console.log("install", JSON.stringify(event)); 
 });
 
 self.addEventListener('fetch', (event) => {
-  console.log("fetch", JSON.stringify(event));
-  new Response('<p>Hello from your friendly neighbourhood service worker!</p>', {
-    headers: { 'Content-Type': 'text/html' }
-  });
+  /*if (event.request.mode === 'navigate') {
+    event.respondWith(
+      new Response("<html><body>sorry, you need to be online</body></html>", {
+          headers: {'Content-Type': 'text/html; charset=UTF-8'}
+      })
+    );
+  }*/ 
 });
