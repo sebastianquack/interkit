@@ -1,0 +1,15 @@
+{
+  "background_color": "white",
+  "description": "client for testing the dreamship chat system",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "name": "Traumschiff",
+  "short_name": "Traumschiff",
+  "start_url": "/index.html"
+}
