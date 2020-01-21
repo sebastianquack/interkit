@@ -1,7 +1,7 @@
 {
   "background_color": "white",
   "description": "client for testing the dreamship chat system",
-  "display": "fullscreen",
+  "display": "standalone",
   "icons": [
     {
       "src": "ship.png",
