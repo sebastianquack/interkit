@@ -20,11 +20,11 @@
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));
       const mjson = await res.json();
       const messages = mjson.docs;
-      console.log("unseen", messages.length);
+      //console.log("unseen", messages.length);
       stories[i] = {...story, unSeenMessages: messages.length}
     }
     stories = stories;
-    console.log(stories);
+    //console.log(stories);
   }
 
   onMount(async () => {

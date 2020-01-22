@@ -23,10 +23,16 @@
   let googleMapsAPIKey;
 
   let fileServerURL;
-  let historyLoaded = false;
+  let playerId;
+  
+  let showItemsSince = Date.now();
+  let showMoreItems = true;
+  let initialHistoryLoaded = false;
 
   const init = async (nodeId)=> {
 
+    playerId = await getPlayerId();
+    
     inputValue = "";
 
     let response = await fetch("/api/scriptNode/" + nodeId);
@@ -40,24 +46,9 @@
     let execOnArrive = true;
 
     // if loadHistory -> pass into items
-    if(loadHistory && !historyLoaded) {
-      let playerId = getPlayerId();
-      let query = {
-        board: currentPlayerNode.board,
-        recipients: playerId,
-      }
-      let response = await fetch("/api/message?$sort=timestamp&$where=" +  JSON.stringify(query));
-      let historyItems = await response.json();
-      console.log(historyItems.docs);
-      historyItems.docs.forEach(async item=>{
-        let i = parseItem(item);
-        if(i) items.push(i);
-        if(!item.seen || item.seen.indexOf(playerId) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
-      });
-      items = items;
-      historyLoaded = true;
-      updateUnseenMessages();
+    if(loadHistory && !initialHistoryLoaded) {
+
+      loadMoreItems();
 
       // find where player is now on this board
       response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentPlayerNode.board);
@@ -137,6 +128,36 @@
       init(playerNodeId);
     }
   }
+
+  const loadMoreItems = async () => {
+      console.log("loading items earlier than", showItemsSince);  
+      let query = {
+        board: currentPlayerNode.board,
+        recipients: playerId,
+        timestamp: {$lt: showItemsSince}
+      }
+      let limit = 10;
+      let response = await fetch("/api/message?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+      let historyItems = await response.json();
+      console.log(historyItems.docs);
+      if(historyItems.docs.length) {
+        console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
+        showItemsSince = historyItems.docs[historyItems.docs.length - 1].timestamp;
+        console.log("showItemsSince", showItemsSince);  
+      }
+      if(historyItems.docs.length < limit) {
+        showMoreItems = false;
+      }
+      historyItems.docs.forEach(async item=>{
+        let i = parseItem(item);
+        if(i) items.unshift(i);
+        if(!item.seen || item.seen.indexOf(playerId) == -1)
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
+      });
+      items = items;
+      initialHistoryLoaded = true;
+      updateUnseenMessages();
+  } 
 
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};
@@ -314,6 +335,9 @@
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
 
     <div class="scrollable" bind:this={div}>
+      {#if showMoreItems} <button on:click={loadMoreItems}>load older messages</button> 
+      {:else} <small>this is the beginning of your message history in this story</small>
+      {/if}
       {#each items as item}
         <ItemBubble 
           {item}

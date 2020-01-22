@@ -30,8 +30,7 @@ module.exports = function (mongoose) {
       required: true
     },
     timestamp: {
-      type: Types.Date,
-      default: Date.now
+      type: Types.Number
     },
     system: {
       type: Types.Boolean
