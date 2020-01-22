@@ -173,6 +173,12 @@
     if (autoscroll) div.scrollTo(0, div.scrollHeight);
   });
 
+  const scrollUp = ()=> {
+    setTimeout(()=>{
+      div.scrollTo(0, div.scrollHeight);
+    }, 400);
+  }
+
   const submitInput = ()=>{
     if (!inputValue) return;
 
@@ -192,6 +198,7 @@
       submitInput();
     }
   }
+
 
   let autoTyping = false;
 
@@ -324,7 +331,7 @@
     {#if !attachmentMenuOpen}
       <div class="input-container">
         <button class="open-attachment" on:click={openAttachmentMenu}>📎</button>
-        <input bind:value={inputValue} on:keydown={handleKeydown}>
+        <input bind:value={inputValue} on:keydown={handleKeydown} on:focus={scrollUp} on:click={scrollUp}>
       </div>
     {:else}
       <div class="input-container">
