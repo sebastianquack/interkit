@@ -3,5 +3,5 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  console.log("fetch", event.request.url);
+  //console.log("fetch", event.request.url);
 });
