@@ -107,3 +107,12 @@ exports.logPlayerToNode = async (playerId, node) => {
   }
   
 }
+
+exports.getPlayersForNode = async (nodeId) => {
+  let query = {
+    node: mongoose.Types.ObjectId(nodeId),  
+  }
+  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
+  let playerIds = nodeLogItem.docs.map((doc)=>doc.player);
+  return playerIds;
+}

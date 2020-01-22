@@ -133,7 +133,7 @@ exports.init = (listener) => {
         emitMessage(socket.broadcast.in(socket.room), 
           {...data, 
             label: name ? name : "unknown player", 
-            recipients: await getPlayerIdsForRoom(socket.room),
+            recipients: await db.getPlayersForNode(socket.room),
             node: currentNode._id, 
             board: currentNode.board
           });
@@ -167,7 +167,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
           emitMessage(io.in(socket.room), {
-            ...result.outputs[i], recipients: await getPlayerIdsForRoom(socket.room), node, board});
+            ...result.outputs[i], recipients: await db.getPlayersForNode(socket.room), node, board});
         } else {
           emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board}); 
         }
