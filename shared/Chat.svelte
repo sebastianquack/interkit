@@ -165,20 +165,14 @@
     stopListening();
   })
 
-  beforeUpdate(() => {
-    autoscroll = div && (div.offsetHeight + div.scrollTop) > (div.scrollHeight - 20);
-  });
-
-  afterUpdate(() => {
-    if (autoscroll) div.scrollTo(0, div.scrollHeight);
-  });
-
   const scrollUp = ()=> {
     setTimeout(()=>{
       div.scrollTo(0, div.scrollHeight);
     }, 400);
   }
 
+  afterUpdate(scrollUp);
+  
   const submitInput = ()=>{
     if (!inputValue) return;
 
@@ -331,7 +325,7 @@
     {#if !attachmentMenuOpen}
       <div class="input-container">
         <button class="open-attachment" on:click={openAttachmentMenu}>📎</button>
-        <input bind:value={inputValue} on:keydown={handleKeydown} on:focus={scrollUp} on:click={scrollUp}>
+        <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
       </div>
     {:else}
       <div class="input-container">
