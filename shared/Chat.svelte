@@ -92,6 +92,7 @@
         items.sort((a,b)=>a.timestamp-b.timestamp);
         items = items; 
         console.log(items);  
+        scrollUp();
       }
 
       if(message.message) {
@@ -105,12 +106,14 @@
         });
         items.sort((a,b)=>a.timestamp-b.timestamp);
         items = items;
+        scrollUp();
 
         if(showPlaceholder)
           setTimeout(() => {
             items.forEach((comment, index)=> {
               if(items[index].placeholder) {
                 items[index].placeholder = false;
+                scrollUp();
               }
             });
           }, 500);
