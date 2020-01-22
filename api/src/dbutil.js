@@ -89,7 +89,8 @@ exports.getBoard = async (boardId) => {
 
 exports.logMessage = async (data) => {
   console.log("logMessage", data);
-  await RestHapi.create(RestHapi.models.message, data, Log);  
+  let message = await RestHapi.create(RestHapi.models.message, data, Log);  
+  return message;
 }
 
 exports.logPlayerToNode = async (playerId, node) => {

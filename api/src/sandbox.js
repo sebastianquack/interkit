@@ -30,6 +30,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     input.raw = input.message;
     if(input.message)
       input.message = msgData.message ? msgData.message.trim().toLowerCase() : "";
+    if(!input.attachment) input.attachment = {mediatype: null}
   }
   
   const vm = new VM({

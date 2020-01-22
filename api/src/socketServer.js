@@ -10,12 +10,13 @@ Log.logLevel = 'WARNING';
 
 let io = null;
 
-const emitMessage = (emitter, data) => {
+const emitMessage = async (emitter, data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
   
-  emitter.emit('message', msgData);         
-  db.logMessage(msgData);
+  let m = await db.logMessage(msgData);
+  emitter.emit('message', {...msgData, _id: m._id});         
+  
 }
 
 async function joinRoom(io, socket, data) {
