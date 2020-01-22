@@ -12,6 +12,7 @@
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let setPlayerNodeId;
   export let loadHistory = false;
+  export let updateUnseenMessages;
   
   let currentPlayerNode = null;
   
@@ -48,12 +49,15 @@
       let response = await fetch("/api/message?$sort=timestamp&$where=" +  JSON.stringify(query));
       let historyItems = await response.json();
       console.log(historyItems.docs);
-      historyItems.docs.forEach(item=>{
+      historyItems.docs.forEach(async item=>{
         let i = parseItem(item);
         if(i) items.push(i);
+        if(!item.seen || item.seen.indexOf(playerId) == -1)
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
       });
       items = items;
       historyLoaded = true;
+      updateUnseenMessages();
 
       // find where player is now on this board
       response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentPlayerNode.board);
@@ -67,10 +71,13 @@
 
     joinRoom(joinNode, execOnArrive);
 
-    listenForMessages((message)=>{
+    listenForMessages(async (message)=>{
       console.log("message received", message);
 
       let item = {...message};
+
+      if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
 
       if(!item.attachment) item.attachment = {};
       if(!item.params) item.params = {};

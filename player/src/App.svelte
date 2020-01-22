@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import Chat from '../../shared/Chat.svelte';
-  import { initSocket } from '../../shared/socketClient.js';
+  import { initSocket, getPlayerId } from '../../shared/socketClient.js';
 
   let playerNodeId = null;
   let directURL = false;
@@ -9,8 +9,26 @@
   let stories = [];
   let currentStory = null;
 
+  const checkForUnseenMessages = async () => {
+    for(let i = 0; i < stories.length; i++) {
+      let story = stories[i];
+      const query = {
+        board: story._id, 
+        recipients: getPlayerId(),
+        seen: {"$nin": [getPlayerId()]}
+      };
+      const res = await fetch("/api/message?$where=" + JSON.stringify(query));
+      const mjson = await res.json();
+      const messages = mjson.docs;
+      console.log("unseen", messages.length);
+      stories[i] = {...story, unSeenMessages: messages.length}
+    }
+    stories = stories;
+    console.log(stories);
+  }
+
   onMount(async () => {
-    initSocket();
+    await initSocket();
 
     let searchParams = new URLSearchParams(window.location.search);
     if(searchParams.get("board")) {
@@ -23,7 +41,7 @@
     const res = await fetch("/api/board?$where=" + JSON.stringify({"listed": true}));
     const json = await res.json();
     stories = json.docs;
-
+    await checkForUnseenMessages();
     loading = false;
   });
 
@@ -44,7 +62,10 @@
     <h2>tap on a story to start</h2>
     <ul>
     {#each stories as story}
-      <li on:click={()=>{launch(story)}}>{story.name} - <em>{story.description}</em></li>
+      <li on:click={()=>{launch(story)}}>
+        {story.name} - <em>{story.description}</em> 
+        {#if story.unSeenMessages } <small>(unread messages: {story.unSeenMessages})</small> {/if} 
+      </li>
     {/each}
     </ul>
 
@@ -62,6 +83,7 @@
         {playerNodeId}
         {setPlayerNodeId}
         loadHistory={true}
+        updateUnseenMessages={checkForUnseenMessages}
       />
     </div>
 

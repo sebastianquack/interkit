@@ -21,14 +21,13 @@ export const initSocket = async () => {
   
   socket.on('connect', async function(){
     console.log("socket connect");
-
-    playerId = await findOrCreatePlayer();    
   });
     
   socket.on('reconnect_attempt', () => {
     console.log("reconnect_attempt");  
   });
 
+  playerId = await findOrCreatePlayer();
 }
 
 // if socket or playerId isn't available yet, try again once after timeout - todo optimize
@@ -85,7 +84,8 @@ export const emitMessage = (msgData) => {
   reTry(()=>{
     socket.emit('message', {
       ...msgData,
-      sender: playerId
+      sender: playerId,
+      seen: [playerId],
     });
   });
 }

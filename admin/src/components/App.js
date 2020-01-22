@@ -18,6 +18,7 @@ import {
   ReferenceInput,
   SelectInput,
   LongTextInput,
+  DateField,
 } from 'react-admin';
 
 import { dataProvider } from '../helpers/dataProvider.js';
@@ -153,6 +154,23 @@ const MessageForm =
 const MessageEdit = props => <Edit {...props}>{MessageForm}</Edit>;
 const MessageCreate = props => <Create {...props}>{MessageForm}</Create>;
 
+export const MessageList = props => (
+    <List {...props} perPage={100}>
+        <Datagrid rowClick="edit">
+            <TextField source="recipients" />
+            <TextField source="seen" />
+            <TextField source="message" />
+            <TextField source="sender" />
+            <TextField source="label" />
+            <TextField source="node" />
+            <TextField source="board" />
+            <DateField source="timestamp" />
+            <DateField source="createdAt" />
+            <TextField source="id" />
+            <DateField source="updatedAt" />
+        </Datagrid>
+    </List>
+);
 
 
 const App = () => 
@@ -163,7 +181,7 @@ const App = () =>
     <Resource name="player" list={ListGuesser} edit={PlayerEdit} create={PlayerCreate}/>
     <Resource name="variable" list={ListGuesser} edit={VarEdit} create={VarCreate}/>
     <Resource name="file" list={ListGuesser} edit={FileEdit} create={FileCreate}/>
-    <Resource name="message" list={ListGuesser} edit={MessageEdit} create={MessageCreate}/>
+    <Resource name="message" list={MessageList} edit={MessageEdit} create={MessageCreate}/>
     <Resource name="nodeLog" list={ListGuesser}/>
   </Admin>
 

@@ -102,3 +102,7 @@ export const deleteFile = async (file, token) => {
   }, {headers: {authorization: `${token}`}})
   console.log(response);
 }
+
+
+
+
