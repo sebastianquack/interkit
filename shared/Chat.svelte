@@ -26,7 +26,8 @@
   let playerId;
   
   let showItemsSince = Date.now();
-  let showMoreItems = true;
+  let showMoreItems = false;
+  let beginningHistory = false;
   let initialHistoryLoaded = false;
 
   const init = async (nodeId)=> {
@@ -49,6 +50,7 @@
     if(loadHistory && !initialHistoryLoaded) {
 
       loadMoreItems();
+      scrollUp();
 
       // find where player is now on this board
       response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentPlayerNode.board);
@@ -147,6 +149,9 @@
       }
       if(historyItems.docs.length < limit) {
         showMoreItems = false;
+        beginningHistory = true;
+      } else {
+        showMoreItems = true;
       }
       historyItems.docs.forEach(async item=>{
         let i = parseItem(item);
@@ -192,8 +197,6 @@
     }, 400);
   }
 
-  afterUpdate(scrollUp);
-  
   const submitInput = ()=>{
     if (!inputValue) return;
 
@@ -203,6 +206,7 @@
       attachment: {},
       params: {}
     });
+    scrollUp();
 
     emitMessage({message: inputValue});
     inputValue = "";
@@ -245,6 +249,7 @@
     items = items.concat({...item, side: "right"});
     emitMessage(item);
     inputValue = "";
+    scrollUp();
   }
 
   const reEnter = ()=> {
@@ -328,6 +333,7 @@
     items = items.concat({...item, side: "right"});
     emitMessage(item);
     inputValue = "";
+    scrollUp();
   }
 
 </script>
@@ -335,9 +341,8 @@
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
 
     <div class="scrollable" bind:this={div}>
-      {#if showMoreItems} <button on:click={loadMoreItems}>load older messages</button> 
-      {:else} <small>this is the beginning of your message history in this story</small>
-      {/if}
+      {#if showMoreItems} <button on:click={loadMoreItems}>load older messages</button> {/if}
+      {#if beginningHistory} <small>this is the beginning of this story for you</small> {/if}
       {#each items as item}
         <ItemBubble 
           {item}
