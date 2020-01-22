@@ -140,7 +140,12 @@ exports.init = (listener) => {
           });
       } else {
         // save incoming message
-        db.logMessage({...data, recipients: [data.sender], node: currentNode._id, board: currentNode.board});
+        db.logMessage({...data, 
+          recipients: [data.sender], 
+          node: currentNode._id, 
+          board: currentNode.board,
+          timestamp: Date.now()
+        });
       }
       handleScript(io, socket, currentNode, data.sender, "onMessage", data);
     });
