@@ -5,7 +5,7 @@
 
 {#if item.params && item.attachment}
 
-<article class={item.params.option ? "option" : item.side} on:click={()=>{if(item.params.option) onClick()}}>
+<article class={item.params.option ? "option" : item.side} on:click={onClick}>
     {#if item.side == "left" && !item.params.option}<label class="bubble-supertitle">{item.label}</label>{/if}
     <span>
       {item.placeholder ? "..." : (item.message ? item.message : "")}

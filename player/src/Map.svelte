@@ -7,13 +7,14 @@ const mapStyles = require('./GoogleMapStyles.json')
 export let visible;
 export let googleReady;
 export let onClose;
+export let map;
 
 let places = [];
 
 let mapContainer;
 let markers = [];
 let userMarker;
-let map;
+
 
 const initGoogleMap = ()=>{
     map = new google.maps.Map(mapContainer, {

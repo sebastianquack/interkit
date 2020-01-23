@@ -21,6 +21,8 @@
   let stories = [];
   let currentStory = null;
 
+  let map;
+
   const checkForUnseenMessages = async () => {
     for(let i = 0; i < stories.length; i++) {
       let story = stories[i];
@@ -37,6 +39,13 @@
     }
     stories = stories;
     //console.log(stories);
+  }
+
+  const openMapTo = (item) => {
+    console.log(item);
+    mainView = "map";
+    map.panTo(item.attachment);
+    map.setZoom(17);
   }
 
   onMount(async () => {
@@ -73,7 +82,7 @@
 
   <div class="top-menu">
     {#if playerNodeId}
-        <button on:click={()=>{setPlayerNodeId(null);}}>home</button>
+        <button on:click={()=>{setPlayerNodeId(null);}}>{"←"}</button>
         {#if currentStory}
         <span
           class="breadcrumb"
@@ -83,21 +92,16 @@
         >{currentStory.name}</span>
         {/if}
     {/if}
-
     <div class="menu-buttons-right">
       {#if mainView == "chat"}
         <button on:click={()=>mainView="map"}>map</button>
       {/if}
     </div>
-  
   </div>
 
   <div class="content-container">
-
-    {#if mainView == "chat"}
-
-      {#if !playerNodeId}
-        <ul>
+    {#if !playerNodeId}
+        <ul class="story-select">
           {#each stories as story}
             <li on:click={()=>{launch(story)}}>
               {story.name} - <em>{story.description}</em> 
@@ -105,20 +109,19 @@
             </li>
           {/each}
         </ul>
-      {:else}
+    {:else}
         <Chat
           {playerNodeId}
           {setPlayerNodeId}
           loadHistory={true}
           updateUnseenMessages={checkForUnseenMessages}
+          mapClick={openMapTo}
         />
       {/if}
-
-    {/if}
-
   </div>
 
   <Map
+    bind:map={map}
     {googleReady}
     visible={mainView=="map"}
     onClose={()=>mainView="chat"}
@@ -177,6 +180,25 @@
     display: flex;
     flex-direction: column;
   }
+
+  ul.story-select {
+    padding: 0;
+    margin: 0;
+    margin-top: 1em;
+  }
+
+  ul.story-select li {
+    list-style: none;
+    padding: 15px;
+    border-top: 1px solid lightgray;
+    height: 2em;
+    line-height: 2em;
+  }
+
+  ul.story-select li:last-child {
+    border-bottom: 1px solid lightgray; 
+  }
+
 
 </style>
 

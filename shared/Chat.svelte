@@ -13,6 +13,7 @@
   export let setPlayerNodeId;
   export let loadHistory = false;
   export let updateUnseenMessages;
+  export let mapClick;
   
   let currentPlayerNode = null;
   
@@ -306,7 +307,6 @@
           attachment: {
             mediatype: "GPS",
             imgSrc: mapImgUrl,
-            imgLink: mapUrl,  
             lat: position.coords.latitude, 
             lng: position.coords.longitude,
             accuracy: position.coords.accuracy
@@ -350,7 +350,10 @@
       {#each items as item}
         <ItemBubble 
           {item}
-          onClick={()=>{autoType(item)}}
+          onClick={()=>{
+            if(item.params.option) autoType(item)
+            if(item.attachment.mediatype == "GPS") mapClick(item)
+          }}
         />
       {/each}
     </div>
