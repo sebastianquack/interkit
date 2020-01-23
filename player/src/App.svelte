@@ -82,9 +82,9 @@
 
   <div class="top-menu">
     {#if playerNodeId}
-        <button on:click={()=>{setPlayerNodeId(null);}}>{"←"}</button>
+        <button on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
         {#if currentStory}
-        <span
+        &nbsp;<span
           class="breadcrumb"
           on:click={()=>{
             if(mainView!="chat") mainView="chat";
@@ -104,7 +104,7 @@
         <ul class="story-select">
           {#each stories as story}
             <li on:click={()=>{launch(story)}}>
-              {story.name} - <em>{story.description}</em> 
+              {story.name} - {story.description}
               {#if story.unSeenMessages } <small>(unread messages: {story.unSeenMessages})</small> {/if} 
             </li>
           {/each}
