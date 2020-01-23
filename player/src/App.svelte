@@ -154,6 +154,7 @@
     left: 0;
     padding: 5px;
     width: 100%;
+    box-sizing: border-box;
   }
 
   span.breadcrumb:hover {
@@ -162,7 +163,7 @@
 
   .menu-buttons-right {
     position: absolute;
-    right: 15px;
+    right: 5px;
     top: 5px;
   }
 
