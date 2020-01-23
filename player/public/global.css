@@ -51,6 +51,7 @@ input[type="range"] {
 button {
 	background-color: #f4f4f4;
 	outline: none;
+  box-shadow: 2px 2px #ddd;
 }
 
 button:hover {

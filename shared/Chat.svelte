@@ -345,8 +345,8 @@
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
 
     <div class="scrollable" bind:this={div}>
-      {#if showMoreItems} <button on:click={loadMoreItems}>load older messages</button> {/if}
-      {#if beginningHistory} <small>this is the beginning of this story for you</small> {/if}
+      {#if showMoreItems} <button class="load-more" on:click={loadMoreItems}>load older messages</button> {/if}
+      {#if beginningHistory} <small class="history-start">beginning of this story for you</small> {/if}
       {#each items as item}
         <ItemBubble 
           {item}
@@ -358,19 +358,17 @@
       {/each}
     </div>
 
+    <div class="input-container">      
     {#if !attachmentMenuOpen}
-      <div class="input-container">
-        <button class="open-attachment" on:click={openAttachmentMenu}>📎</button>
+        <button style="width: 2em" class="open-attachment" on:click={openAttachmentMenu}>📎</button>
         <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
-      </div>
     {:else}
-      <div class="input-container">
         <button on:click={openCamera}>Camera</button>
         <button on:click={openQRScanner}>QR Code</button>
         <button on:click={getGPSLocation}>GPS Location</button>
         <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
-      </div>  
     {/if}
+    </div>  
 
   {#if QRScannerOpen}
     <div class="qr-scanner-container">
@@ -428,39 +426,65 @@
   }
 
   .scrollable {
-    margin: 0 0 0.5em 0;
+    margin: 0 0 10px 0;
     overflow-y: auto;
     position: absolute;
     top: 0;
-    bottom: 35px;
+    bottom: 45px;
     left: 0;
     right: 0;
     padding: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .input-container {
+    background-color: white;
     width: 100%;
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
     position: absolute;
     bottom: 0px;
     left: 0px;
     box-sizing: border-box;
     display: flex;
+    border-top: 1px solid gray;
+    height: 55px;
   }
 
   .input-container button {
-    margin-right: 5px;
+    margin-right: 10px;
   }
 
   .close-attachment {
     position: absolute;
     right: 0;
-    top: 0;
+    top: 10px;
   }
 
   input {
     flex: auto;
+    margin-bottom: 10px;
+  }
+
+  button {
+    margin-bottom: 10px;
+  }
+
+  button.load-more {
+    left: 50%;
+    transform: translateX(-50%);
+    position: relative;
+  }
+
+  small.history-start {
+    padding-left: 10%;
+    padding-right: 10%;
+    text-align: center;
+    display: block;
+    color: gray;
+    font-size: 10px;
   }
 
   .qr-scanner-container {

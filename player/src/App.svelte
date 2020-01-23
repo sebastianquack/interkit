@@ -82,7 +82,7 @@
 
   <div class="top-menu">
     {#if playerNodeId}
-        <button on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
+        <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
         {#if currentStory}
         &nbsp;<span
           class="breadcrumb"
@@ -94,7 +94,7 @@
     {/if}
     <div class="menu-buttons-right">
       {#if mainView == "chat"}
-        <button on:click={()=>mainView="map"}>map</button>
+        <button class="map-button" on:click={()=>mainView="map"}>open map</button>
       {/if}
     </div>
   </div>
@@ -151,13 +151,15 @@
   }
 
   .top-menu {
-    height: 50px;
+    height: 55px;
     position: absolute;
     top: 0;
     left: 0;
-    padding: 5px;
+    padding: 10px;
     width: 100%;
     box-sizing: border-box;
+    background-color: lightgreen;
+    border-bottom: 1px solid gray;
   }
 
   span.breadcrumb:hover {
@@ -166,13 +168,17 @@
 
   .menu-buttons-right {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 10px;
+    top: 10px;
+  }
+
+  button.map-button {
+    box-shadow: 2px 2px #ddd;
   }
 
   .content-container {
     position: absolute;
-    top: 50px;
+    top: 55px;
     bottom: 0;
     left: 0;
     right: 0;
@@ -184,7 +190,6 @@
   ul.story-select {
     padding: 0;
     margin: 0;
-    margin-top: 1em;
   }
 
   ul.story-select li {
