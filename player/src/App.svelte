@@ -1,7 +1,19 @@
+<svelte:head>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
+</svelte:head>
+
 <script>
   import { onMount } from 'svelte';
   import Chat from '../../shared/Chat.svelte';
   import { initSocket, getPlayerId } from '../../shared/socketClient.js';
+  import Map from './Map.svelte';
+
+  let googleReady = false;
+
+  window.googleReady = ()=>{
+    console.log("googleReady");
+    googleReady = true;
+  }
 
   let playerNodeId = null;
   let directURL = false;
@@ -50,6 +62,8 @@
     currentStory = story;
     setPlayerNodeId(story.startingNode);
   }
+
+  let mainView = "chat";
     
 </script>
 
@@ -57,37 +71,59 @@
 
 {#if !loading}
 
-  {#if !playerNodeId}
-
-    <h2>tap on a story to start</h2>
-    <ul>
-    {#each stories as story}
-      <li on:click={()=>{launch(story)}}>
-        {story.name} - <em>{story.description}</em> 
-        {#if story.unSeenMessages } <small>(unread messages: {story.unSeenMessages})</small> {/if} 
-      </li>
-    {/each}
-    </ul>
-
-  {:else}
-
-    {#if !directURL}
-      <div class="top-menu">
-        <span>{currentStory ? currentStory.name : ""}</span>
-        <button on:click={()=>{setPlayerNodeId(null)}}>exit</button>
-      </div>
+  <div class="top-menu">
+    {#if playerNodeId}
+        <button on:click={()=>{setPlayerNodeId(null);}}>home</button>
+        {#if currentStory}
+        <span
+          class="breadcrumb"
+          on:click={()=>{
+            if(mainView!="chat") mainView="chat";
+          }}
+        >{currentStory.name}</span>
+        {/if}
     {/if}
 
-    <div class="chat-container {directURL ? 'chat-container-no-menu' : ''}">
-      <Chat
-        {playerNodeId}
-        {setPlayerNodeId}
-        loadHistory={true}
-        updateUnseenMessages={checkForUnseenMessages}
-      />
+    <div class="menu-buttons-right">
+      {#if mainView == "chat"}
+        <button on:click={()=>mainView="map"}>map</button>
+      {/if}
     </div>
+  
+  </div>
 
-  {/if}
+  <div class="content-container">
+
+    {#if mainView == "chat"}
+
+      {#if !playerNodeId}
+        <ul>
+          {#each stories as story}
+            <li on:click={()=>{launch(story)}}>
+              {story.name} - <em>{story.description}</em> 
+              {#if story.unSeenMessages } <small>(unread messages: {story.unSeenMessages})</small> {/if} 
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <Chat
+          {playerNodeId}
+          {setPlayerNodeId}
+          loadHistory={true}
+          updateUnseenMessages={checkForUnseenMessages}
+        />
+      {/if}
+
+    {/if}
+
+  </div>
+
+  <Map
+    {googleReady}
+    visible={mainView=="map"}
+    onClose={()=>mainView="chat"}
+  />
+
 {/if}
 
 </div>
@@ -115,21 +151,30 @@
     height: 50px;
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     padding: 5px;
+    width: 100%;
   }
 
-  .chat-container {
+  span.breadcrumb:hover {
+    cursor: pointer;
+  }
+
+  .menu-buttons-right {
+    position: absolute;
+    right: 15px;
+    top: 5px;
+  }
+
+  .content-container {
     position: absolute;
     top: 50px;
     bottom: 0;
     left: 0;
     right: 0;
     box-sizing: border-box;
-  }
-
-  .chat-container-no-menu {
-    top: 0px;
+    display: flex;
+    flex-direction: column;
   }
 
 </style>
