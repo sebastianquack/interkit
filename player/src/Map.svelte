@@ -89,10 +89,11 @@ const getUserPosition = ()=> {
 
       console.log("setting userPosition");
       map.panTo(pos);
+      map.setZoom(16);
 
       if(userMarker) userMarker.setMap(null);
       userMarker = new google.maps.Marker({
-          map: this.map,
+          map: map,
           position: pos,
           icon: {
               path: google.maps.SymbolPath.CIRCLE,

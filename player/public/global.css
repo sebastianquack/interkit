@@ -53,6 +53,10 @@ button {
 	outline: none;
 }
 
+button:hover {
+  cursor: pointer;
+}
+
 button:active {
 	background-color: #ddd;
 }
