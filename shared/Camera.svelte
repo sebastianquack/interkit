@@ -9,6 +9,7 @@ let mediaStream;
 let canvasElement;
 let canvas;
 
+export let onClose;
 export let onUpload;
 
 const init = ()=> {
@@ -111,6 +112,7 @@ onMount(init);
 
 onDestroy(()=>{
   console.log("stopping video stream", mediaStream);
+  if(!mediaStream) return;
   mediaStream.getTracks().forEach((track)=>{
     track.stop();
   });
@@ -127,6 +129,7 @@ onDestroy(()=>{
     <button on:click={cancel}>cancel</button>
   {:else}
     <button on:click={snap}>snap</button>
+    <button on:click={onClose}>close</button>
   {/if}
 </div>
 

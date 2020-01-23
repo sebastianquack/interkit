@@ -73,6 +73,7 @@ onMount(init);
 
 onDestroy(()=>{
   console.log("stopping video stream", mediaStream);
+  if(!mediaStream) return;
   mediaStream.getTracks().forEach((track)=>{
     track.stop();
   });

@@ -384,12 +384,12 @@
 
   {#if cameraOpen}
     <div class="qr-scanner-container">
-      <button class="close-qr" on:click={closeCamera}>close</button>
       <Camera
         onUpload={async (imageURL)=>{
           closeCamera();
           await sendImage(imageURL);
         }}
+        onClose={closeCamera}
       />
     </div>
   {/if}
