@@ -19,13 +19,14 @@
   export let editNodeId;
 
   export let playerNodeId;
+  export let projectId;
   
   let boards = [];
   let editMode = false;
   let playerURL;
 
   const loadBoardList = async ()=>{
-    const res = await fetch("/api/board");
+    const res = await fetch("/api/board?project=" + projectId);
     const json = await res.json();
     boards = json.docs;
     playerURL = await getConfig("playerURL");
@@ -59,7 +60,8 @@
       new: true,
       name: "",
       scriptNodes: [],
-      library: ""
+      library: "",
+      project: projectId
     }
     setCurrentBoardData(newBoard);
     editMode = true;
@@ -87,7 +89,8 @@
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
-          library: currentBoardData.library
+          library: currentBoardData.library,
+          project: projectId
         }])
       });
       if(response.ok) {
@@ -105,7 +108,8 @@
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
-          library: currentBoardData.library
+          library: currentBoardData.library,
+          project: projectId
         })
       });
       if(response.ok) {
@@ -150,21 +154,23 @@
     
 </script>
 
-<select bind:value={currentBoardId} on:change={loadBoardData}>
-  <option value={null}>select a board</option>
-  <option disabled>_________</option>
-{#each boards as board}
-  <option value={board._id}>{board.name}</option>
-{/each}
-</select>
-<button on:click={createBoard}>new board</button>
+<div class="top-right">
+  <select bind:value={currentBoardId} on:change={loadBoardData}>
+    <option value={null}>select a board</option>
+    <option disabled>_________</option>
+  {#each boards as board}
+    <option value={board._id}>{board.name}</option>
+  {/each}
+  </select>
+  <button on:click={createBoard}>new board</button>
 
-{#if currentBoardData}
-
-  
-  {#if !currentBoardData.new}
+  {#if currentBoardData && !currentBoardData.new}
     <button on:click={deleteBoard}>delete board</button> 
   {/if}
+
+</div>
+
+{#if currentBoardData}
 
   {#if editMode}
     <h2>edit board</h2>
@@ -255,6 +261,12 @@
     bottom: 10px;
     left: 10px;
     margin-bottom: 0px;
+  }
+
+  .top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
 
 

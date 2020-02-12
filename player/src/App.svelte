@@ -7,6 +7,7 @@
   import Chat from '../../shared/Chat.svelte';
   import { initSocket, getPlayerId } from '../../shared/socketClient.js';
   import Map from './Map.svelte';
+  import { getConfig } from '../../shared/util.js';
 
   let googleReady = false;
 
@@ -59,7 +60,14 @@
       directURL = true;
     }
 
-    const res = await fetch("/api/board?$where=" + JSON.stringify({"listed": true}));
+    let projectId = searchParams.get("project");
+    if(!projectId) {
+      projectId = await getConfig("defaultProject");
+    }
+    console.log("projectId", projectId);
+    
+    const res = await fetch("/api/board?$where=" + JSON.stringify(
+      {"listed": true, "project": projectId}));
     const json = await res.json();
     stories = json.docs;
     await checkForUnseenMessages();
@@ -82,7 +90,9 @@
 
   <div class="top-menu">
     {#if playerNodeId}
-        <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
+        {#if !directURL}
+          <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
+        {/if}
         {#if currentStory}
         &nbsp;<span
           class="breadcrumb"

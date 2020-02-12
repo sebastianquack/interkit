@@ -24,7 +24,11 @@ module.exports = function (mongoose) {
     },
     library: {
       type: Types.String
-    } 
+    },
+    project: {
+      type: Types.ObjectId,
+      ref: "project"
+    }
   });
   
   Schema.statics = {
@@ -40,6 +44,10 @@ module.exports = function (mongoose) {
         startingNode: {
           type: "ONE_ONE",
           model: "scriptNode"
+        },
+        project: {
+          type: "MANY_ONE",
+          model: "project"
         }
       },
 

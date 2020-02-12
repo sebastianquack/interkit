@@ -1,76 +1,99 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
 
-  import Board from './Board.svelte';
-  import EditNode from './EditNode.svelte';
-  
+  import { onMount } from 'svelte';
+
   import Login from './Login.svelte';
   import Logout from './Logout.svelte';
   import {token} from './stores.js';
 
-  import Chat from '../../shared/Chat.svelte';
-  import { initSocket } from '../../shared/socketClient.js';
+  import Project from './Project.svelte';
+  import { getConfig } from '../../shared/util.js';
 
-  onMount(() => {
-     initSocket();
-  });
+  let currentProject = null;
+  let editProject = null;
+  let projects = [];
 
-  let editNodeId = null;
-  const setEditNodeId = (nodeId)=>{editNodeId = nodeId};
-
-  let playerNodeId = null;
-  const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId};
-
-  let currentBoardId = null;
-  const setCurrentBoardId = (boardId)=>{currentBoardId = boardId};
-
-  let currentBoardData = null;
-  const setCurrentBoardData = (boardData)=>{
-    currentBoardData = boardData;
+  let playerURL;
+  
+  const loadProjectList = async ()=>{
+    const res = await fetch("/api/project");
+    const json = await res.json();
+    projects = json.docs;
+    playerURL = await getConfig("playerURL");
   }
-  const reloadBoardData = ()=>{
-    if(currentBoardData) currentBoardData.expired = true;
+
+  const addProject = async ()=>{
+    editProject = {
+      name: "untitled",
+      new: true
+    }
   }
+
+  const saveProject = async ()=>{
+    if(editProject.new) {
+      await fetch("/api/project", {
+        method: "POST",
+        headers: {'authorization': $token},
+        body: JSON.stringify([{
+          name: editProject.name,
+        }])
+      });
+    } else {
+      await fetch("/api/project/" + editProject._id, {
+        method: "PUT",
+        headers: {'authorization': $token},
+        body: JSON.stringify({
+          _id: editProject._id,
+          name: editProject.name,
+        })
+      });
+    }
+    loadProjectList();
+    editProject = null;
+  }
+
+  onMount(loadProjectList);
 
 </script>
 
 
 {#if $token}
 
-  <div id="left" class="area">
-    <Logout/>
-    <Board
-      {currentBoardId}
-      {setCurrentBoardId}
-      {currentBoardData}
-      {setCurrentBoardData}
-      {editNodeId}
-      {setEditNodeId}
-      {playerNodeId}
+  {#if currentProject}
+
+    <button class="top" on:click={()=>currentProject=null}>close {currentProject.name}</button>
+    <Project
+      projectId={currentProject._id}
     />
-  </div>
-  
-  <div id="top-right" class="area">
-    {#if editNodeId}
-    <EditNode
-      {editNodeId}
-      {setEditNodeId}
-      {setPlayerNodeId}
-      {reloadBoardData}
-      {currentBoardData}
-    />
+
+  {:else}
+
+    {#if !editProject}
+
+      <Logout/>
+    
+      <h3>Projects</h3>
+      <ul>
+      {#each projects as project}
+        <li>
+          <span on:click={()=>{currentProject = project}}
+          >{project.name}</span>
+          <button on:click={()=>{editProject = project;}}>✎</button>
+          <a target="_blank" href="{playerURL}?project={project._id}">external player link</a>
+      {/each}
+      </ul>
+
+      <button on:click={addProject}>new</button>
+
+    {:else}
+
+      <input type="text" bind:value={editProject.name}/>
+      <button on:click={saveProject}>save</button>
+      <button on:click={()=>{editProject = null}}>cancel</button>
+
     {/if}
-  </div>
-  <div id="bottom-right" class="area">
-    {#if playerNodeId}
-    <Chat
-      {playerNodeId}
-      {setPlayerNodeId}
-      {setEditNodeId}
-      authoring={true}
-    />
-    {/if}
-  </div>
+
+  {/if}
 
 {:else}
 
@@ -80,40 +103,23 @@
 
 
 
+
 <style>
+  span:hover {
+    cursor: pointer;
+  }
 
-  .area {
-    box-sizing: border-box;
+  a {
+    color: gray;
+    padding-left: 1px;
+    margin-bottom: 10px;
+    position: relative;
+    font-size: 10px;
+    font-weight: normal;
+  }
+
+  button.top {
     position: absolute;
-    padding: 10px;
+    z-index: 10;
   }
-
-  #left {
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 50%; 
-    z-index: 0;
-  }
-
-  #top-right {
-    width: 50%;
-    height: 50vh;
-    overflow-y: auto;    
-    top: 0;
-    right: 0;
-    border-left: 4px solid gray;
-    border-bottom: 4px solid gray;
-  }
-
-  #bottom-right {
-    width: 50%;
-    height: 50vh;
-    bottom: 0;
-    right: 0;
-    border-left: 4px solid gray;
-  }
-
-
 </style>
-
