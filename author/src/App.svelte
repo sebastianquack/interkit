@@ -61,7 +61,11 @@
 
   {#if currentProject}
 
-    <button class="top" on:click={()=>currentProject=null}>close {currentProject.name}</button>
+    <div class="project-title">
+      <h2>{currentProject.name}</h2>
+      <button on:click={()=>currentProject=null}>close</button>
+    </div>
+
     <Project
       projectId={currentProject._id}
     />
@@ -76,9 +80,9 @@
       <ul>
       {#each projects as project}
         <li>
-          <span on:click={()=>{currentProject = project}}
-          >{project.name}</span>
+          {project.name}
           <button on:click={()=>{editProject = project;}}>✎</button>
+          <button on:click={()=>{currentProject = project;}}>open project</button>
           <a target="_blank" href="{playerURL}?project={project._id}">external player link</a>
       {/each}
       </ul>
@@ -109,6 +113,17 @@
     cursor: pointer;
   }
 
+  .project-title {
+    position: absolute;
+    z-index: 10;    
+  }
+
+  h2 {
+    display: inline-block;
+    margin: 0px;
+    margin-top: 2px;
+  }
+
   a {
     color: gray;
     padding-left: 1px;
@@ -116,10 +131,5 @@
     position: relative;
     font-size: 10px;
     font-weight: normal;
-  }
-
-  button.top {
-    position: absolute;
-    z-index: 10;
   }
 </style>

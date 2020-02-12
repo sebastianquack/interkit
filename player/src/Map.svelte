@@ -68,7 +68,7 @@ const initGoogleMap = ()=>{
     });
     
     map.fitBounds(latlngbounds);
-    getUserPosition();
+    //getUserPosition();
       
 }
 
