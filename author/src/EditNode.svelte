@@ -5,6 +5,10 @@
   import 'codemirror/lib/codemirror.css';
   import 'codemirror/mode/javascript/javascript.js';
 
+  import CodeEditor from './CodeEditor.svelte';
+
+  import { cheatSheet } from "./cheatSheet.js";
+
   export let editNodeId;
   export let setEditNodeId;
   export let setPlayerNodeId;
@@ -15,9 +19,6 @@
   let scriptNodeEdit = {};
   let startingNodeEdit;
 
-  let textArea;
-  let editor;
-  
   let editTitle = false;
  
   const loadNoad = async (id) => {
@@ -32,17 +33,6 @@
     if(typeof scriptNodeEdit.multiPlayer == "undefined") {
       scriptNodeEdit.multiPlayer = false;
     }   
-
-    if(editor) editor.toTextArea();
-    
-    await tick();
-    
-    editor = CodeMirror.fromTextArea(textArea, {
-      lineNumbers: true,
-      mode:  "javascript"
-    });
-    editor.on("change", ()=>{scriptNodeEdit.script = editor.getValue()})
-
   }
 
   // run whenever editNodeId prop changes
@@ -90,7 +80,7 @@
         headers: {'authorization': $token},
         body: JSON.stringify({
           name: scriptNodeEdit.name, 
-          script: editor.getValue(),
+          script: scriptNodeEdit.script,
           multiPlayer: scriptNodeEdit.multiPlayer
         })
       });
@@ -120,7 +110,20 @@
     }
   }
 
+  let showHelp = false;
+
 </script>
+
+<button class="help-button" on:click={()=>showHelp = !showHelp}>{showHelp ? "close" : "cheat sheet"}</button>
+
+{#if showHelp} 
+<div class="scroll help-content">
+   <h2>cheat sheet</h2>
+   <CodeEditor readOnly code={cheatSheet}></CodeEditor>
+</div>
+{/if}
+
+<div class="scroll">
 
 {#if !editTitle}
   <div class="edit-headline">
@@ -132,7 +135,9 @@
   <input bind:value={scriptNodeEdit.name}><br/>
   <button on:click="{()=>{editTitle=false}}">cancel</button>
 {/if}
-<textarea bind:this={textArea} bind:value={scriptNodeEdit.script}></textarea><br/>
+
+<CodeEditor bind:code={scriptNodeEdit.script}></CodeEditor>
+
 <label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/>
 <label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br>
 
@@ -140,10 +145,35 @@
 
 <button on:click={deleteNode}>delete</button><br>
 
+</div>
+
 <style>
   
   label {
     display: inline-block;
+  }
+
+  .scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .help-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    z-index: 10;
+  }
+
+  .help-content {
+    background-color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9;
+    padding: 10px;
+    box-sizing: border-box;
   }
 </style>
 

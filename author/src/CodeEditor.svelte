@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy, tick, beforeUpdate } from 'svelte';
+  import { onMount, onDestroy, tick, beforeUpdate, afterUpdate } from 'svelte';
 
   import CodeMirror from 'codemirror';
   import 'codemirror/lib/codemirror.css';
@@ -7,14 +7,25 @@
 
   let textArea;
   let editor;
+  let editorChanged = false;
   export let code;
+  export let readOnly = false;
   
   onMount(()=>{
+    console.log("mount");
     editor = CodeMirror.fromTextArea(textArea, {
       lineNumbers: true,
-      mode:  "javascript"
+      mode:  "javascript",
+      readOnly: readOnly ? true : false,
     });
-    editor.on("change", ()=>{code = editor.getValue()})
+    editor.on("change", ()=>{editorChanged = true; code = editor.getValue()})
+  })
+
+  afterUpdate(()=>{
+    if(code && !editorChanged) {
+      editor.getDoc().setValue(code);
+    }
+    editorChanged = false;
   })
 
   onDestroy(()=> {
@@ -23,4 +34,4 @@
 
 </script>
 
-<textarea bind:this={textArea} bind:value={code}></textarea><br/>  
+<textarea bind:this={textArea} value={code}></textarea><br/>  
