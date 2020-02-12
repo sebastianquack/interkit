@@ -130,7 +130,13 @@
     let newNode = {
       name: "new" + Math.floor(Math.random() * 1000),
       board: currentBoardData._id,
-      script: "",
+      script: `function onArrive() {
+  
+}
+
+function onMessage() {
+  
+}`,
       multiPlayer: false,
       posX: 100,
       posY: 100

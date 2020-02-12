@@ -157,11 +157,16 @@
       } else {
         showMoreItems = true;
       }
-      historyItems.docs.forEach(async item=>{
-        let i = parseItem(item);
-        if(i) items.unshift(i);
-        if(!item.seen || item.seen.indexOf(playerId) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
+      let activeOptions = true; // show options only if they are the last ones at bottom
+      historyItems.docs.forEach(async item=>{        
+        if(!item.params) item.params = {};
+        if(!item.params.option || (activeOptions && item.params.option)) {
+          let i = parseItem(item);
+          if(i) items.unshift(i);
+          if(!item.seen || item.seen.indexOf(playerId) == -1)
+            await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
+        }
+        if(!item.params.option) activeOptions = false;
       });
       items = items;
       initialHistoryLoaded = true;
@@ -173,8 +178,7 @@
     if(!rawItem.params) rawItem.params = {};
 
     if(rawItem.system && rawItem.params.moveTo) return null;
-    if(rawItem.params.option) return null;
-
+    
     if(rawItem.attachment.mediatype == "image") {
       rawItem.attachment.imgSrc = fileServerURL + rawItem.attachment.filename;
     }
@@ -210,6 +214,7 @@
       attachment: {},
       params: {}
     });
+    items = items.filter((i)=>!(i.params && i.params.option));
     scrollUp();
 
     emitMessage({message: inputValue});
@@ -240,7 +245,6 @@
     setTimeout(()=>{
       submitInput();
       autoTyping = false;
-      items = items.filter((i)=>!(i.params && i.params.option));
     }, delay * (item.message.length+5));
   }
 
