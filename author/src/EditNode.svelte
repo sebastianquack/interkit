@@ -157,8 +157,8 @@
 
   .help-button {
     position: absolute;
-    right: 5px;
-    top: 5px;
+    right: 10px;
+    top: 10px;
     z-index: 10;
   }
 
