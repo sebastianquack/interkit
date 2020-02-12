@@ -22,8 +22,8 @@
   })
 
   afterUpdate(()=>{
-    if(code && !editorChanged) {
-      editor.getDoc().setValue(code);
+    if(!editorChanged) {
+      editor.getDoc().setValue(code ? code : "");
     }
     editorChanged = false;
   })
