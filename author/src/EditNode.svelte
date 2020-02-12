@@ -95,10 +95,6 @@
     
   }
 
-  onDestroy(()=> {
-    editor.toTextArea();
-  })
-
   const deleteNode = async ()=> {
     if(confirm("really?")) {
       await fetch("/api/scriptNode/" + editNodeId, {
