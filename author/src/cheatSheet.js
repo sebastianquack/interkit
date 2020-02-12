@@ -17,6 +17,8 @@ option("option 1") // presents an option
 image("image.jpg") // sends an image
 audio("audio.mp3") // sends an audio file
 
+moveTo("node") // moves player to another node on the same board
+
 // input object
 input.raw // the raw input text
 input.message // sanitized input text (trimmed and lowercase)
