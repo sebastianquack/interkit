@@ -56,6 +56,13 @@ const PlayerForm =
 const PlayerEdit = props => <Edit {...props}>{PlayerForm}</Edit>;
 const PlayerCreate = props => <Create {...props}>{PlayerForm}</Create>;
 
+const ProjectForm = 
+    <SimpleForm>
+    </SimpleForm>
+const ProjectEdit = props => <Edit {...props}>{ProjectForm}</Edit>;
+const ProjectCreate = props => <Create {...props}>{ProjectForm}</Create>;
+
+
 const VarForm = 
     <SimpleForm>
         <TextInput source="key" />
@@ -183,6 +190,7 @@ const App = () =>
     <Resource name="file" list={ListGuesser} edit={FileEdit} create={FileCreate}/>
     <Resource name="message" list={MessageList} edit={MessageEdit} create={MessageCreate}/>
     <Resource name="nodeLog" list={ListGuesser}/>
+    <Resource name="project" list={ListGuesser}/>
   </Admin>
 
 export default App;

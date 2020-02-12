@@ -19,16 +19,16 @@
   let playerNodeId = null;
   let directURL = false;
   let loading = true;
-  let stories = [];
-  let currentStory = null;
+  let boards = [];
+  let currentBoard = null;
 
   let map;
 
   const checkForUnseenMessages = async () => {
-    for(let i = 0; i < stories.length; i++) {
-      let story = stories[i];
+    for(let i = 0; i < boards.length; i++) {
+      let board = boards[i];
       const query = {
-        board: story._id, 
+        board: board._id, 
         recipients: getPlayerId(),
         seen: {"$nin": [getPlayerId()]}
       };
@@ -36,10 +36,10 @@
       const mjson = await res.json();
       const messages = mjson.docs;
       //console.log("unseen", messages.length);
-      stories[i] = {...story, unSeenMessages: messages.length}
+      boards[i] = {...board, unSeenMessages: messages.length}
     }
-    stories = stories;
-    //console.log(stories);
+    boards = boards;
+    //console.log(boards);
   }
 
   const openMapTo = (item) => {
@@ -53,6 +53,7 @@
     await initSocket();
 
     let searchParams = new URLSearchParams(window.location.search);
+    
     if(searchParams.get("board")) {
       let res = await fetch("/api/board/" + searchParams.get("board"));
       let json = await res.json();
@@ -69,15 +70,24 @@
     const res = await fetch("/api/board?$where=" + JSON.stringify(
       {"listed": true, "project": projectId}));
     const json = await res.json();
-    stories = json.docs;
+    boards = json.docs;
     await checkForUnseenMessages();
+    
+    console.log(boards);
+    if(boards.length == 1) {
+      playerNodeId = boards[0].startingNode;
+      directURL = true;
+      console.log("opening starting node");
+    }
+
     loading = false;
   });
 
   const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId}; 
-  const launch = (story) => {
-    currentStory = story;
-    setPlayerNodeId(story.startingNode);
+  const launch = (board) => {
+    console.log("launching", board)
+    currentBoard = board;
+    setPlayerNodeId(board.startingNode);
   }
 
   let mainView = "chat";
@@ -93,13 +103,13 @@
         {#if !directURL}
           <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
         {/if}
-        {#if currentStory}
+        {#if currentBoard}
         &nbsp;<span
           class="breadcrumb"
           on:click={()=>{
             if(mainView!="chat") mainView="chat";
           }}
-        >{currentStory.name}</span>
+        >{currentBoard.name}</span>
         {/if}
     {/if}
     <div class="menu-buttons-right">
@@ -111,11 +121,11 @@
 
   <div class="content-container">
     {#if !playerNodeId}
-        <ul class="story-select">
-          {#each stories as story}
-            <li on:click={()=>{launch(story)}}>
-              {story.name} - {story.description}
-              {#if story.unSeenMessages } <small>(unread messages: {story.unSeenMessages})</small> {/if} 
+        <ul class="board-select">
+          {#each boards as board}
+            <li on:click={()=>{launch(board)}}>
+              {board.name} - {board.description}
+              {#if board.unSeenMessages } <small>(unread messages: {board.unSeenMessages})</small> {/if} 
             </li>
           {/each}
         </ul>
@@ -197,12 +207,12 @@
     flex-direction: column;
   }
 
-  ul.story-select {
+  ul.board-select {
     padding: 0;
     margin: 0;
   }
 
-  ul.story-select li {
+  ul.board-select li {
     list-style: none;
     padding: 15px;
     border-top: 1px solid lightgray;
@@ -210,7 +220,7 @@
     line-height: 2em;
   }
 
-  ul.story-select li:last-child {
+  ul.board-select li:last-child {
     border-bottom: 1px solid lightgray; 
   }
 

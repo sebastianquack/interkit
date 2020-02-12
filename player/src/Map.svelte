@@ -68,6 +68,7 @@ const initGoogleMap = ()=>{
     });
     
     map.fitBounds(latlngbounds);
+    getUserPosition();
       
 }
 
@@ -126,7 +127,7 @@ const getUserPosition = ()=> {
 <div id="map-container" style="visibility: {visible ? 'visible' : 'hidden'}">     
   <div id="map" bind:this={mapContainer}></div>
   <img id="locate-button" alt="locat button" src="locate.png" on:click={getUserPosition} />
-  <button id="close" on:click={onClose}>close map</button>
+  <button id="close" on:click={onClose}>open chat</button>
 </div>
 
 
