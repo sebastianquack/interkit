@@ -161,6 +161,17 @@ const MessageForm =
 const MessageEdit = props => <Edit {...props}>{MessageForm}</Edit>;
 const MessageCreate = props => <Create {...props}>{MessageForm}</Create>;
 
+
+const BoardForm = 
+    <SimpleForm>
+        <TextInput source="name" />
+        <TextInput source="description" />
+        <TextInput source="project" />
+    </SimpleForm>
+const BoardEdit = props => <Edit {...props}>{BoardForm}</Edit>;
+const BoardCreate = props => <Create {...props}>{BoardForm}</Create>;
+
+
 export const MessageList = props => (
     <List {...props} perPage={100}>
         <Datagrid rowClick="edit">
@@ -183,7 +194,7 @@ export const MessageList = props => (
 const App = () => 
   <Admin dataProvider={dataProvider} authProvider={authProvider}>
     <Resource name="config" list={ListGuesser} edit={ConfigEdit} create={ConfigCreate}/>
-    <Resource name="board" list={ListGuesser} edit={EditGuesser}/>
+    <Resource name="board" list={ListGuesser} edit={BoardEdit}/>
     <Resource name="scriptNode" list={NodeList} edit={NodeEdit} create={NodeCreate}/>
     <Resource name="player" list={ListGuesser} edit={PlayerEdit} create={PlayerCreate}/>
     <Resource name="variable" list={ListGuesser} edit={VarEdit} create={VarCreate}/>
