@@ -346,7 +346,7 @@
 
     <div class="scrollable" bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={loadMoreItems}>load older messages</button> {/if}
-      {#if beginningHistory} <small class="history-start">beginning of this story for you</small> {/if}
+      {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each items as item}
         <ItemBubble 
           {item}
