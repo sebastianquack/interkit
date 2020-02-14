@@ -16,7 +16,15 @@ const emitMessage = async (emitter, data) => {
   
   let m = await db.logMessage(msgData);
   emitter.emit('message', {...msgData, _id: m._id});         
+}
+
+const emitInRoom = async (room, data) => {
+  let msgData = {...data, timestamp: Date.now()};
+  if(!msgData.params) msgData.params = {};
   
+  let m = await db.logMessage(msgData);
+  io.in(room).emit('message', {...msgData, _id: m._id});         
+
 }
 
 async function joinRoom(io, socket, data) {
@@ -170,10 +178,11 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
     }
     if(result.outputs) {
 
+      let recipients = await db.getPlayersForNode(socket.room);
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
-          emitMessage(io.in(socket.room), {
-            ...result.outputs[i], recipients: await db.getPlayersForNode(socket.room), node, board});
+          console.log("emitMessage socket.room", socket.room);
+          emitInRoom(socket.room, {...result.outputs[i], recipients, node, board});
         } else {
           emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board}); 
         }
