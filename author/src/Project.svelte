@@ -32,6 +32,33 @@
 
   export let projectId;
 
+  const createNode = async (name, boardId)=>{
+
+    let newNode = {
+      name: name,
+      board: boardId,
+      script: `function onArrive() {
+}
+
+function onMessage() {
+  
+}`,
+      multiPlayer: false,
+      posX: 100,
+      posY: 100
+    }
+    let response = await fetch("/api/scriptNode", {
+        method: "POST",
+        headers: {'authorization': $token},
+        body: JSON.stringify(newNode)
+    });
+    if(response.ok) {
+      let json = await response.json();
+      console.log(json);
+      return json._id;
+    }
+  }
+
 </script>
 
 
@@ -45,6 +72,7 @@
     {setEditNodeId}
     {playerNodeId}
     {projectId}
+    {createNode}
   />
 </div>
 
@@ -56,6 +84,7 @@
     {setPlayerNodeId}
     {reloadBoardData}
     {currentBoardData}
+    {createNode}
   />
   {/if}
 </div>

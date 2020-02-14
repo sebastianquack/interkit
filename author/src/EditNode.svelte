@@ -14,6 +14,8 @@
   export let setPlayerNodeId;
   export let reloadBoardData;
   export let currentBoardData;
+
+  export let createNode;
   
   let scriptNode = {};
   let scriptNodeEdit = {};
@@ -49,7 +51,7 @@
     if(startingNodeChanged) {
       let response;
       console.log("startingNodeEdit", startingNodeEdit);
-      
+
       if(startingNodeEdit) {
         response = await fetch("/api/board/" + currentBoardData._id, {
         method: "PUT",
@@ -75,13 +77,29 @@
     
     if(changed) {
       //console.log("save", scriptNodeEdit);
+
+      let connectedNodeNames = [];
+      let array1;
+      let regex1 = /(?:moveTo\(\")(.+)(?:\"\))/g    
+      while ((array1 = regex1.exec(scriptNodeEdit.script)) !== null) {
+        connectedNodeNames.push(array1[1]);
+      } 
+      let currentNodeNames = currentBoardData.scriptNodes.map((n)=>n.name);
+      let newNodes = connectedNodeNames.filter((n)=>currentNodeNames.indexOf(n) == -1);
+      console.log("newNodes", newNodes);
+
+      newNodes.forEach(async (n)=>{
+        await createNode(n, currentBoardData._id)
+      })
+
       let response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
         method: 'PUT',
         headers: {'authorization': $token},
         body: JSON.stringify({
           name: scriptNodeEdit.name, 
           script: scriptNodeEdit.script,
-          multiPlayer: scriptNodeEdit.multiPlayer
+          multiPlayer: scriptNodeEdit.multiPlayer,
+          board: currentBoardData._id,
         })
       });
       if(response.ok) {
@@ -89,6 +107,7 @@
         scriptNode = {...newNode};
         scriptNodeEdit = {...newNode};
         editTitle = false;
+
         reloadBoardData();
       }  
     }

@@ -47,7 +47,10 @@ module.exports = function (mongoose) {
       console.log("found connections: ", connectedNodeNames);
 
       for(let i = 0; i < connectedNodeNames.length; i++) {
-        let n = await RestHapi.list(RestHapi.models.scriptNode, {name: connectedNodeNames[i]}, Log);
+        let n = await RestHapi.list(RestHapi.models.scriptNode, {
+          name: connectedNodeNames[i],
+          board: payload.board
+        }, Log);
         if(n.docs.length == 1) {
           connectedNodeIds.push(n.docs[0]._id);
         }

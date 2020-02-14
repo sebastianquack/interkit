@@ -20,6 +20,8 @@
 
   export let playerNodeId;
   export let projectId;
+
+  export let createNode;
   
   let boards = [];
   let editMode = false;
@@ -126,34 +128,11 @@
   }
 
   const addNode = async ()=>{
-
-    let newNode = {
-      name: "new" + Math.floor(Math.random() * 1000),
-      board: currentBoardData._id,
-      script: `function onArrive() {
-  
-}
-
-function onMessage() {
-  
-}`,
-      multiPlayer: false,
-      posX: 100,
-      posY: 100
-    }
-    let response = await fetch("/api/scriptNode", {
-        method: "POST",
-        headers: {'authorization': $token},
-        body: JSON.stringify(newNode)
-      });
-      if(response.ok) {
-        let json = await response.json();
-        console.log(json);
-        setEditNodeId(json._id);
-        loadBoardData();
-      }
+    let id = await createNode("new" + Math.floor(Math.random() * 1000), currentBoardData._id);
+    setEditNodeId(id);
+    loadBoardData();
   }
-  
+
   let attachmentManagerOpen = false;
 
   onMount(loadBoardList);
