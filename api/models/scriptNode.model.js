@@ -1,6 +1,8 @@
 const RestHapi = require('rest-hapi')
 const Log = RestHapi.getLogger('connections');
 
+const beautify = require('js-beautify');
+
 module.exports = function (mongoose) {
   let modelName = "scriptNode";
   let Types = mongoose.Schema.Types;
@@ -36,6 +38,9 @@ module.exports = function (mongoose) {
     console.log("payload", payload);
 
     if(typeof payload.script !== "undefined") {
+
+      // beautify
+      payload.script = beautify(payload.script, { indent_size: 2 });
 
       let connectedNodeNames = [];
       let connectedNodeIds = [];

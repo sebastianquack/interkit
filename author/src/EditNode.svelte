@@ -42,6 +42,8 @@
       if(confirm("save " + scriptNodeEdit.name + "?")) {
         await save();
         loadNoad(nodeId);
+      } else {
+        loadNoad(nodeId);
       }
     } else {
       loadNoad(nodeId);
