@@ -37,10 +37,21 @@
     }   
   }
 
+  const saveAndLoad = async (nodeId)=>{
+    if(changed) {
+      if(confirm("save " + scriptNodeEdit.name + "?")) {
+        await save();
+        loadNoad(nodeId);
+      }
+    } else {
+      loadNoad(nodeId);
+    }
+  }
+
   // run whenever editNodeId prop changes
-  $: {
+  $: {    
      //console.log('editNodeId changed', editNodeId);
-     loadNoad(editNodeId);
+     saveAndLoad(editNodeId);
   }
 
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
