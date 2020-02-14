@@ -17,6 +17,7 @@
       lineNumbers: true,
       mode:  "javascript",
       readOnly: readOnly ? true : false,
+      lineWrapping: true
     });
     editor.on("change", ()=>{editorChanged = true; code = editor.getValue()})
   })
