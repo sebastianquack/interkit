@@ -38,29 +38,29 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     sandbox: {
       player: {
         ...varCache.player,
-        set: (key, value) => { 
-          varCache.player[key] = value;
+        set: function (key, value) { 
+          this[key] = value;
           db.setVar("player", {playerId}, key, value); 
         },
       },
       here: {
         ...varCache.node,
-        set: (key, value) => { 
-          varCache.node[key] = value;
+        set: function (key, value) { 
+          this[key] = value;
           db.setVar("node", {nodeId: node._id}, key, value); 
         },
       },
       playerHere: {
         ...varCache.playerNode,
-        set: (key, value) => { 
-          varCache.playerNode[key] = value;
+        set: function (key, value) { 
+          this[key] = value;
           db.setVar("playerNode", {playerId, nodeId: node._id}, key, value); 
         },
       },
       board: {
         ...varCache.board,
-        set: (key, value) => { 
-          varCache.board[key] = value;
+        set: function (key, value) { 
+          this[key] = value;
           db.setVar("board", {boardId: node.board}, key, value); 
         },
       },
