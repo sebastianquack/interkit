@@ -9,6 +9,7 @@ export let googleReady;
 export let onClose;
 export let map;
 export let markerItems;
+export let setItemModal;
 
 let mapContainer;
 let markers = [];
@@ -60,7 +61,7 @@ const initMarkers = ()=>{
       })
         
       marker.addListener('click', ()=> {
-        console.log(p);
+        setItemModal(p);
       });
 
       markers.push(marker)
@@ -80,7 +81,7 @@ afterUpdate(()=>{
   }
 
   if(map) {
-    console.log("todo: compare marker items");
+    //console.log("todo: compare marker items");
     initMarkers();
   }
 })
@@ -134,7 +135,7 @@ const getUserPosition = ()=> {
 <div id="map-container" style="visibility: {visible ? 'visible' : 'hidden'}">     
   <div id="map" bind:this={mapContainer}></div>
   <img id="locate-button" alt="locat button" src="locate.png" on:click={getUserPosition} />
-  <button id="close" on:click={onClose}>open chat</button>
+  <button id="close" on:click={onClose}>close</button>
 </div>
 
 

@@ -12,7 +12,6 @@ module.exports = function (mongoose) {
     type: {
       type: Types.String,
       required: true,
-      enum: ['marker'],
     },
     project: {
       type: Types.ObjectId,

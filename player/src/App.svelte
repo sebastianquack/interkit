@@ -7,6 +7,8 @@
   import Chat from '../../shared/Chat.svelte';
   import { initSocket, getPlayerId } from '../../shared/socketClient.js';
   import Map from './Map.svelte';
+  import Archive from './Archive.svelte';
+  import Modal from './Modal.svelte';
   import { getConfig } from '../../shared/util.js';
 
   let googleReady = false;
@@ -24,6 +26,10 @@
 
   let map;
   let markerItems;
+  let items;
+  let itemModal = null;
+
+  const setItemModal = (item)=>itemModal = item;
 
   const checkForUnseenMessages = async () => {
     for(let i = 0; i < boards.length; i++) {
@@ -54,8 +60,15 @@
     // get markers for this player and this project
     let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
     let itemsJson = await itemsRes.json();
-    markerItems = itemsJson.docs.filter(m=>m.type == "marker");
-    console.log("markerItems", markerItems);
+    markerItems = itemsJson.docs.filter(m=>m.type == "location");
+    //console.log("markerItems", markerItems);
+  }
+
+  const loadItems = async () => {
+    let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
+    let itemsJson = await itemsRes.json();
+    items = itemsJson.docs;
+    //console.log("items", items);
   }
 
   onMount(async () => {
@@ -104,19 +117,28 @@
 
   let mainView = "chat";
 
+  const openChat = async () => {
+    mainView = "chat"
+  }
+  
   const openMap = async () => {
     await loadMarkers();
-    mainView="map";
+    mainView = "map";
   }
-    
+
+  const openArchive = async () => {
+    await loadItems();
+    mainView = "archive";
+  }
+
 </script>
 
 <div class="main-container">
 
 {#if !loading}
 
-  <div class="top-menu">
-    {#if playerNodeId}
+  <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
+    {#if playerNodeId && mainView == "chat"}
         {#if !directURL}
           <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
         {/if}
@@ -130,9 +152,9 @@
         {/if}
     {/if}
     <div class="menu-buttons-right">
-      {#if mainView == "chat"}
-        <button class="map-button" on:click={openMap}>open map</button>
-      {/if}
+      <button disabled={mainView == "chat"} on:click={openChat}>chat</button>
+      <button disabled={mainView == "archive"} on:click={openArchive}>archive</button>
+      <button disabled={mainView == "map"} on:click={openMap}>map</button>
     </div>
   </div>
 
@@ -141,7 +163,7 @@
         <ul class="board-select">
           {#each boards as board}
             <li on:click={()=>{launch(board)}}>
-              {board.name} - {board.description}
+              {board.name} {#if board.description} - {board.description} {/if}
               {#if board.unSeenMessages } <small>(unread messages: {board.unSeenMessages})</small> {/if} 
             </li>
           {/each}
@@ -153,6 +175,7 @@
           loadHistory={true}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
+          {setItemModal}
         />
       {/if}
   </div>
@@ -161,8 +184,22 @@
     bind:map={map}
     {googleReady}
     visible={mainView=="map"}
-    onClose={()=>mainView="chat"}
+    onClose={openChat}
     {markerItems}
+    {setItemModal}
+  />
+
+  <Archive
+    visible={mainView=="archive"}
+    onClose={openChat}
+    {items}
+    {setItemModal}
+  />
+
+  <Modal
+    visible={itemModal}
+    item={itemModal}
+    onClose={() => itemModal = null}
   />
 
 {/if}
@@ -170,6 +207,15 @@
 </div>
 
 <style>
+
+  button {
+    color: #999;
+  }
+
+  button:disabled,
+  button[disabled] {
+    color: #000;
+  }
 
   .main-container {
     position: absolute;
@@ -190,12 +236,16 @@
 
   .top-menu {
     height: 55px;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     padding: 10px;
     width: 100%;
     box-sizing: border-box;
+    z-index: 10;
+  }
+
+  .highlight {
     background-color: lightgreen;
     border-bottom: 1px solid gray;
   }
@@ -210,7 +260,7 @@
     top: 10px;
   }
 
-  button.map-button {
+  .menu-buttons-right button {
     box-shadow: 2px 2px #ddd;
   }
 
