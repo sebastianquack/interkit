@@ -48,6 +48,10 @@ module.exports = function (mongoose) {
         project: {
           type: "MANY_ONE",
           model: "project"
+        },
+        items: {
+          type: "MANY_MANY",
+          model: "item"
         }
       },
 

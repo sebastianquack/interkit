@@ -8,13 +8,12 @@ export let visible;
 export let googleReady;
 export let onClose;
 export let map;
-
-let places = [];
+export let markerItems;
 
 let mapContainer;
 let markers = [];
 let userMarker;
-
+let fitBoundsDone = false;
 
 const initGoogleMap = ()=>{
     map = new google.maps.Map(mapContainer, {
@@ -25,7 +24,9 @@ const initGoogleMap = ()=>{
       mapTypeControl: false,
       styles: mapStyles // change default map styles
     });
+}
 
+const initMarkers = ()=>{
     var latlngbounds = new google.maps.LatLngBounds();
 
     markers.forEach((m)=>{
@@ -33,16 +34,16 @@ const initGoogleMap = ()=>{
     })
     markers = [];
 
-    places.forEach((p, index)=>{      
+    markerItems.forEach((p, index)=>{      
 
-      let placePosition = {lat: p.lat, lng: p.lon};
+      let placePosition = {lat: p.value.lat, lng: p.value.lng};
 
       let icon = {
-        url: "/images/marker.png", // url
+        url: "/marker.png", // url
         scaledSize: {height: 50, width: 50}, // scaled size
         origin: {x:0, y:0}, // origin
         anchor: {x:25, y:50}, // anchor
-        labelOrigin: new google.maps.Point(25 + (p.labelOffsetX ? p.labelOffsetX : 0), 60 + (p.labelOffsetY ? p.labelOffsetY : 0))
+        labelOrigin: new google.maps.Point(25, 60)
       };
     
       // add markers for user
@@ -51,9 +52,9 @@ const initGoogleMap = ()=>{
         icon: icon,
         label: {
           color: "#000",
-          fontFamily: "thin",
+          fontFamily: "sans-serif",
           fontSize: "16px",
-          text: p["label_" + this.props.locale].toUpperCase(),
+          text: p.key,
         },
         map
       })
@@ -67,14 +68,20 @@ const initGoogleMap = ()=>{
 
     });
     
-    map.fitBounds(latlngbounds);
-    //getUserPosition();
-      
+    if(!fitBoundsDone) {
+      map.fitBounds(latlngbounds);
+      fitBoundsDone = true;
+    }
 }
 
 afterUpdate(()=>{
   if(!map && googleReady) {
     initGoogleMap();
+  }
+
+  if(map) {
+    console.log("todo: compare marker items");
+    initMarkers();
   }
 })
 

@@ -202,6 +202,7 @@ const App = () =>
     <Resource name="message" list={MessageList} edit={MessageEdit} create={MessageCreate}/>
     <Resource name="nodeLog" list={ListGuesser}/>
     <Resource name="project" list={ListGuesser}/>
+    <Resource name="item" list={ListGuesser}/>
   </Admin>
 
 export default App;

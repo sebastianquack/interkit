@@ -23,6 +23,7 @@
   let currentBoard = null;
 
   let map;
+  let markerItems;
 
   const checkForUnseenMessages = async () => {
     for(let i = 0; i < boards.length; i++) {
@@ -42,11 +43,19 @@
     //console.log(boards);
   }
 
-  const openMapTo = (item) => {
-    console.log(item);
+  const openMapTo = (chatItem) => {
+    console.log(chatItem);
     mainView = "map";
-    map.panTo(item.attachment);
+    map.panTo(chatItem.attachment);
     map.setZoom(17);
+  }
+
+  const loadMarkers = async () => {
+    // get markers for this player and this project
+    let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
+    let itemsJson = await itemsRes.json();
+    markerItems = itemsJson.docs.filter(m=>m.type == "marker");
+    console.log("markerItems", markerItems);
   }
 
   onMount(async () => {
@@ -66,6 +75,7 @@
       projectId = await getConfig("defaultProject");
     }
     console.log("projectId", projectId);
+
     
     const res = await fetch("/api/board?$where=" + JSON.stringify(
       {"listed": true, "project": projectId}));
@@ -80,6 +90,8 @@
       console.log("opening starting node");
     }
 
+    await loadMarkers();
+
     loading = false;
   });
 
@@ -91,6 +103,11 @@
   }
 
   let mainView = "chat";
+
+  const openMap = async () => {
+    await loadMarkers();
+    mainView="map";
+  }
     
 </script>
 
@@ -114,7 +131,7 @@
     {/if}
     <div class="menu-buttons-right">
       {#if mainView == "chat"}
-        <button class="map-button" on:click={()=>mainView="map"}>open map</button>
+        <button class="map-button" on:click={openMap}>open map</button>
       {/if}
     </div>
   </div>
@@ -145,6 +162,7 @@
     {googleReady}
     visible={mainView=="map"}
     onClose={()=>mainView="chat"}
+    {markerItems}
   />
 
 {/if}

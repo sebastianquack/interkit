@@ -9,7 +9,13 @@ module.exports = function (mongoose) {
     routeOptions: {
       readAuth: false,
       createAuth: false,
-    }
+      associations: {
+        items: {
+          type: "MANY_MANY",
+          model: "item"
+        }
+      }
+    },
   };
   
   return Schema;

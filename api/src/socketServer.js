@@ -156,6 +156,9 @@ exports.init = (listener) => {
         });
       }
       handleScript(io, socket, currentNode, data.sender, "onMessage", data);
+
+
+      // maybe todo here: add connected bots -> check if bots are connected and on what node, handleSscript
     });
   
   });

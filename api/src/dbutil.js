@@ -34,18 +34,13 @@ exports.setVar = async (scope, refs, key, value) => {
 
     // create
     if(variable.docs.length == 0) {
-      
       await RestHapi.create(RestHapi.models.variable, {...where, value}, Log);  
-
     // update
     } else {
-
       await RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
         value: value 
       }, Log);  
-
     }
-
   }
 }
 
@@ -87,6 +82,12 @@ exports.getBoard = async (boardId) => {
   return board;
 }
 
+exports.getProjectForNode = async (node) => {
+  let board = await exports.getBoard(node.board);
+  let project = await RestHapi.find(RestHapi.models.project, board.project, null, Log);
+  return project;
+}
+
 exports.logMessage = async (data) => {
   console.log("logMessage", data);
   let message = await RestHapi.create(RestHapi.models.message, data, Log);  
@@ -105,8 +106,7 @@ exports.logPlayerToNode = async (playerId, node) => {
     await RestHapi.create(RestHapi.models.nodeLog, {...query, node: mongoose.Types.ObjectId(node._id)}, Log);   
   } else {
     await RestHapi.update(RestHapi.models.nodeLog, nodeLogItem.docs[0]._id, {node: mongoose.Types.ObjectId(node._id)}, Log);   
-  }
-  
+  }  
 }
 
 exports.getPlayersForNode = async (nodeId) => {
@@ -117,3 +117,74 @@ exports.getPlayersForNode = async (nodeId) => {
   let playerIds = nodeLogItem.docs.map((doc)=>doc.player);
   return playerIds;
 }
+
+// creates or update an item
+exports.createOrUpdateItem = async (payload, projectId) => {
+  let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
+  if(items.docs.length == 0) {
+    console.log("creating item with", payload, projectId);
+    let item = await RestHapi.create(RestHapi.models.item, {...payload, project: projectId}, Log);  
+  }
+  else if(items.docs.length == 1) {
+    await RestHapi.update(RestHapi.models.item, items.docs[0]._id, {...payload, project: projectId}, Log);
+  }
+}
+
+// award item to a player
+exports.awardItemToPlayer = async (playerId, projectId, key) => {
+  let items = await RestHapi.list(RestHapi.models.item, {key: key, project: projectId}, Log)
+  if(items.docs.length == 1) {
+    let item = items.docs[0];
+    await RestHapi.addOne(
+      RestHapi.models.player,
+      playerId,
+      RestHapi.models.item,
+      item._id,
+      "items",
+      {},
+      Log
+    )
+    console.log("awardItemToPlayer - success")
+  } else {
+    console.log("awardItemToPlayer - item not found")
+  }
+}
+
+// remove item from a player
+exports.removeItemFromPlayer = async (playerId, projectId, key) => {
+  console.log("removeItemFromPlayer", key);
+  let items = await RestHapi.list(RestHapi.models.item, {key: key, project: projectId}, Log)
+  if(items.docs.length == 1) {
+    let item = items.docs[0];
+    await RestHapi.removeOne(
+      RestHapi.models.player,
+      playerId,
+      RestHapi.models.item,
+      item._id,
+      "items",
+      {},
+      Log
+    )
+    console.log("removeItemFromPlayer - success")
+  } else {
+    console.log("removeItemFromPlayer - item not found")
+  }
+}
+
+
+// retrieves a players items
+exports.getItemsForPlayer = async (playerId) => {
+  let items = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
+  console.log("retrieved items for player", playerId, items.docs);
+  return items.docs;
+}
+
+
+
+
+
+
+
+
+
+
