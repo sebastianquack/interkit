@@ -77,8 +77,10 @@
       if(!item.params) item.params = {};
 
       if(item.params.moveTo) {
-        setPlayerNodeId(item.params.moveTo);
-        setEditNodeId(item.params.moveTo);
+        setTimeout(()=>{
+          setPlayerNodeId(item.params.moveTo);
+          setEditNodeId(item.params.moveTo);  
+        }, item.params.moveToDelay ? item.params.moveToDelay : 0);
       }
 
       if(item.attachment.mediatype) {

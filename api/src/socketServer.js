@@ -203,18 +203,26 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
           let newNode = newNodes.docs[0];
           console.log("moving player to room " + newNode.name);
           if(newNode._id != currentNode._id) {
-            await socket.leave(socket.room);
+            
+            // do we need this? apparently not
+            //await socket.leave(socket.room);
 
             // inform others in the old room 
             /*if(currentNode.multiPlayer) {
               io.in(socket.room).emit('message', {system: true, message: "a human left to " + newNode.name});   
             }*/
             
-            socket.room = newNode._id;
-            await socket.join(newNode._id);
+            // do we need this? apparently not
+            //socket.room = newNode._id;
+            //await socket.join(newNode._id);
+            
             // inform sender of new room
             console.log("emit moveTo message");
-            emitMessage(socket, {system: true, params: {moveTo: newNode._id}, recipients: [playerId], node, board});
+            emitMessage(socket, {system: true, params: {
+              moveTo: newNode._id,
+              moveToDelay: result.moveToDelay,
+            }, 
+            recipients: [playerId], node, board});
             //socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
             // inform others in the new room 

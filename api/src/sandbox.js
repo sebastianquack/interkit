@@ -70,7 +70,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       option: (message) => { result.outputs.push({message, params: {option: true}}); },       
       image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
       audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},
-      moveTo: (room) => { result.moveTo = room; },
+      moveTo: (room, delay = 0) => { result.moveTo = room; result.moveToDelay = delay; },
       createOrUpdateItem: (payload) => { db.createOrUpdateItem(payload, project._id) },
       awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
       removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },

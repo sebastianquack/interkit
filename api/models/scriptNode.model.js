@@ -45,7 +45,7 @@ module.exports = function (mongoose) {
       let connectedNodeNames = [];
       let connectedNodeIds = [];
 
-      let regex1 = /(?:moveTo\(\")(.+)(?:\"\))/g    
+      let regex1 = /(?:moveTo\(\")(.+)(?:\")/g    
       while ((array1 = regex1.exec(payload.script)) !== null) {
         connectedNodeNames.push(array1[1]);
       } 
