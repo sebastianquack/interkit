@@ -34,7 +34,7 @@
   left: 0;
   top: 0;
   background-color: rgb(0,0,0,0.75);
-  padding: 40px;
+  padding: 10px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
