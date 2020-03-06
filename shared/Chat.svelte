@@ -15,8 +15,8 @@
   export let updateUnseenMessages;
   export let mapClick;
 
-  export let setNotificationItem; 
-  export let setLockScreen;
+  export let setNotificationItem = ()=>{}; 
+  export let setLockScreen = ()=>{};
   
   let currentPlayerNode = null;
   
