@@ -48,7 +48,7 @@ const reTry = (action) => {
 
 // ask server to put us in a room
 export const joinRoom = (room, execOnArrive=true) => {
-  //console.log("joinRoom");
+  console.log("joinRoom", room);
   reTry(()=>{
     socket.emit('joinRoom', {
       room, 

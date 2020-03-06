@@ -40,10 +40,6 @@
     
     inputValue = "";
 
-    let response = await fetch("/api/scriptNode/" + nodeId);
-    currentPlayerNode = await response.json();
-    console.log("init currentPlayerNode", currentPlayerNode._id);
-
     fileServerURL = await getConfig("fileServerURL");
     console.log(fileServerURL);
 
@@ -53,11 +49,14 @@
     // if loadHistory -> pass into items
     if(loadHistory && !initialHistoryLoaded) {
 
-      loadMoreItems();
+      let response = await fetch("/api/scriptNode/" + nodeId);
+      let requestedNode = await response.json();
+    
+      loadMoreItems(requestedNode.board);
       scrollUp();
 
       // find where player is now on this board
-      response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentPlayerNode.board);
+      response = await fetch("/api/nodeLog?player="+playerId+"&board="+requestedNode.board);
       let lastNode = await response.json();
       console.log("lastNode", lastNode);
       if(lastNode.docs.length) {
@@ -65,6 +64,16 @@
         execOnArrive = false;
       }
     }
+
+    if(joinNode != nodeId) {
+      setPlayerNodeId(joinNode);
+      return
+    }
+
+    let response = await fetch("/api/scriptNode/" + joinNode);
+    let currentPlayerNode = await response.json();
+
+    //console.log("init currentPlayerNode", currentPlayerNode._id, currentPlayerNode.name);
 
     joinRoom(joinNode, execOnArrive);
 
@@ -81,6 +90,8 @@
 
       if(item.params.moveTo) {
         setTimeout(()=>{
+          console.log("playerNodeId", playerNodeId);
+          console.log("moveTo", item.params.moveTo);
           setPlayerNodeId(item.params.moveTo);
           setEditNodeId(item.params.moveTo);  
         }, item.params.moveToDelay ? item.params.moveToDelay : 0);
@@ -151,10 +162,10 @@
     }
   }
 
-  const loadMoreItems = async () => {
+  const loadMoreItems = async (board) => {
       console.log("loading items earlier than", showItemsSince);  
       let query = {
-        board: currentPlayerNode.board,
+        board,
         recipients: playerId,
         timestamp: {$lt: showItemsSince}
       }
@@ -213,7 +224,8 @@
   }
 
   onDestroy(() => {
-    leaveRoom(currentPlayerNode._id);
+    if(currentPlayerNode)
+      leaveRoom(currentPlayerNode._id);
     stopListening();
   })
 
