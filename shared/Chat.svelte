@@ -33,6 +33,7 @@
   let showMoreItems = false;
   let beginningHistory = false;
   let initialHistoryLoaded = false;
+  let execOnArrive = true;
 
   const init = async (nodeId)=> {
 
@@ -44,7 +45,6 @@
     console.log(fileServerURL);
 
     let joinNode = nodeId;
-    let execOnArrive = true;
 
     // if loadHistory -> pass into items
     if(loadHistory && !initialHistoryLoaded) {
@@ -71,7 +71,7 @@
     }
 
     let response = await fetch("/api/scriptNode/" + joinNode);
-    let currentPlayerNode = await response.json();
+    currentPlayerNode = await response.json();
 
     //console.log("init currentPlayerNode", currentPlayerNode._id, currentPlayerNode.name);
 
@@ -92,6 +92,7 @@
         setTimeout(()=>{
           console.log("playerNodeId", playerNodeId);
           console.log("moveTo", item.params.moveTo);
+          execOnArrive = true;
           setPlayerNodeId(item.params.moveTo);
           setEditNodeId(item.params.moveTo);  
         }, item.params.moveToDelay ? item.params.moveToDelay : 0);
