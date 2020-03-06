@@ -3,13 +3,25 @@
   export let onClose;
   export let visible;
   export let item;
+  export let fileServerURL;
 
 </script>
 
 <div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
   <div id="content" on:click|stopPropagation>
     <button id="close" on:click={onClose}>close</button>
-    <h2>{item ? item.key : ""}</h2>
+    {#if item}
+      <h2>{item.key}</h2>
+      <p>{item.value.description ? item.value.description : ""}</p>
+      {#if item.value.image}
+        <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>
+      {/if}
+      {#if item.value.sound} 
+        <audio controls>
+          <source src={fileServerURL + item.value.sound} type="audio/mpeg">
+        </audio> 
+      {/if}
+    {/if}
   </div>
 </div>
 
@@ -37,6 +49,10 @@
   padding: 20px;
   box-sizing: border-box;
   flex-grow: 0.5;
+}
+
+#content img {
+  width: 100%;
 }
 
 #close {

@@ -9,6 +9,7 @@
   import Map from './Map.svelte';
   import Archive from './Archive.svelte';
   import Modal from './Modal.svelte';
+  import LockScreen from './LockScreen.svelte';
   import { getConfig } from '../../shared/util.js';
 
   let googleReady = false;
@@ -26,8 +27,19 @@
 
   let map;
   let markerItems;
-  let items;
+  let documentItems;
   let itemModal = null;
+
+  let showLockScreen = false;
+  const setLockScreen = ()=>showLockScreen=true;
+  let notificationItem = null;
+  const setNotificationItem = (item)=>{
+    console.log(item);
+    if(showLockScreen)
+      notificationItem = item;
+  }
+
+  let fileServerURL = "";
 
   const setItemModal = (item)=>itemModal = item;
 
@@ -57,18 +69,15 @@
   }
 
   const loadMarkers = async () => {
-    // get markers for this player and this project
     let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
     let itemsJson = await itemsRes.json();
     markerItems = itemsJson.docs.filter(m=>m.type == "location");
-    //console.log("markerItems", markerItems);
   }
 
-  const loadItems = async () => {
+  const loadDocuments = async () => {
     let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
     let itemsJson = await itemsRes.json();
-    items = itemsJson.docs;
-    //console.log("items", items);
+    documentItems = itemsJson.docs.filter(m=>m.type == "document");
   }
 
   onMount(async () => {
@@ -105,6 +114,8 @@
 
     await loadMarkers();
 
+    fileServerURL = await getConfig("fileServerURL");
+
     loading = false;
   });
 
@@ -127,7 +138,7 @@
   }
 
   const openArchive = async () => {
-    await loadItems();
+    await loadDocuments();
     mainView = "archive";
   }
 
@@ -176,6 +187,8 @@
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
           {setItemModal}
+          {setNotificationItem}
+          {setLockScreen}
         />
       {/if}
   </div>
@@ -192,15 +205,27 @@
   <Archive
     visible={mainView=="archive"}
     onClose={openChat}
-    {items}
+    items={documentItems}
     {setItemModal}
   />
 
   <Modal
     visible={itemModal}
     item={itemModal}
+    {fileServerURL}
     onClose={() => itemModal = null}
   />
+
+
+  <LockScreen
+    {notificationItem}
+    visible={showLockScreen}
+    onClose={()=>{
+      showLockScreen = false;
+      notificationItem = null;
+    }}
+  />
+
 
 {/if}
 
@@ -222,7 +247,7 @@
     top: 0;
     width: 100%;
     height: 100vh;
-    max-width: 600px;
+    max-width: 500px;
     background-color: white;
     left: 50%;
     transform: translate(-50%, 0);

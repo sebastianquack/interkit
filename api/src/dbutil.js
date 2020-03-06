@@ -126,6 +126,7 @@ exports.createOrUpdateItem = async (payload, projectId) => {
     let item = await RestHapi.create(RestHapi.models.item, {...payload, project: projectId}, Log);  
   }
   else if(items.docs.length == 1) {
+    console.log("updating item with", payload, projectId);
     await RestHapi.update(RestHapi.models.item, items.docs[0]._id, {...payload, project: projectId}, Log);
   }
 }
@@ -179,7 +180,17 @@ exports.getItemsForPlayer = async (playerId) => {
   return items.docs;
 }
 
-
+/*
+exports.getItemForPlayerByKey = asnyc (playerId, key) => {
+  let item = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {key}, Log);
+  if(item.docs.length) {
+    console.log("retrieved item for player", item.docs[0]);
+    return item.docs[0];
+  } else {
+    return null;
+  }
+}
+*/
 
 
 

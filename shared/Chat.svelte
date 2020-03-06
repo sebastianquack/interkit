@@ -14,6 +14,9 @@
   export let loadHistory = false;
   export let updateUnseenMessages;
   export let mapClick;
+
+  export let setNotificationItem; 
+  export let setLockScreen;
   
   let currentPlayerNode = null;
   
@@ -83,6 +86,12 @@
         }, item.params.moveToDelay ? item.params.moveToDelay : 0);
       }
 
+      if(item.params.interfaceCommand) {
+        if(item.params.interfaceCommand == "lock") {
+          setLockScreen();
+        }
+      }
+
       if(item.attachment.mediatype) {
         item.side = "left";
         if(item.attachment.mediatype == "image") {
@@ -110,6 +119,11 @@
         items.sort((a,b)=>a.timestamp-b.timestamp);
         items = items;
         scrollUp();
+
+        setNotificationItem({...item, 
+          side: isSystemMessage ? "system" : "left",
+          placeholder: false,
+        });
 
         if(showPlaceholder)
           setTimeout(() => {
@@ -178,6 +192,8 @@
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};
     if(!rawItem.params) rawItem.params = {};
+
+    if(rawItem.params.interfaceCommand) return null;
 
     if(rawItem.system && rawItem.params.moveTo) return null;
     

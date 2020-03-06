@@ -4,15 +4,20 @@
   export let visible;
   export let items = [];
   export let setItemModal;
-
+  
+  let icons = {
+    "location": "marker.png",
+    "document": "doc_icon.png"
+  }
 </script>
 
 <div id="container" style="visibility: {visible ? 'visible' : 'hidden'}">     
-  <ul>
     {#each items as item}
-      <li on:click={()=>setItemModal(item)}>{item.key} ({item.type})</li>
+      <div class="item" on:click={()=>setItemModal(item)}>
+        <img src={icons[item.type]} alt="item icon"/>
+        <span>{item.key}</span>
+      </div>
     {/each}
-  </ul>
 </div>
 
 <style>
@@ -36,8 +41,29 @@
   box-shadow: 2px 2px #ddd;
 }
 
-li:hover {
+div.item {
+  float: left;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.item img {
+  height: 50px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.item span {
+  width: 100%;
+  text-align: center;
+  display: inline-block;
+}
+
+div.item:hover {
   cursor: pointer;
 }
+
 
 </style>

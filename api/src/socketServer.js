@@ -191,6 +191,13 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
         }
       }
 
+      if(result.interfaceCommand) {
+        emitMessage(socket, {params: {
+              interfaceCommand: result.interfaceCommand
+            }, 
+            recipients: [playerId], node, board});  
+      }
+
       if(result.moveTo) {
         
         let newNodes = await RestHapi.list(RestHapi.models.scriptNode, {
