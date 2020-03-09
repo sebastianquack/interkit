@@ -113,6 +113,7 @@
           item.attachment.audioSrc = fileServerURL + item.attachment.filename;
         }
         items.push(item);
+        setNotificationItem(item);
         items.sort((a,b)=>a.timestamp-b.timestamp);
         items = items; 
         console.log(items);  
