@@ -234,7 +234,7 @@
   }
 
   #toggle-attachment-manager {
-    margin-right: 5px;
+    margin-right: 10px;
   }
 
   h2 small {

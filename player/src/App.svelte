@@ -22,6 +22,7 @@
   let playerNodeId = null;
   let directURL = false;
   let loading = true;
+  let empty = false;
   let boards = [];
   let currentBoard = null;
 
@@ -95,28 +96,33 @@
     let projectId = searchParams.get("project");
     if(!projectId) {
       projectId = await getConfig("defaultProject");
+      if(projectId == "") {
+        projectId = null;
+      }
     }
     console.log("projectId", projectId);
-    if(!projectId) return;
+    
+    if(!playerNodeId && projectId) {
+      const res = await fetch("/api/board?$where=" + JSON.stringify(
+        {"listed": true, "project": projectId}));
+      const json = await res.json();
+      boards = json.docs;
+      await checkForUnseenMessages();
+      
+      console.log(boards);
+      if(boards.length == 1) {
+        playerNodeId = boards[0].startingNode;
+        directURL = true;
+        console.log("opening starting node");
+      }
+    } 
 
-    
-    const res = await fetch("/api/board?$where=" + JSON.stringify(
-      {"listed": true, "project": projectId}));
-    const json = await res.json();
-    boards = json.docs;
-    await checkForUnseenMessages();
-    
-    console.log(boards);
-    if(boards.length == 1) {
-      playerNodeId = boards[0].startingNode;
-      directURL = true;
-      console.log("opening starting node");
+    if(!projectId && !playerNodeId) {
+      empty = true;
     }
 
     await loadMarkers();
-
     fileServerURL = await getConfig("fileServerURL");
-
     loading = false;
   });
 
@@ -147,7 +153,11 @@
 
 <div class="main-container">
 
-{#if !loading}
+{#if empty}   
+  <p style="margin: 16px">nothing to see here...</p>
+{/if}
+
+{#if !loading && !empty}
 
   <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
     {#if playerNodeId && mainView == "chat"}
@@ -226,11 +236,6 @@
       notificationItem = null;
     }}
   />
-
-
-{:else}
-
-<p style="margin: 16px">nothing to see here...</p>
 
 {/if}
 
