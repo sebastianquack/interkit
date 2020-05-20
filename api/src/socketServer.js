@@ -211,46 +211,49 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
           console.log("moving player to room " + newNode.name);
           if(newNode._id != currentNode._id) {
             
-            // do we need this? apparently not
-            //await socket.leave(socket.room);
-
-            // inform others in the old room 
+            
+            // inform others in the old room  
             /*if(currentNode.multiPlayer) {
               io.in(socket.room).emit('message', {system: true, message: "a human left to " + newNode.name});   
             }*/
-            
-            // do we need this? apparently not
-            //socket.room = newNode._id;
-            //await socket.join(newNode._id);
-            
-            // inform sender of new room
+
+            // tell sender to move to new room
             console.log("emit moveTo message");
-            emitMessage(socket, {system: true, params: {
+            await emitMessage(socket, {system: true, params: {
               moveTo: newNode._id,
               moveToDelay: result.moveToDelay,
             }, 
             recipients: [playerId], node, board});
-            //socket.emit('message', {system: true, message: "you are now in " + newNode.name});
 
+            /* experimental
+            if(result.moveToAll) {
+              let recipients = await db.getPlayersForNode(currentNode._id);
+              await emitInRoom(currentNode._id, {system: true, params: {
+                moveTo: newNode._id,
+                moveToDelay: result.moveToDelay,
+            }, 
+            recipients: recipients, node, board});
+            */
+    
             // inform others in the new room 
             /*if(currentNode.multiPlayer) {
               socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
             }*/
-
             //handleScript(io, socket, newNode, playerId, "onArrive");
-          } 
-        } else {
-          console.log("node " + result.moveTo + " not found");
-          emitMessage(socket, {
-            message: "node " + result.moveTo + " not found", 
-            system: true, 
-            recipients: [playerId],
-            node, board
-          });
+        
+          } else {
+            console.log("node " + result.moveTo + " not found");
+            emitMessage(socket, {
+              message: "node " + result.moveTo + " not found", 
+              system: true, 
+              recipients: [playerId],
+              node, board
+            });
+          }
         }
       }
- 
     }
+ 
   });
 
 }
