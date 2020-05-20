@@ -19,6 +19,12 @@ module.exports = function(mongoose) {
   Schema.statics = {
     collectionName: modelName,
     routeOptions: {
+      associations: {
+        projects: {
+          type: "MANY_MANY",
+          model: "project",
+        },
+      },
       create: {
         pre: function(payload, logger) {
           let hashedPassword = mongoose

@@ -1,10 +1,12 @@
 <script>
   
-  import { token } from './stores.js';
+  import { token, userId, loggedInUsername } from './stores.js';
 
   function logout() {
     console.log("logout");
     token.set(null);
+    userId.set(null);
+    loggedInUsername.set(null);
   }
 
 </script>

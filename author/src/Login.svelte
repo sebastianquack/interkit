@@ -1,8 +1,10 @@
 <script>
   
-  import { token } from './stores.js';
+  import { token, userId, loggedInUsername } from './stores.js';
   let username = "admin"
   let password = "password";
+
+  export let onLogin = ()=>{};
 
   async function submit() {
     const response = await fetch("/api/login", {
@@ -10,9 +12,12 @@
       body: JSON.stringify({username, password})
     });
     const json = await response.json();
-    //console.log(json);
-    if(json.token) {
+    if(json.token && json.user) {
       token.set(json.token);  
+      userId.set(json.user._id);
+      loggedInUsername.set(json.user.username);
+
+      await onLogin();
     } else {
       if(json.error) {
         alert(json.message);

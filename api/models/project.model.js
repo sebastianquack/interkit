@@ -11,6 +11,7 @@ module.exports = function (mongoose) {
       required: true,
       unique: true
     }
+
   });
   
   Schema.statics = {
@@ -22,6 +23,10 @@ module.exports = function (mongoose) {
           type: "ONE_MANY",
           foreignField: "project",
           model: "board"
+        },
+        users: {
+          type: "MANY_MANY",
+          model: "user",
         },
       },
     },

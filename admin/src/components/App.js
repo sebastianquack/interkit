@@ -24,6 +24,14 @@ import {
 import { dataProvider } from '../helpers/dataProvider.js';
 import authProvider from '../helpers/authProvider';
 
+const UserForm = 
+  <SimpleForm>
+      <TextInput source="username" />
+      <TextInput source="password" />
+  </SimpleForm>;
+const UserEdit = props => <Edit {...props}>{UserForm}</Edit>
+const UserCreate = props => <Create {...props}>{UserForm}</Create>;
+
 const ConfigForm = 
     <SimpleForm>
         <TextInput source="key" />
@@ -190,6 +198,15 @@ export const MessageList = props => (
     </List>
 );
 
+export const ProjectList = props => (
+    <List {...props} perPage={100}>
+        <Datagrid rowClick="edit">
+            <TextField source="id" />
+            <TextField source="name" />
+        </Datagrid>
+    </List>
+);
+
 
 const App = () => 
   <Admin dataProvider={dataProvider} authProvider={authProvider}>
@@ -201,8 +218,9 @@ const App = () =>
     <Resource name="file" list={ListGuesser} edit={FileEdit} create={FileCreate}/>
     <Resource name="message" list={MessageList} edit={MessageEdit} create={MessageCreate}/>
     <Resource name="nodeLog" list={ListGuesser}/>
-    <Resource name="project" list={ListGuesser}/>
+    <Resource name="project" list={ProjectList}/>
     <Resource name="item" list={ListGuesser}/>
+    <Resource name="user" list={ListGuesser} edit={UserEdit} create={UserCreate}/>
   </Admin>
 
 export default App;

@@ -260,7 +260,7 @@
     padding-right: 10px;
     padding-top: 10px;    
     z-index: 10;
-    border-bottom: 1px solid gray;
+    border-bottom: 4px solid gray;
   }
 
 

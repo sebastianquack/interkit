@@ -53,7 +53,7 @@
 
 <div class="container">
 
-<h3>attachments</h3><button on:click={close}>close</button><br>
+<h2>attachments</h2><button on:click={close}>close</button><br>
 
 {#if !uploadProgress}
   <input type="file" bind:this={fileInput}>
@@ -79,7 +79,7 @@
 
 <style>
 
-  h3 {
+  h2 {
     display: inline-block;
     margin-right: 5px;
   }
