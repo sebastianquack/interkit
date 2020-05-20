@@ -168,17 +168,18 @@
     <button on:click={loadBoardData}>cancel</button><br>
     <br>
   {:else}
-    <div class="edit-headline">
+    
+    {#if !attachmentManagerOpen}
+      <div class="edit-headline">
       <h2>{currentBoardData.name} 
         <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
         <a target="_blank" href="{playerURL}?board={currentBoardData._id}">external player link</a>
       </h2>
       
       <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
-      {#if !attachmentManagerOpen}<button on:click="{()=>{editMode=true}}">✎</button>{/if}
-    </div>
+      <button on:click="{()=>{editMode=true}}">✎</button>
+      </div>
 
-    {#if !attachmentManagerOpen}
       <NodeGraph
         {currentBoardData}
         nodes={currentBoardData.scriptNodes}
@@ -190,16 +191,17 @@
     {:else}
       <AttachmentManager
         boardId={currentBoardData._id}
+        close={()=>{attachmentManagerOpen = false}}
       />
     {/if}
   {/if}
   
   <br>
   {#if !currentBoardData.new}
-    {#if !attachmentManagerOpen} <button id="add-node" on:click={addNode}>add node</button> {/if}   
-    <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>
-      {!attachmentManagerOpen ? "📎" : "close"} 
-    </button> 
+    {#if !attachmentManagerOpen}    
+      <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = true}}>📎</button>
+      <button id="add-node" on:click={addNode}>add node</button>
+    {/if}
   {/if}
   
 {/if}
@@ -245,7 +247,7 @@
     position: absolute;
     bottom: 10px;
     left: 10px;
-    margin-bottom: 0px;
+    margin-bottom: 0px; 
   }
 
   .top-right {

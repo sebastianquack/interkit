@@ -5,6 +5,7 @@
   import { token } from './stores.js';
 
   export let boardId;
+  export let close;
 
   let attachments = [];
   let fileServerURL;
@@ -13,6 +14,9 @@
     let result = await fetch("/api/file");
     let json = await result.json();
     if(json) {
+       json.docs.sort(function (a, b) {
+        return a.filename.toLowerCase().localeCompare(b.filename.toLowerCase());
+      });
       attachments = json.docs;
       console.log(attachments);
     }
@@ -47,7 +51,17 @@
 
 </script>
 
-<h3>attachments</h3>
+<div class="container">
+
+<h3>attachments</h3><button on:click={close}>close</button><br>
+
+{#if !uploadProgress}
+  <input type="file" bind:this={fileInput}>
+  <button on:click={doUpload}>upload</button>
+{:else}
+  <span>{uploadProgress}</span>
+{/if}
+
 
 <ul>
   {#each attachments as attachment}
@@ -58,16 +72,30 @@
   {/each}
 </ul>
 
-{#if !uploadProgress}
-  <input type="file" bind:this={fileInput}>
-  <button on:click={doUpload}>upload</button>
-{:else}
-  <span>{uploadProgress}</span>
-{/if}
+
+</div>
 
 
 
 <style>
+
+  h3 {
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  .container {
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding-top: 3em;
+    padding-left: 10px;
+    box-sizing: border-box;
+    overflow: scroll;
+    width: 100%;
+  }
+
   span.link {
     color: rgb(0,100,200);
     text-decoration: none;
