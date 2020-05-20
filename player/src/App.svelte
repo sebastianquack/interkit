@@ -97,6 +97,7 @@
       projectId = await getConfig("defaultProject");
     }
     console.log("projectId", projectId);
+    if(!projectId) return;
 
     
     const res = await fetch("/api/board?$where=" + JSON.stringify(
@@ -226,6 +227,10 @@
     }}
   />
 
+
+{:else}
+
+<p style="margin: 16px">nothing to see here...</p>
 
 {/if}
 
