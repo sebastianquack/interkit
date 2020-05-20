@@ -252,8 +252,15 @@
 
   .top-right {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 0px;
+    right: 0px;
+    background-color: #fff;
+    width: 100%;
+    text-align: right;
+    padding-right: 10px;
+    padding-top: 10px;    
+    z-index: 10;
+    border-bottom: 1px solid gray;
   }
 
 

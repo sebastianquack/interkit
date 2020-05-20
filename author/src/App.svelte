@@ -115,7 +115,7 @@
 
   .project-title {
     position: absolute;
-    z-index: 10;    
+    z-index: 10;
   }
 
   h2 {
