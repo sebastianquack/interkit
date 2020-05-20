@@ -4,14 +4,14 @@
 
   import { token } from './stores.js';
 
-  export let boardId;
+  export let projectId;
   export let close;
 
   let attachments = [];
   let fileServerURL;
 
   const loadAttattchments = async () => {
-    let result = await fetch("/api/file");
+    let result = await fetch("/api/file?project=" + projectId);
     let json = await result.json();
     if(json) {
        json.docs.sort(function (a, b) {
@@ -34,7 +34,7 @@
     if(fileInput.files.length) {
       Array.from(fileInput.files).forEach(async (file)=>{
         uploadProgress = "";
-        let newFile = await upload(file, (progress)=>{uploadProgress = progress + "%"});
+        let newFile = await upload(file, (progress)=>{uploadProgress = progress + "%"}, projectId);
         uploadProgress = "";
         if(newFile)
           attachments = attachments.concat(newFile);

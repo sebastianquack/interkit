@@ -28,6 +28,11 @@ module.exports = function (mongoose) {
           type: "MANY_MANY",
           model: "user",
         },
+        files: {
+          type: "ONE_MANY",
+          foreignField: "project",
+          model: "file"
+        },
       },
     },
   };

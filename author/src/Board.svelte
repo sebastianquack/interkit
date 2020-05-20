@@ -140,6 +140,9 @@
 </script>
 
 <div class="top-right">
+
+  <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>📎</button>
+
   <select bind:value={currentBoardId} on:change={loadBoardData}>
     <option value={null}>select a board</option>
     <option disabled>_________</option>
@@ -188,22 +191,22 @@
         {playerNodeId}
         {currentBoardData}
       />
-    {:else}
-      <AttachmentManager
-        boardId={currentBoardData._id}
-        close={()=>{attachmentManagerOpen = false}}
-      />
     {/if}
   {/if}
   
-  <br>
   {#if !currentBoardData.new}
     {#if !attachmentManagerOpen}    
-      <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = true}}>📎</button>
       <button id="add-node" on:click={addNode}>add node</button>
     {/if}
   {/if}
   
+{/if}
+
+{#if attachmentManagerOpen}
+  <AttachmentManager
+      {projectId}
+      close={()=>{attachmentManagerOpen = false}}
+    />
 {/if}
 
 
@@ -230,6 +233,10 @@
     display: inline-block;
   }
 
+  #toggle-attachment-manager {
+    margin-right: 5px;
+  }
+
   h2 small {
     font-weight: normal;
     font-size: 10px;
@@ -241,13 +248,6 @@
     bottom: 10px;
     right: 10px;
     margin-bottom: 0px;
-  }
-
-  #toggle-attachment-manager {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    margin-bottom: 0px; 
   }
 
   .top-right {

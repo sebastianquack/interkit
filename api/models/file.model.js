@@ -12,6 +12,10 @@ module.exports = function (mongoose) {
       unique: false,
       required: true,
     },
+    project: {
+      type: Types.ObjectId,
+      ref: "project"
+    }
   });
   
   Schema.statics = {
@@ -19,7 +23,13 @@ module.exports = function (mongoose) {
     routeOptions: {
       readAuth: false,
       createAuth: false,
-      updateAuth: false
+      updateAuth: false,
+      associations: {
+        project: {
+          type: "MANY_ONE",
+          model: "project",
+        },
+      },
     }
   };
   

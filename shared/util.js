@@ -46,7 +46,7 @@ function getFileExtension (file) {
     return filenameParts[filenameParts.length - 1].toLowerCase()
 }
 
-export const upload = async (file, progress) => {
+export const upload = async (file, progress, projectId = null) => {
 
   console.log(file);
   let fileType = file.type;
@@ -82,7 +82,8 @@ export const upload = async (file, progress) => {
       method: "post", 
       body: JSON.stringify([{
         filename: fileName,
-        path: fileName
+        path: fileName,
+        project: projectId
       }])
   });
   const json = await res.json();  
