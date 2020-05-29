@@ -19,6 +19,10 @@ import {
   SelectInput,
   LongTextInput,
   DateField,
+  ReferenceArrayField,
+  ChipField,
+  SingleFieldList,
+  ArrayField
 } from 'react-admin';
 
 import { dataProvider } from '../helpers/dataProvider.js';
@@ -63,12 +67,6 @@ const PlayerForm =
     </SimpleForm>
 const PlayerEdit = props => <Edit {...props}>{PlayerForm}</Edit>;
 const PlayerCreate = props => <Create {...props}>{PlayerForm}</Create>;
-
-const ProjectForm = 
-    <SimpleForm>
-    </SimpleForm>
-const ProjectEdit = props => <Edit {...props}>{ProjectForm}</Edit>;
-const ProjectCreate = props => <Create {...props}>{ProjectForm}</Create>;
 
 
 const VarForm = 
@@ -198,11 +196,22 @@ export const MessageList = props => (
     </List>
 );
 
+const ProjectForm = 
+    <SimpleForm>
+    </SimpleForm>
+const ProjectEdit = props => <Edit {...props}>{ProjectForm}</Edit>;
+const ProjectCreate = props => <Create {...props}>{ProjectForm}</Create>;
+
 export const ProjectList = props => (
     <List {...props} perPage={100}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="name" />
+            <ArrayField source="users">
+                <SingleFieldList>
+                    <ChipField source="username" />
+                </SingleFieldList>
+            </ArrayField>
         </Datagrid>
     </List>
 );

@@ -24,6 +24,14 @@
     return -1;
   }
 
+  const saveCanvasOffset = async (x, y)=> {
+    await fetch("/api/board/" + currentBoardData._id, {
+          method: 'PUT',
+          headers: {'authorization': $token},
+          body: JSON.stringify({offsetX: x, offsetY: y})
+        })    
+  }
+
   let mouseX;
   let mouseY;
   let offsetX;
@@ -32,6 +40,12 @@
   let rectHeight = 70;
   let dragging = null;
   let dragStart;
+
+  let canvasDragging = false;
+  let canvasOffsetX = currentBoardData.offsetX ? currentBoardData.offsetX : 0;
+  let canvasOffsetY = currentBoardData.offsetY ? currentBoardData.offsetY : 0;
+  let canvasDragStartX = 0;
+  let canvasDragStartY = 0;
 
   let connections = [];
   $: {
@@ -71,6 +85,12 @@
 </script>
 
  <svg
+  on:mousedown={()=>{
+    console.log("start draggin canvas");
+    canvasDragging = true;
+    canvasDragStartX = mouseX - canvasOffsetX;
+    canvasDragStartY = mouseY - canvasOffsetY;
+  }}
   on:mousemove={(e)=>{
     mouseX = e.clientX;
     mouseY = e.clientY;         
@@ -81,16 +101,31 @@
         nodes[i].posX = mouseX - offsetX;
         nodes[i].posY = mouseY - offsetY;  
       }
+    } else {
+      console.log("drag canvas")
+      if(canvasDragging) {
+        canvasOffsetX = mouseX - canvasDragStartX;
+        canvasOffsetY = mouseY - canvasDragStartY;
+      }
     }
   }}
   on:mouseup={()=>{
-    let i = getNodeIndexById(dragging);
-    if(i > -1) {
-      saveNodePosition(nodes[i]._id, nodes[i].posX, nodes[i].posY)
+    if(dragging) {
+      let i = getNodeIndexById(dragging);
+      if(i > -1) {
+        saveNodePosition(nodes[i]._id, nodes[i].posX, nodes[i].posY)
+      }
+      dragging = null;  
     }
-    dragging = null;  
+
+    if(canvasDragging) {
+      canvasDragging = false;
+      saveCanvasOffset(canvasOffsetX, canvasOffsetY);
+    }
   }}
  >
+
+  <g transform="translate({canvasOffsetX},{canvasOffsetY})">
   
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" 
@@ -111,7 +146,7 @@
 
   {#each nodes as node, index}
       <g
-        on:mousedown={()=>{
+        on:mousedown|stopPropagation={(e)=>{
             //console.log("mousedown", node._id);
             dragging = node._id;
             dragStart = Date.now();
@@ -163,6 +198,7 @@
       />
   {/each}  
   
+  </g>
 </svg>
 
 
@@ -180,6 +216,10 @@ svg {
   height: 100%;
   width: 100%;
   z-index: 0;
+}
+
+svg:hover {
+  cursor: grab;
 }
 
 rect {

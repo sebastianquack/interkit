@@ -28,7 +28,20 @@ module.exports = function (mongoose) {
     project: {
       type: Types.ObjectId,
       ref: "project"
+    },
+    offsetX: {
+      type: Types.Number,
+      default: 0
+    },
+    offsetY: {
+      type: Types.Number,
+      default: 0
+    },
+    zoom: {
+      type: Types.Number,
+      default: 1
     }
+
   });
   
   Schema.statics = {
