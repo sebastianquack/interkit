@@ -32,6 +32,14 @@
         })    
   }
 
+  const saveCanvasZoom = async (z)=> {
+    await fetch("/api/board/" + currentBoardData._id, {
+          method: 'PUT',
+          headers: {'authorization': $token},
+          body: JSON.stringify({zoom: z})
+        })    
+  }
+
   let mouseX;
   let mouseY;
   let offsetX;
@@ -42,11 +50,19 @@
   let dragStart;
 
   let canvasDragging = false;
-  let canvasOffsetX = currentBoardData.offsetX ? currentBoardData.offsetX : 0;
-  let canvasOffsetY = currentBoardData.offsetY ? currentBoardData.offsetY : 0;
   let canvasDragStartX = 0;
   let canvasDragStartY = 0;
-
+  let zoomStep = 0.1;
+  let canvasOffsetX;
+  let canvasOffsetY;
+  let zoom;
+  
+  $: {
+    canvasOffsetX = currentBoardData.offsetX ? currentBoardData.offsetX : 0;
+    canvasOffsetY = currentBoardData.offsetY ? currentBoardData.offsetY : 0;
+    zoom = currentBoardData.zoom ? currentBoardData.zoom : 1;
+  }
+  
   let connections = [];
   $: {
     connections = [];
@@ -84,9 +100,13 @@
   
 </script>
 
+  <div class="scale-controls">
+    <button on:click={()=>{zoom -= zoomStep; saveCanvasZoom(zoom);}}>-</button>
+    <button on:click={()=>{zoom += zoomStep; saveCanvasZoom(zoom);}}>+</button>
+  </div>
+
  <svg
   on:mousedown={()=>{
-    console.log("start draggin canvas");
     canvasDragging = true;
     canvasDragStartX = mouseX - canvasOffsetX;
     canvasDragStartY = mouseY - canvasOffsetY;
@@ -102,7 +122,6 @@
         nodes[i].posY = mouseY - offsetY;  
       }
     } else {
-      console.log("drag canvas")
       if(canvasDragging) {
         canvasOffsetX = mouseX - canvasDragStartX;
         canvasOffsetY = mouseY - canvasDragStartY;
@@ -125,7 +144,7 @@
   }}
  >
 
-  <g transform="translate({canvasOffsetX},{canvasOffsetY})">
+  <g transform="translate({canvasOffsetX},{canvasOffsetY}) scale({zoom},{zoom})">
   
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="7" 
@@ -244,6 +263,16 @@ rect {
 
 g:hover {
   cursor: pointer;
+}
+
+.scale-controls {
+  position: absolute;
+  bottom: 0;
+  z-index: 100;
+}
+
+.scale-controls button {
+  width: 1.5em;
 }
 
 </style>

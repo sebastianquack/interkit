@@ -35,7 +35,7 @@
   }
   
   const loadBoardData = async ()=>{
-    //console.log("reloading board data", currentBoardId);
+    console.log("reloading board data", currentBoardId);
     editMode = false;
     if(currentBoardId) {
       const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
