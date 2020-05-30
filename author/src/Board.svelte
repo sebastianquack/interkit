@@ -9,6 +9,7 @@
   import NodeGraph from './NodeGraph.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
   import VarList from './VarList.svelte';
+  import PlayerMonitoring from './PlayerMonitoring.svelte';
 
   export let currentBoardId;
   export let setCurrentBoardId;
@@ -21,7 +22,8 @@
 
   export let playerNodeId;
   export let projectId;
-
+  export let clearPlayerId;
+  
   export let createNode;
   
   let boards = [];
@@ -135,6 +137,7 @@
   }
 
   let attachmentManagerOpen = false;
+  let playerMonitoringOpen = false;
 
   onMount(loadBoardList);
     
@@ -142,7 +145,10 @@
 
 <div class="top-right">
 
+  <button id="toggle-player-monitoring" on:click={()=>{playerMonitoringOpen = !playerMonitoringOpen}}>👥</button>
   <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>📎</button>
+  
+  
 
   <select bind:value={currentBoardId} on:change={loadBoardData}>
     <option value={null}>select a board</option>
@@ -182,7 +188,7 @@
     
   {:else}
     
-    {#if !attachmentManagerOpen}
+    {#if !attachmentManagerOpen && !playerMonitoringOpen}
       <div class="edit-headline">
       <h2>{currentBoardData.name} 
         <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
@@ -205,7 +211,7 @@
   {/if}
   
   {#if !currentBoardData.new}
-    {#if !attachmentManagerOpen && !editMode}    
+    {#if !attachmentManagerOpen && !playerMonitoringOpen && !editMode}    
       <button id="add-node" on:click={addNode}>add node</button>
     {/if}
   {/if}
@@ -217,6 +223,14 @@
       {projectId}
       close={()=>{attachmentManagerOpen = false}}
     />
+{/if}
+
+{#if playerMonitoringOpen}
+  <PlayerMonitoring
+    {projectId}
+    {clearPlayerId}
+    close={()=>{playerMonitoringOpen = false}}
+  />
 {/if}
 
 

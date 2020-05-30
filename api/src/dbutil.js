@@ -96,9 +96,12 @@ exports.logMessage = async (data) => {
 
 exports.logPlayerToNode = async (playerId, node) => {
   console.log("logPlayerToNode", playerId, node._id);
+
+  let project = await exports.getProjectForNode(node);
   let query = {
     player: mongoose.Types.ObjectId(playerId),  
     board: node.board,
+    project: project._id
   }
   let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
 

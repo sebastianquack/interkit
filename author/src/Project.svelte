@@ -68,6 +68,13 @@ function onMessage() {
     playerInfoOpen = true;
     playerId = newPlayerId;
   }
+  const clearPlayerId = (id)=> {
+    if(id == playerId) {
+      playerId = null; 
+      playerNodeId = null;
+      playerInfoOpen = false;
+    }
+  }
 
 </script>
 
@@ -81,6 +88,7 @@ function onMessage() {
     {editNodeId}
     {setEditNodeId}
     {playerNodeId}
+    {clearPlayerId}
     {projectId}
     {createNode}
   />
@@ -113,6 +121,7 @@ function onMessage() {
       <PlayerInfo
         {playerId}
         {playerNodeId}
+        {clearPlayerId}
         close={()=>playerInfoOpen = false}
       />
     {/if}

@@ -6,6 +6,7 @@ import VarList from './VarList.svelte';
 
 export let playerId;
 export let playerNodeId;
+export let clearPlayerId;
 
 export let close;
 
@@ -26,7 +27,7 @@ $: {
 const deletePlayer = async()=>{
   if(confirm("permanently delete player?")) {
     const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
-    alert("done");
+    clearPlayerId(playerId);
   }
 }
 
@@ -42,7 +43,9 @@ const deletePlayer = async()=>{
   {#each Object.keys(nodeLogs) as key}
     <li>{nodeLogs[key][0].board.name}:
     {#each nodeLogs[key] as nl}
-      <span class="nl">{nl.node.name}</span> 
+      {#if nl.node}
+        <span class="nl">{nl.node.name}</span> 
+      {/if}
     {/each}
     </li>
   {/each}
@@ -59,7 +62,7 @@ const deletePlayer = async()=>{
     ids={{player: playerId}}
   />
 
-  <!--button on:click={deletePlayer}>delete player</button-->
+  <button on:click={deletePlayer}>delete player</button>
 
 </div>
 

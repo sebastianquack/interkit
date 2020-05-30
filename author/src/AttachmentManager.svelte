@@ -53,7 +53,7 @@
 
 <div class="container">
 
-<h2>attachments</h2><button on:click={close}>close</button><br>
+<h3>attachments<button on:click={close}>close</button></h3>
 
 {#if !uploadProgress}
   <input type="file" bind:this={fileInput}>
@@ -79,9 +79,9 @@
 
 <style>
 
-  h2 {
-    display: inline-block;
-    margin-right: 5px;
+  h3 button {
+    margin-left: 5px;
+    font-size: 16px;
   }
 
   .container {
@@ -94,6 +94,7 @@
     box-sizing: border-box;
     overflow: scroll;
     width: 100%;
+    background-color: #fff;
   }
 
   span.link {

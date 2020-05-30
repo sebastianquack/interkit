@@ -2,6 +2,7 @@ let Joi = require('@hapi/joi')
 let RestHapi = require('rest-hapi')
 let Auth = require("../plugins/auth.plugin.js");
 
+// not yet really needed - currently only one nodelog entry per board is kept - can be expanded to history in future
 function getHistory(server, model, options, logger) {
   const Log = logger.bind("getHistory")
   let Boom = require('@hapi/boom')
@@ -79,6 +80,10 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       ref: "board"
     },
+    project: {
+      type: Types.ObjectId,
+      ref: "project"
+    },
     timestamp: {
       type: Types.Date,
       default: Date.now
@@ -98,6 +103,10 @@ module.exports = function (mongoose) {
           type: "MANY_ONE",
           model: "board"
         },
+        project: {
+          type: "MANY_ONE",
+          model: "project"
+        }
       },
       extraEndpoints: [
         getHistory
