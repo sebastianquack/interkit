@@ -11,6 +11,7 @@
   export let playerNodeId;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let setPlayerNodeId;
+  export let togglePlayerInfo = (playerId)=>{};
   export let loadHistory = false;
   export let updateUnseenMessages;
   export let mapClick;
@@ -437,6 +438,7 @@
   <div class="author-buttons">
     <button on:click={reEnter}>clear & re-enter</button>
     <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit code</button>
+    <button on:click={()=>togglePlayerInfo(playerId)}>player info</button>
   </div>
 {/if}
 

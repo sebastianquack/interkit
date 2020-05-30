@@ -3,6 +3,7 @@
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';
+  import PlayerInfo from './PlayerInfo.svelte';
   
   import {token} from './stores.js';
 
@@ -59,6 +60,15 @@ function onMessage() {
     }
   }
 
+
+  let playerInfoOpen = false;
+  let playerId;
+
+  const togglePlayerInfo = (newPlayerId) => {
+    playerInfoOpen = true;
+    playerId = newPlayerId;
+  }
+
 </script>
 
 
@@ -90,12 +100,23 @@ function onMessage() {
 </div>
 <div id="bottom-right" class="area">
   {#if playerNodeId}
-  <Chat
-    {playerNodeId}
-    {setPlayerNodeId}
-    {setEditNodeId}
-    authoring={true}
-  />
+    
+    <Chat
+      {playerNodeId}
+      {setPlayerNodeId}
+      {setEditNodeId}
+      authoring={true}
+      {togglePlayerInfo}
+    />
+
+    {#if playerInfoOpen && playerId}
+      <PlayerInfo
+        {playerId}
+        {playerNodeId}
+        close={()=>playerInfoOpen = false}
+      />
+    {/if}
+
   {/if}
 </div>
 
@@ -135,6 +156,13 @@ function onMessage() {
     bottom: 0;
     right: 0;
     border-left: 4px solid gray;
+  }
+
+  button.player-info {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 100;
   }
 
 

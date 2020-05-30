@@ -9,7 +9,9 @@ let vars = [];
 
 const loadVars = async ()=>{
     console.log("loading vars for", scope, JSON.stringify(ids));
-    const res = await fetch("/api/variable?$where=" + JSON.stringify(ids));
+    let query = {...ids, scope};
+    let embed = scope == "playerNode" ? "&$embed=node" : ""
+    const res = await fetch("/api/variable?$where=" + JSON.stringify(query) + embed);
     const json = await res.json();
     console.log(json);
     if(json.docs) vars = json.docs;
@@ -62,16 +64,22 @@ const removeVar = async (v)=> {
 
 </script>
 
-<h3>{scope} variables <button on:click={loadVars}>reload</button></h3> 
+<h4>{scope} variables <button on:click={loadVars}>reload</button></h4> 
 <ul>
   {#each vars as v}
-  <li>{v.key}: {v.value} <button on:click={()=>updateVar(v)}>edit</button> <button on:click={()=>removeVar(v)}>delete</button></li>
+  <li>{v.node ? v.node.name ? v.node.name + "/" : "" : ""}{v.key}: {v.value} <button on:click={()=>updateVar(v)}>edit</button> <button on:click={()=>removeVar(v)}>delete</button></li>
   {/each}
 </ul>
 
 <style>
-  h3 button {
+  h4 button {
     font-size: 16px;
   }
+
+  h4 {
+    margin-bottom: 0px;
+  }
 </style>
+
+
 
