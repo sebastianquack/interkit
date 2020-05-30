@@ -8,6 +8,7 @@
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
+  import VarList from './VarList.svelte';
 
   export let currentBoardId;
   export let setCurrentBoardId;
@@ -161,6 +162,9 @@
 {#if currentBoardData}
 
   {#if editMode}
+
+    <div class="scroll">
+
     <h2>edit board</h2>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
@@ -168,8 +172,14 @@
     <label>code library (executed every time a node runs):</label><br>
     <CodeEditor bind:code={currentBoardData.library}></CodeEditor><br>
     <button on:click={saveBoard}>save</button>
-    <button on:click={loadBoardData}>cancel</button><br>
     <br>
+
+    <VarList scope="board" ids={{board: currentBoardData._id}}/>
+
+    <button on:click={loadBoardData}>close</button>
+
+    </div>
+    
   {:else}
     
     {#if !attachmentManagerOpen}
@@ -195,7 +205,7 @@
   {/if}
   
   {#if !currentBoardData.new}
-    {#if !attachmentManagerOpen}    
+    {#if !attachmentManagerOpen && !editMode}    
       <button id="add-node" on:click={addNode}>add node</button>
     {/if}
   {/if}
@@ -225,7 +235,7 @@
     z-index: 1;
   }
 
-  h2 {
+  .edit-headline h2 {
     margin-bottom: 0;
   }
 
@@ -262,6 +272,13 @@
     z-index: 10;
     border-bottom: 4px solid gray;
   }
+
+  .scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+
 
 
 </style>

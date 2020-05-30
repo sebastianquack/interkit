@@ -6,6 +6,7 @@
   import 'codemirror/mode/javascript/javascript.js';
 
   import CodeEditor from './CodeEditor.svelte';
+  import VarList from './VarList.svelte';
 
   import { cheatSheet } from "./cheatSheet.js";
 
@@ -172,6 +173,10 @@
 {#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
 
 <button on:click={deleteNode}>delete</button><br>
+
+
+<VarList scope="node" ids={{node: scriptNodeEdit._id}}/>
+
 
 </div>
 

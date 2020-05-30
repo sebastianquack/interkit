@@ -116,7 +116,7 @@ function onMessage() {
     height: 100vh;
     width: 50%; 
     z-index: 0;
-    padding-top: 40px;
+    padding-top: 50px;
   }
 
   #top-right {
