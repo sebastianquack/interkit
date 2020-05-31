@@ -176,7 +176,7 @@
 <button on:click={deleteNode}>delete</button><br>
 
 
-{#if scriptNodeEdit}
+{#if scriptNodeEdit._id}
   <VarList scope="node" ids={{node: scriptNodeEdit._id}}/>
 {/if}
 
