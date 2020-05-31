@@ -57,6 +57,7 @@
   const loadBoardData = async ()=>{
     console.log("reloading board data", currentBoardId);
     editMode = false;
+    tabNavigation = "boards";
     if(currentBoardId) {
       const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
       const json = await res.json();
