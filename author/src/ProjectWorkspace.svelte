@@ -41,13 +41,12 @@
     }
   }
 
-  let playerURL;
-  let attachmentManagerOpen = false;
-  let playerMonitoringOpen = false;
-  let editMode = false;
-  
   let boards = [];
-
+  let playerURL;
+  let editMode = false;
+  let tabNavigation = "board";
+  const toggleTab = (tab) => {if(tabNavigation == tab) tabNavigation = "boards"; else tabNavigation = tab}
+  
   const loadBoardList = async ()=>{
     const res = await fetch("/api/board?project=" + project._id);
     const json = await res.json();
@@ -143,8 +142,8 @@ function onMessage() {
     </div>
 
 
-    <button id="toggle-player-monitoring" on:click={()=>{playerMonitoringOpen = !playerMonitoringOpen}}>👥</button>
-    <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>📎</button>
+    <button id="toggle-player-monitoring" on:click={()=>{toggleTab("players")}}>👥</button>
+    <button id="toggle-attachment-manager" on:click={()=>{toggleTab("attachments")}}>📎</button>
     
     <select bind:value={currentBoardId} on:change={loadBoardData}>
       <option value={null}>select a board</option>
@@ -163,7 +162,7 @@ function onMessage() {
 
   <div class="left-work-area">
 
-    {#if !attachmentManagerOpen && !playerMonitoringOpen}    
+    {#if tabNavigation == "boards"}    
     <Board
       {currentBoardId}
       {setCurrentBoardId}
@@ -179,18 +178,18 @@ function onMessage() {
     />
     {/if}
 
-    {#if attachmentManagerOpen}
+    {#if tabNavigation == "attachments"}
       <AttachmentManager
           projectId={project._id}
-          close={()=>{attachmentManagerOpen = false}}
+          close={()=>{tabNavigation = "boards"}}
         />
     {/if}
 
-    {#if playerMonitoringOpen}
+    {#if tabNavigation == "players"}
       <PlayerMonitoring
         projectId={project._id}
         {clearPlayerId}
-        close={()=>{playerMonitoringOpen = false}}
+        close={()=>{tabNavigation = "boards"}}
       />
     {/if}
 
