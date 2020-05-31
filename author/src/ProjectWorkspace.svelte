@@ -44,7 +44,7 @@
   let boards = [];
   let playerURL;
   let editMode = false;
-  let tabNavigation = "board";
+  let tabNavigation = "boards";
   const toggleTab = (tab) => {if(tabNavigation == tab) tabNavigation = "boards"; else tabNavigation = tab}
   
   const loadBoardList = async ()=>{
