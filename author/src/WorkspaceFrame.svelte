@@ -53,7 +53,7 @@
 
 </div>
 
-<div id="top-right" class="area" style="height: {height}vh">
+<div id="top-right" class="area" style="height: {height}vh; {dragging ? 'user-select: none' : ''}">
 
   <slot name="top-right-work-area"></slot>
 
@@ -63,7 +63,7 @@
 
 </div>
 
-<div id="bottom-right" class="area" style="height: {100 - height}vh">
+<div id="bottom-right" class="area" style="height: {100 - height}vh; {dragging ? 'user-select: none' : ''}">
 
   <slot name="bottom-right-work-area"></slot>
 

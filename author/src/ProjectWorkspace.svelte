@@ -69,7 +69,6 @@
     }
   }
 
-
   const createBoard = ()=>{
     let newBoard = {
       new: true,
