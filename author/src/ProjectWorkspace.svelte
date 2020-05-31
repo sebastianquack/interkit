@@ -10,6 +10,8 @@
   import PlayerMonitoring from './PlayerMonitoring.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
   import PlaytestArea from './PlaytestArea.svelte';
+
+  import WorkspaceFrame from './WorkspaceFrame.svelte';
   
   export let project;
   export let close;
@@ -132,11 +134,10 @@ function onMessage() {
 
 </script>
 
-  
-<div id="left" class="area">
+<WorkspaceFrame>
 
-  <div class="left-top-menu">
-
+  <div slot="left-top-menu">
+    
     <div class="project-title">
         <h2>{project.name}</h2>
         <button on:click={close}>close</button>
@@ -161,23 +162,23 @@ function onMessage() {
 
   </div>
 
-  <div class="left-work-area">
+  <div slot="left-work-area">
 
     {#if tabNavigation == "boards"}    
-    <Board
-      {currentBoardId}
-      {setCurrentBoardId}
-      {currentBoardData}
-      {setCurrentBoardData}
-      {editNodeId}
-      {setEditNodeId}
-      {playerNodeId}
-      projectId={project._id}
-      {createNode}
-      {loadBoardData}
-      {loadBoardList}
-    />
-    {/if}
+      <Board
+        {currentBoardId}
+        {setCurrentBoardId}
+        {currentBoardData}
+        {setCurrentBoardData}
+        {editNodeId}
+        {setEditNodeId}
+        {playerNodeId}
+        projectId={project._id}
+        {createNode}
+        {loadBoardData}
+        {loadBoardList}
+      />
+      {/if}
 
     {#if tabNavigation == "attachments"}
       <AttachmentManager
@@ -196,52 +197,34 @@ function onMessage() {
 
   </div>
 
+  <div slot="top-right-work-area" class="h100">
+    {#if editNodeId}
+    <EditNode
+      {editNodeId}
+      {setEditNodeId}
+      {setPlayerNodeId}
+      {reloadBoardData}
+      {currentBoardData}
+      {createNode}
+    />
+    {/if}
+  </div>
 
-</div>
+  <div slot="bottom-right-work-area" class="h100">
+    <PlaytestArea
+      {playerId}
+      {setPlayerId}
+      {clearPlayerId}
+      {playerNodeId}
+      {setPlayerNodeId}
+      {setEditNodeId}
+    />
+  </div>
 
-<div id="top-right" class="area">
-  {#if editNodeId}
-  <EditNode
-    {editNodeId}
-    {setEditNodeId}
-    {setPlayerNodeId}
-    {reloadBoardData}
-    {currentBoardData}
-    {createNode}
-  />
-  {/if}
-</div>
-
-<div id="bottom-right" class="area">
-
-  <PlaytestArea
-    {playerId}
-    {setPlayerId}
-    {clearPlayerId}
-    {playerNodeId}
-    {setPlayerNodeId}
-    {setEditNodeId}
-  />
-
-</div>
-
-
+</WorkspaceFrame>
 
 
 <style>
-
-  .left-top-menu {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    background-color: #fff;
-    width: 100%;
-    text-align: right;
-    padding: 10px 10px 0px 10px;
-    z-index: 10;
-    border-bottom: 4px solid gray;
-    box-sizing: border-box;
-  }
 
   .project-title {
     position: absolute;
@@ -255,51 +238,12 @@ function onMessage() {
     margin-top: 2px;
   }
 
-
   #toggle-attachment-manager {
     margin-right: 10px;
   }
 
-  .left-work-area {
-    position: absolute;
-    left: 0;
-    top: 50px;
-    bottom: 0;
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-
-  .area {
-    box-sizing: border-box;
-    position: absolute;
-    padding: 10px;
-  }
-
-  #left {
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 50%; 
-    z-index: 0;
-  }
-
-  #top-right {
-    width: 50%;
-    height: 50vh;
-    overflow-y: auto;    
-    top: 0;
-    right: 0;
-    border-left: 4px solid gray;
-    border-bottom: 4px solid gray;
-  }
-
-  #bottom-right {
-    width: 50%;
-    height: 50vh;
-    bottom: 0;
-    right: 0;
-    border-left: 4px solid gray;
+  .h100 {
+    height: 100%;
   }
 
 </style>

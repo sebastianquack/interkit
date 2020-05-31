@@ -143,6 +143,7 @@
 
 </script>
 
+
 <button class="help-button" on:click={()=>showHelp = !showHelp}>{showHelp ? "close" : "cheat sheet"}</button>
 
 {#if showHelp} 
@@ -177,8 +178,8 @@
 
 <VarList scope="node" ids={{node: scriptNodeEdit._id}}/>
 
-
 </div>
+
 
 <style>
   
