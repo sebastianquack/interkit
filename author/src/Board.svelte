@@ -2,15 +2,11 @@
 
   import { onMount } from 'svelte';
   
-  import { getConfig } from '../../shared/util.js';
-
   import { token } from './stores.js';  
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
-  import AttachmentManager from './AttachmentManager.svelte'; 
   import VarList from './VarList.svelte';
-  import PlayerMonitoring from './PlayerMonitoring.svelte';
-
+  
   export let currentBoardId;
   export let setCurrentBoardId;
 
@@ -22,65 +18,25 @@
 
   export let playerNodeId;
   export let projectId;
-  export let clearPlayerId;
   
+  export let loadBoardData;
+  export let loadBoardList;
+
   export let createNode;
-  
-  let boards = [];
-  let editMode = false;
+    
   let playerURL;
 
-  const loadBoardList = async ()=>{
-    const res = await fetch("/api/board?project=" + projectId);
-    const json = await res.json();
-    boards = json.docs;
-    playerURL = await getConfig("playerURL");
-  }
-  
-  const loadBoardData = async ()=>{
-    console.log("reloading board data", currentBoardId);
-    editMode = false;
-    if(currentBoardId) {
-      const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
-      const json = await res.json();
-      setCurrentBoardData(json);
-    } else {
-      setCurrentBoardData(null);
-    }
-  }
+  let editMode;
 
   $: {
     if(currentBoardId && currentBoardData && currentBoardData.expired)
      loadBoardData();
   }
 
-  const closeBoard = ()=>{
-    setCurrentBoardData(null);  
-    setEditNodeId(null);
-    editMode = false;
-  }
-
-  const createBoard = ()=>{
-    let newBoard = {
-      new: true,
-      name: "",
-      scriptNodes: [],
-      library: "",
-      project: projectId
-    }
-    setCurrentBoardData(newBoard);
-    editMode = true;
-  }
-
-  const deleteBoard = async ()=>{
-    if(confirm("really?")) {
-      await fetch("/api/board/" + currentBoardData._id, {
-        method: "DELETE",
-        headers: {'authorization': $token},
-      });
-      loadBoardList();
-      closeBoard();
-    }
+  $: {
+    if(currentBoardData)
+      if(currentBoardData.new) 
+        editMode = true;
   }
 
   const saveBoard = async ()=>{
@@ -135,35 +91,8 @@
     setEditNodeId(id);
     loadBoardData();
   }
-
-  let attachmentManagerOpen = false;
-  let playerMonitoringOpen = false;
-
-  onMount(loadBoardList);
     
 </script>
-
-<div class="top-right">
-
-  <button id="toggle-player-monitoring" on:click={()=>{playerMonitoringOpen = !playerMonitoringOpen}}>👥</button>
-  <button id="toggle-attachment-manager" on:click={()=>{attachmentManagerOpen = !attachmentManagerOpen}}>📎</button>
-  
-  
-
-  <select bind:value={currentBoardId} on:change={loadBoardData}>
-    <option value={null}>select a board</option>
-    <option disabled>_________</option>
-  {#each boards as board}
-    <option value={board._id}>{board.name}</option>
-  {/each}
-  </select>
-  <button on:click={createBoard}>new board</button>
-
-  {#if currentBoardData && !currentBoardData.new}
-    <button on:click={deleteBoard}>delete board</button> 
-  {/if}
-
-</div>
 
 {#if currentBoardData}
 
@@ -182,21 +111,20 @@
 
     <VarList scope="board" ids={{board: currentBoardData._id}}/>
 
-    <button on:click={loadBoardData}>close</button>
+    <button on:click={()=>editMode = false}>close</button>
 
     </div>
     
   {:else}
     
-    {#if !attachmentManagerOpen && !playerMonitoringOpen}
       <div class="edit-headline">
-      <h2>{currentBoardData.name} 
-        <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
-        <a target="_blank" href="{playerURL}?board={currentBoardData._id}">external player link</a>
-      </h2>
-      
-      <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
-      <button on:click="{()=>{editMode=true}}">✎</button>
+        <h2>{currentBoardData.name} 
+          <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
+          <a target="_blank" href="{playerURL}?board={currentBoardData._id}">external player link</a>
+        </h2>
+        
+        <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
+        <button on:click="{()=>{editMode=true}}">✎</button>
       </div>
 
       <NodeGraph
@@ -207,31 +135,17 @@
         {playerNodeId}
         {currentBoardData}
       />
-    {/if}
+
   {/if}
   
   {#if !currentBoardData.new}
-    {#if !attachmentManagerOpen && !playerMonitoringOpen && !editMode}    
+    {#if !editMode}    
       <button id="add-node" on:click={addNode}>add node</button>
     {/if}
   {/if}
   
 {/if}
 
-{#if attachmentManagerOpen}
-  <AttachmentManager
-      {projectId}
-      close={()=>{attachmentManagerOpen = false}}
-    />
-{/if}
-
-{#if playerMonitoringOpen}
-  <PlayerMonitoring
-    {projectId}
-    {clearPlayerId}
-    close={()=>{playerMonitoringOpen = false}}
-  />
-{/if}
 
 
 <style>
@@ -244,7 +158,7 @@
     font-weight: normal;
   }
 
-  button, input, h2, select {
+  button, input, h2 {
     position: relative;
     z-index: 1;
   }
@@ -257,9 +171,6 @@
     display: inline-block;
   }
 
-  #toggle-attachment-manager {
-    margin-right: 10px;
-  }
 
   h2 small {
     font-weight: normal;
@@ -272,19 +183,6 @@
     bottom: 10px;
     right: 10px;
     margin-bottom: 0px;
-  }
-
-  .top-right {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    background-color: #fff;
-    width: 100%;
-    text-align: right;
-    padding-right: 10px;
-    padding-top: 10px;    
-    z-index: 10;
-    border-bottom: 4px solid gray;
   }
 
   .scroll {

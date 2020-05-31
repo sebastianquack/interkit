@@ -516,15 +516,6 @@
     position: relative;
   }
 
-  small.history-start {
-    padding-left: 10%;
-    padding-right: 10%;
-    text-align: center;
-    display: block;
-    color: gray;
-    font-size: 10px;
-  }
-
   .qr-scanner-container {
     position: absolute;
     top: 0;

@@ -55,7 +55,6 @@ const deletePlayer = async(playerId)=>{
     position: absolute;
     top: 0;
     left: 0;
-    padding-top: 3em;
     padding-left: 10px;
     box-sizing: border-box;
     overflow: scroll;

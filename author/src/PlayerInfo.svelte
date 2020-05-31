@@ -5,7 +5,6 @@ import { token } from './stores.js';
 import VarList from './VarList.svelte';
 
 export let playerId;
-export let playerNodeId;
 export let clearPlayerId;
 
 export let close;
@@ -28,6 +27,7 @@ const deletePlayer = async()=>{
   if(confirm("permanently delete player?")) {
     const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
     clearPlayerId(playerId);
+    close();
   }
 }
 
