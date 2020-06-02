@@ -20,7 +20,7 @@ cd player && npm i && cd -
 
 2. run local minio (S3 service) and mongodb
 ````
-cd api/services
+cd services
 docker-compose up -d
 cd -
 ````
