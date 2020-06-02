@@ -35,7 +35,7 @@ module.exports = function (mongoose) {
   // scan script for moveTo commands and update connections for this node
   const updateConnections = async (payload) => {
     
-    console.log("payload", payload);
+    //console.log("payload", payload);
 
     if(typeof payload.script !== "undefined") {
 

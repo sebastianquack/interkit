@@ -71,7 +71,7 @@ module.exports = function (mongoose) {
                 if(message.seen.indexOf(request.params._playerId) == -1) {
                   message.seen.push(request.params._playerId);
                 }
-                console.log("seen", message.seen);
+                //console.log("seen", message.seen);
                 let result = await RestHapi.update(model, request.params._id, {
                   seen: message.seen
                 }, Log)

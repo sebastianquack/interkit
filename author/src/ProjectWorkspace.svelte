@@ -141,6 +141,7 @@ function onMessage() {
     <div class="project-title">
         <h2>{project.name}</h2>
         <button on:click={close}>close</button>
+        <a target="_blank" href="{playerURL}?project={project._id}">project link</a>
     </div>
 
 
@@ -244,6 +245,15 @@ function onMessage() {
 
   .h100 {
     height: 100%;
+  }
+
+  a {
+    color: gray;
+    padding-left: 1px;
+    margin-bottom: 10px;
+    position: relative;
+    font-size: 10px;
+    font-weight: normal;
   }
 
 </style>

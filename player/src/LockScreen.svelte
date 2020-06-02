@@ -1,7 +1,7 @@
 <script>
 
   export let visible = true;
-  export let info = "player not looking at the screen"
+  export let info = "";//"player not looking at the screen"
   export let onClose = ()=>visible = false;
   /*export let notificationItem = {
     side: "left",
@@ -10,15 +10,22 @@
     params: {},
     attachment: {}
   };*/
-  export let notificationItem = null;
+  export let notificationItem;
+  export let openBoardForMessage;
 
   import ItemBubble from '../../shared/ItemBubble.svelte';
+
+  const notificationTap = ()=>{
+    if(notificationItem.board && notificationItem.node) {
+      openBoardForMessage(notificationItem.board, notificationItem.node);  
+    }
+  }
   
 </script>
 
 <div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
   {#if notificationItem} 
-    <div id="notification">
+    <div id="notification" on:click={notificationTap}>
       <ItemBubble item={notificationItem}/>
     </div>
   {/if}
@@ -33,7 +40,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  background-color: rgb(0,0,0,0.9);
+  background-color: rgb(0,0,0,0.5);
   padding: 40px;
   box-sizing: border-box;
   display: flex;
@@ -61,6 +68,10 @@
   transform: translate(-50%, 0);
   padding: 5px 10px;
   z-index: 12;
+}
+
+#notification:hover {
+  cursor: pointer;
 }
 
 </style>

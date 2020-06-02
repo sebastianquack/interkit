@@ -11,10 +11,12 @@
   export let playerNodeId;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let setPlayerNodeId;
+  export let currentBoard;
   export let togglePlayerInfo = (playerId)=>{};
   export let loadHistory = false;
   export let updateUnseenMessages;
   export let mapClick;
+  export let mainView;
 
   export let setNotificationItem = ()=>{}; 
   export let setLockScreen = ()=>{};
@@ -43,11 +45,11 @@
     inputValue = "";
 
     fileServerURL = await getConfig("fileServerURL");
-    console.log(fileServerURL);
-
+    
     let joinNode = nodeId;
 
     // if loadHistory -> pass into items
+    console.log("should we load history", loadHistory, initialHistoryLoaded);
     if(loadHistory && !initialHistoryLoaded) {
 
       let response = await fetch("/api/scriptNode/" + nodeId);
@@ -79,16 +81,26 @@
     joinRoom(joinNode, execOnArrive);
 
     listenForMessages(async (message)=>{
+      console.log("playerNodeId", playerNodeId);
+      console.log("currentBoard", currentBoard);
       console.log("message received", message);
 
       let item = {...message};
-
-      if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
-
       if(!item.attachment) item.attachment = {};
       if(!item.params) item.params = {};
 
+      //if this item was from a different node on the same board, switch back to that node without execOnArrive
+      if(currentBoard._id != message.board) {
+          console.log("warning, message is from a different board")
+          setNotificationItem({...item, side: "left"});
+          setLockScreen();
+          return;
+          // todo -> switch if you click
+      }
+
+      if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
+      
       if(item.params.moveTo) {
         setTimeout(()=>{
           console.log("playerNodeId", playerNodeId);
@@ -149,10 +161,33 @@
             });
           }, 500);
       }
+    
+      //if this item was from a different node on the same board, switch back to that node without execOnArrive
+      if(currentBoard._id == message.board && playerNodeId != message.node) {
+          console.log("warning, message is from a different node")
+          execOnArrive = false;
+          setPlayerNodeId(message.node);
+          setEditNodeId(message.node);  
+      }
+
+      if(mainView=="map" || mainView == "archive") {
+        setNotificationItem({...item, side: "left"});
+        setLockScreen();
+      }
+
     })    
 
     googleMapsAPIKey = await getConfig("googleMapsAPIKey");
   }
+
+  $: {
+    if(currentBoard) {
+      console.log("resetting initialHistoryLoaded");
+      initialHistoryLoaded = false;    
+      showItemsSince = Date.now();
+    }
+  }
+
 
   $: {
     if(!currentPlayerNode || 
@@ -165,7 +200,8 @@
     }
   }
 
-  const loadMoreItems = async (board) => {
+  const loadMoreItems = async (board = currentBoard) => {
+      console.log("loadMoreItems", board);
       console.log("loading items earlier than", showItemsSince);  
       let query = {
         board,
@@ -230,12 +266,13 @@
   onDestroy(() => {
     if(currentPlayerNode)
       leaveRoom(currentPlayerNode._id);
-    stopListening();
+    //stopListening();
   })
 
   const scrollUp = ()=> {
     setTimeout(()=>{
-      div.scrollTo(0, div.scrollHeight);
+      if(div)
+        div.scrollTo(0, div.scrollHeight);
     }, 400);
   }
 
@@ -383,7 +420,7 @@
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
 
     <div class="scrollable" bind:this={div}>
-      {#if showMoreItems} <button class="load-more" on:click={loadMoreItems}>load older messages</button> {/if}
+      {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each items as item}
         <ItemBubble 
