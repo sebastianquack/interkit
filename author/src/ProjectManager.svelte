@@ -151,20 +151,19 @@
 
     <Logout/>
   
-      {#if projects}
-        <h1>Projects</h1>
-        <ul>
-        {#each projects as project}
-          <li>
-            {project.name}
-            <button on:click={()=>{editProject = project;}}>✎</button>
-            <button on:click={()=>{currentProject = project;}}>open project</button>
-            <a target="_blank" href="{playerURL}?project={project._id}">external player link</a>
-        {/each}
-        </ul>
-      {/if}
+    {#if projects}
+      <h1>Projects</h1>
+      <ul>
+      {#each projects as project}
+        <li>
+          {project.name}
+          <button on:click={()=>{editProject = project;}}>✎</button>
+          <button on:click={()=>{currentProject = project;}}>open project</button>
+          <a target="_blank" href="{playerURL}?project={project._id}">external player link</a>
+      {/each}
+      </ul>
+    {/if}
       
-
     <button on:click={addProject}>new</button>
 
   {:else}

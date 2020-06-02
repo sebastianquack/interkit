@@ -1,6 +1,5 @@
 <script>
 
-  const refs = {};
   let w; // the width of the container
   let h; // the height of the container
 
@@ -31,7 +30,6 @@
 
 
 <div class="container" 
-  bind:this={refs.container} 
   bind:clientWidth={w} 
   bind:clientHeight={h} 
   on:mousemove={drag} 

@@ -1,5 +1,6 @@
 let mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
+const Moment = require('moment')
 
 const Log = RestHapi.getLogger('socket');
 Log.logLevel = 'WARNING';
@@ -195,7 +196,16 @@ exports.getItemForPlayerByKey = asnyc (playerId, key) => {
 }
 */
 
+// uses moment add, ie moment().add({days:7,months:1}); // with object literal
 
+exports.scheduleMessage = (timeFromNowObj, data) => {
+  let message = {
+    ...data,
+    scheduled: true,
+    deliveryTime: Moment().add(timeFromNowObj).valueOf()
+  }
+  exports.logMessage(message);  
+}
 
 
 

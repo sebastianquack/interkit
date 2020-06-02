@@ -76,6 +76,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         },
       },
       output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
+      scheduleOutput: (timeFromNowObj, message, label=varCache.board.narrator) => { 
+        db.scheduleMessage(timeFromNowObj, {recipients: [playerId], message, label, node: node._id, board: node.board}) },
       option: (message) => { result.outputs.push({message, params: {option: true}}); },       
       image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
       audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},

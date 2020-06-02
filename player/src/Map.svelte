@@ -6,7 +6,6 @@ const mapStyles = require('./GoogleMapStyles.json')
 
 export let visible;
 export let googleReady;
-export let onClose;
 export let map;
 export let markerItems;
 export let setItemModal;
@@ -155,13 +154,6 @@ const getUserPosition = ()=> {
   position: absolute;
   left: 0;
   top: 0;
-}
-
-#close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  box-shadow: 2px 2px #ddd;
 }
 
 #locate-button {

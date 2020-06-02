@@ -170,7 +170,8 @@
       let query = {
         board,
         recipients: playerId,
-        timestamp: {$lt: showItemsSince}
+        timestamp: {$lt: showItemsSince},
+        scheduled: {$ne: true}
       }
       let limit = 10;
       let response = await fetch("/api/message?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));

@@ -50,6 +50,7 @@
       const query = {
         board: board._id, 
         recipients: getPlayerId(),
+        scheduled: false,
         seen: {"$nin": [getPlayerId()]}
       };
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));

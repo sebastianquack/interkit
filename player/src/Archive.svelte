@@ -1,6 +1,5 @@
 <script>
 
-  export let onClose;
   export let visible;
   export let items = [];
   export let setItemModal;
@@ -32,13 +31,6 @@
   padding: 20px;
   box-sizing: border-box;
   padding-top: 45px;
-}
-
-#close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  box-shadow: 2px 2px #ddd;
 }
 
 div.item {

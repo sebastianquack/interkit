@@ -43,6 +43,12 @@ module.exports = function (mongoose) {
      type: [Types.ObjectId],
      default: []
     },
+    scheduled: {
+      type: Types.Boolean
+    },
+    deliveryTime: {
+      type: Types.Number
+    }
   });
   
   Schema.statics = {

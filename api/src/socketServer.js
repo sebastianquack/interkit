@@ -31,7 +31,6 @@ async function joinRoom(io, socket, data) {
   console.log("joining " + data.room);
   await socket.join(data.room);
   
-  // inform others in the new room 
   socket.room = data.room;
   socket.playerId = data.playerId;
   
@@ -113,8 +112,7 @@ exports.init = (listener) => {
           console.log(error);
         }
       }
-      
-      });
+    });
 
     socket.on('leaveRoom', async function(room) {
       console.log("removing socket from room " + room);

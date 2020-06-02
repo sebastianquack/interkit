@@ -4,7 +4,7 @@ function onArrive() {
   /* do stuff here... */
 }
 
-// called when player sends a message
+// called when player inputs something 
 function onMessage() { 
   /* do stuff here... */
 }
@@ -18,6 +18,9 @@ image("image.jpg") // sends an image
 audio("audio.mp3") // sends an audio file
 
 moveTo("node") // moves player to another node on the same board
+
+// schedule a message to be delivered to the player in the future      
+scheduleOutput({hours:1, minutes:30}, "hi again", "paul"})
 
 // input object
 input.raw // the raw input text
