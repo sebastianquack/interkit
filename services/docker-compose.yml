@@ -17,22 +17,37 @@ services:
 
   mongo-express:
     image: mongo-express:0.54.0
+    depends_on:
+      - mongo    
     restart: always
     ports:
       - 9001:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+    #environment:
+    #  ME_CONFIG_MONGODB_ADMINUSERNAME: root
+    #  ME_CONFIG_MONGODB_ADMINPASSWORD: example
 
   minio:
     image: minio/minio:RELEASE.2020-06-01T17-28-03Z
     restart: always
     entrypoint: sh
     command: -c 'mkdir -p /data/dreamshiplocal && /usr/bin/minio server /data'
-    environment:
-      MINIO_ACCESS_KEY: 2QnjrZa8xskGDkgRHa
-      MINIO_SECRET_KEY: svyY54BZL4curtbPX2
+    env_file:
+      - ./minio.env
     volumes:
       - ./data/minio:/data:cached
     ports:
       - 9002:9000
+
+  # configure public bucket
+  minio-mc-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file:
+      - ./minio.env
+    entrypoint: >
+      /bin/sh -c "
+      sleep 15;
+      /usr/bin/mc config host add minio http://minio:9000 $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY};
+      /usr/bin/mc policy set public minio/dreamshiplocal;
+      "
