@@ -3,7 +3,7 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket } from '../../shared/socketClient.js';
+  import { initSocket, joinRoom } from '../../shared/socketClient.js';
   import { getConfig } from '../../shared/util.js';
 
   import Board from './Board.svelte';
@@ -22,7 +22,16 @@
   const setEditNodeId = (nodeId)=>{editNodeId = nodeId};
 
   let playerNodeId = null;
-  const setPlayerNodeId = (nodeId)=>{playerNodeId = nodeId};
+  const setPlayerNodeId = (nodeId)=>{
+    playerNodeId = nodeId
+
+    // register player on server and allow rejoin
+    joinRoom(playerNodeId, true, true);
+  };
+
+  const updatePlayerNodeId = (nodeId)=>{
+    playerNodeId = nodeId
+  }
 
   let currentBoardId = null;
   const setCurrentBoardId = (boardId)=>{currentBoardId = boardId};
@@ -178,6 +187,7 @@ function onMessage() {
         {createNode}
         {loadBoardData}
         {loadBoardList}
+        {playerURL}
       />
       {/if}
 
@@ -213,11 +223,12 @@ function onMessage() {
 
   <div slot="bottom-right-work-area" class="h100">
     <PlaytestArea
+      projectId={project._id}
       {playerId}
       {setPlayerId}
       {clearPlayerId}
       {playerNodeId}
-      {setPlayerNodeId}
+      {updatePlayerNodeId}
       {setEditNodeId}
     />
   </div>
@@ -245,6 +256,8 @@ function onMessage() {
 
   .h100 {
     height: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   a {

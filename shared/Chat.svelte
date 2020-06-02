@@ -80,6 +80,7 @@
 
     joinRoom(joinNode, execOnArrive);
 
+    console.log("setting up listener for chat");
     listenForMessages(async (message)=>{
       console.log("playerNodeId", playerNodeId);
       console.log("currentBoard", currentBoard);
@@ -89,13 +90,12 @@
       if(!item.attachment) item.attachment = {};
       if(!item.params) item.params = {};
 
-      //if this item was from a different node on the same board, switch back to that node without execOnArrive
+      // if this was from a different board, show notification
       if(currentBoard._id != message.board) {
           console.log("warning, message is from a different board")
           setNotificationItem({...item, side: "left"});
           setLockScreen();
           return;
-          // todo -> switch if you click
       }
 
       if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
@@ -474,7 +474,7 @@
 {#if authoring}
   <div class="chat-debug">{currentPlayerNode ? currentPlayerNode.name : ""}</div>
   <div class="author-buttons">
-    <button on:click={reEnter}>clear & re-enter</button>
+    <!--button on:click={reEnter}>clear & re-enter</button-->
     <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit code</button>
     <button on:click={()=>togglePlayerInfo(playerId)}>player info</button>
   </div>

@@ -3,7 +3,7 @@
   let w; // the width of the container
   let h; // the height of the container
 
-  let height = 60; // the initial height of the top-right-work-area in vh
+  let height = 50; // the initial height of the top-right-work-area in vh
 
   let dragging = false;
   let startDragY;

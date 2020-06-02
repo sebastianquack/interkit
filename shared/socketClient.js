@@ -47,13 +47,14 @@ const reTry = (action) => {
 }
 
 // ask server to put us in a room
-export const joinRoom = (room, execOnArrive=true) => {
+export const joinRoom = (room, execOnArrive=true, allowRejoin=false) => {
   console.log("joinRoom", room);
   reTry(()=>{
     socket.emit('joinRoom', {
       room, 
       playerId,
-      execOnArrive
+      execOnArrive,
+      allowRejoin
     }); 
   });
 }

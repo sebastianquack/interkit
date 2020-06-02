@@ -23,8 +23,6 @@
   export let loadBoardList;
 
   export let createNode;
-    
-  let playerURL;
 
   let editMode;
 
@@ -120,7 +118,6 @@
       <div class="edit-headline">
         <h2>{currentBoardData.name} 
           <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
-          <a target="_blank" href="{playerURL}?board={currentBoardData._id}">board link</a>
         </h2>
         
         <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
@@ -149,15 +146,7 @@
 
 
 <style>
-  a {
-    color: gray;
-    padding-left: 1px;
-    margin-bottom: 10px;
-    position: relative;
-    font-size: 10px;
-    font-weight: normal;
-  }
-
+  
   button, input, h2 {
     position: relative;
     z-index: 1;

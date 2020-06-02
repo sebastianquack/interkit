@@ -109,7 +109,7 @@ exports.init = (listener) => {
         }
       }
       // check if room needs to be changed
-      if(socket.room != data.room) {
+      if(socket.room != data.room || data.allowRejoin) {
         try {
           joinRoom(io, socket, data);
         } catch(error) {

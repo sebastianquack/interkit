@@ -1,13 +1,15 @@
 <script>
   import Chat from '../../shared/Chat.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
+
+  import PlayerClient from '../../player/src/PlayerClient.svelte';
   
-  export let playerNodeId = null;
+  export let projectId;
   export let playerId;
   export let setPlayerId;
   export let clearPlayerId;
   export let setEditNodeId;
-  export let setPlayerNodeId;
+  export let updatePlayerNodeId;
   
   let playerInfoOpen = false;
 
@@ -17,15 +19,13 @@
   }
 
 </script>
-
-{#if playerNodeId}
   
-  <Chat
-    {playerNodeId}
-    {setPlayerNodeId}
+  <PlayerClient
+    {projectId}
     {setEditNodeId}
     authoring={true}
     {togglePlayerInfo}
+    {updatePlayerNodeId}
   />
 
   {#if playerInfoOpen && playerId}
@@ -36,4 +36,4 @@
     />
   {/if}
 
-{/if}
+

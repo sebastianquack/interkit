@@ -196,7 +196,7 @@
     cursor: pointer;
   }
 
-  a, span {
+  span {
     color: gray;
     padding-left: 1px;
     margin-bottom: 10px;
