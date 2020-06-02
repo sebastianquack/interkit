@@ -5,7 +5,7 @@
 <script>
   import { onMount } from 'svelte';
   import Chat from '../../shared/Chat.svelte';
-  import { initSocket, getPlayerId } from '../../shared/socketClient.js';
+  import { initSocket, getPlayerId, listenForMessages } from '../../shared/socketClient.js';
   import Map from './Map.svelte';
   import Archive from './Archive.svelte';
   import Modal from './Modal.svelte';
@@ -35,9 +35,10 @@
   const setLockScreen = ()=>showLockScreen=true;
   let notificationItem = null;
   const setNotificationItem = (item)=>{
-    console.log(item);
-    if(showLockScreen)
-      notificationItem = item;
+    console.log("setNotificationItem", item);
+    if(!item.attachment) item.attachment = {};
+    if(!item.params) item.params = {};
+    notificationItem = item;
   }
 
   let fileServerURL = "";
@@ -80,6 +81,25 @@
     let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
     let itemsJson = await itemsRes.json();
     documentItems = itemsJson.docs.filter(m=>m.type == "document");
+  }
+
+  $: {
+    if(!playerNodeId) {
+      setTimeout(()=>{
+        initAppSocket();   
+      }, 500); // timeout needed to avoid race condition with chat component umounting
+      checkForUnseenMessages();    
+    }
+  }
+
+  const initAppSocket = ()=>{
+    console.log("initialising socket listener for root app component");
+    listenForMessages(async (message)=>{
+      console.log("app received message", message)
+      setNotificationItem({...message, side: "left"});
+      setLockScreen();
+      await checkForUnseenMessages();    
+    });
   }
 
   onMount(async () => {
@@ -194,13 +214,14 @@
     {:else}
         <Chat
           {playerNodeId}
+          {currentBoard}
           {setPlayerNodeId}
           loadHistory={true}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
-          {setItemModal}
           {setNotificationItem}
           {setLockScreen}
+          {mainView}
         />
       {/if}
   </div>
@@ -235,6 +256,15 @@
     onClose={()=>{
       showLockScreen = false;
       notificationItem = null;
+    }}
+    openBoardForMessage={async (boardId, nodeId)=>{
+      showLockScreen = false;
+      console.log("launching from notification", boardId);
+      let res = await fetch("/api/board/" + boardId);
+      let json = await res.json();
+      setPlayerNodeId(nodeId);
+      currentBoard = json;
+      mainView = "chat";
     }}
   />
 

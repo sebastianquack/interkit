@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
 
+const db = require('../src/dbutil.js');
+
 if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
 }
@@ -22,20 +24,9 @@ try {
   })
 
   const models = await RestHapi.generateModels(mongoose)
-  
-  let messages = await RestHapi.list(models.message, {$where: {scheduled: true }}, Log)
-  if(messages.docs) {
+    
+  await db.deliverScheduledMessages(models.message, Log);
 
-    for(let i = 0; i < messages.docs.length; i++) {
-      let m = messages.docs[i];
-      console.log("delivering: ", m);
-      let result = await RestHapi.update(models.message, m._id, {
-        scheduled: false,
-        timestamp: Date.now(),
-      }, Log)
-      console.log(result);
-    };
-  }
   process.exit()
 
 } catch (err) {

@@ -14,8 +14,12 @@ const emitMessage = async (emitter, data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
   
-  let m = await db.logMessage(msgData);
-  emitter.emit('message', {...msgData, _id: m._id});         
+  let id = data._id;
+  if(!id) {
+    let m = await db.logMessage(msgData);
+    id = m._id;
+  }
+  emitter.emit('message', {...msgData, _id: id});         
 }
 
 const emitInRoom = async (room, data) => {
@@ -125,9 +129,10 @@ exports.init = (listener) => {
       
       socket.leave(room);
       socket.room = null;
-      socket.playerId = null;
+      //socket.playerId = null;
     });
 
+    // this is when user inputs something
     socket.on("message", async (data)=>{
       console.log("socket message received", data);
 
@@ -155,11 +160,37 @@ exports.init = (listener) => {
       }
       handleScript(io, socket, currentNode, data.sender, "onMessage", data);
 
-
-      // maybe todo here: add connected bots -> check if bots are connected and on what node, handleSscript
     });
   
   });
+
+  // check for scheduled messages, deliver and inform connected players via socket
+  const scheduleMessagesInterval = setInterval(async ()=>{
+    let clients = Object.keys(io.sockets.sockets);
+
+    // just a ping to test sockets
+    /*clients.forEach((key)=>{
+      io.sockets.sockets[key].emit('message', {status: "ping"});         
+    })*/
+    
+    let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
+    messages.forEach((m)=>{
+      // check if this message is for a connected client
+      clients.forEach((key)=> {
+        if(io.sockets.sockets[key].playerId) {
+          let includes = false;
+          for(let i = 0; i < m.recipients.length; i++) {
+            if(m.recipients[i].toString() == io.sockets.sockets[key].playerId.toString()) 
+              includes = true;
+          }
+          if(includes) {
+            console.log("connected player found, emitting via socket");            
+            emitMessage(io.sockets.sockets[key], m);
+          }
+        }
+      });
+    })
+  }, 10000);
 
 } 
 

@@ -74,6 +74,7 @@ export const listenForMessages = (callback) => {
 }
 
 export const stopListening = () => {
+  console.log("stopListening");
   reTry(()=>{
     socket.off('message');
   });

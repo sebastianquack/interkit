@@ -207,7 +207,33 @@ exports.scheduleMessage = (timeFromNowObj, data) => {
   exports.logMessage(message);  
 }
 
-
+// pass in messageModel and log so we are able to call it from outside of server application through helper script
+exports.deliverScheduledMessages = async (messageModel, log) => {
+  console.log("deliverScheduledMessages");
+  let messages = await RestHapi.list(messageModel, {$where: {scheduled: true }}, log)
+  let deliveredMesssages = [];
+  if(messages.docs.length) {
+    for(let i = 0; i < messages.docs.length; i++) {
+      let m = messages.docs[i];
+      if(m.deliveryTime <= Date.now()) {
+        console.log("delivering: ", m);
+        let result = await RestHapi.update(messageModel, m._id, {
+          scheduled: false,
+          timestamp: Date.now(),
+        }, log)
+        console.log(result);
+        deliveredMesssages.push(result);
+        let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
+        exports.logPlayerToNode(m.recipients[0], node);
+      } else {
+        console.log("found a scheduled message but not yet time to deliver");
+      }
+    };
+  } else {
+    console.log("no messages scheduled");
+  }
+  return deliveredMesssages;
+}
 
 
 

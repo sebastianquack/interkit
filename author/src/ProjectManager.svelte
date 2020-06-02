@@ -159,7 +159,7 @@
           {project.name}
           <button on:click={()=>{editProject = project;}}>✎</button>
           <button on:click={()=>{currentProject = project;}}>open project</button>
-          <a target="_blank" href="{playerURL}?project={project._id}">external player link</a>
+          <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
       {/each}
       </ul>
     {/if}
