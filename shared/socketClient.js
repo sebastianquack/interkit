@@ -67,7 +67,7 @@ export const joinRoom = (room, execOnArrive=true, allowRejoin=false) => {
 
 export const leaveRoom = (room) => {
   reTry(()=>{
-    socket.off('message');
+    //socket.off('message');
     socket.emit('leaveRoom', room); // ask server to remove us from a room
   });
 }

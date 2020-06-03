@@ -137,7 +137,9 @@
   const initPlayerContainerSocket = ()=>{
     console.log("initialising socket message listener on player container");
     listenForMessages(async (message)=>{
+      console.log("player container received message", message)
       if(chatMessageHandler) {
+        console.log("handing off to chatMessageHandler");
         chatMessageHandler(message);
       } else {
         console.log("player container received message", message)
@@ -149,6 +151,7 @@
   }
 
   const registerMessageHandler = (handler) => {
+    console.log("registerMessageHandler", handler);
     chatMessageHandler = handler
   }
 
@@ -172,6 +175,8 @@
     
     fileServerURL = await getConfig("fileServerURL");
     loading = false;
+
+    initPlayerContainerSocket();
   });
 
   // this happens when player is switched or deleted in authoring
@@ -187,10 +192,6 @@
   $: {
     console.log("playerContainer: currentBoard changed", currentBoard);
     if(!currentBoard) {
-      setTimeout(()=>{
-        if(!currentBoard)
-          initPlayerContainerSocket();   
-      }, 500); // timeout needed to avoid race condition with chat component umounting
       checkForUnseenMessages();    
     }
   }

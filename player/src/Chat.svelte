@@ -67,6 +67,7 @@
 
   onDestroy(() => {
     registerMessageHandler(null);
+    updatePlayerNodeId(null);
     
     if(currentNode)
       leaveRoom(currentNode._id);
