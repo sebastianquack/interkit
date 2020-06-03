@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { initSocket, getPlayerId } from '../../shared/socketClient.js';
+  import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
   let projectId;
@@ -9,6 +10,13 @@
   onMount(async () => {    
     let searchParams = new URLSearchParams(window.location.search);
     projectId = searchParams.get("project");
+
+    if(!projectId) {
+      let defaultProjectId = await getConfig("defaultProject");
+      if(defaultProjectId) {
+        projectId = defaultProjectId;
+      }
+    }
 
     await initSocket();
     playerId = await getPlayerId();
