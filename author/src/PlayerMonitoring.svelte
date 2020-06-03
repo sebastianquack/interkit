@@ -35,7 +35,7 @@ const deletePlayer = async(playerId)=>{
 
 </script>
 
-<div class="container">
+<div class="scroll-container">
 
 <h3>active players <button on:click={loadPlayers}>reload</button> <button on:click={close}>close</button></h3> 
 
@@ -55,11 +55,11 @@ const deletePlayer = async(playerId)=>{
     font-size: 16px;
   }
 
-  .container {
-    height: 100vh;
+  .scroll-container {
     position: absolute;
     top: 0;
     left: 0;
+    bottom: 0;
     padding-left: 10px;
     box-sizing: border-box;
     overflow: scroll;
