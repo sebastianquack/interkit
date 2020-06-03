@@ -7,90 +7,102 @@
   import QRScanner from './QRScanner.svelte';
   import Camera from './Camera.svelte';
 
-  export let authoring;
-  export let playerNodeId;
-  export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
-  export let setPlayerNodeId;
+
+  // main props passed in from the outside
+  export let playerId;
   export let currentBoard;
-  export let togglePlayerInfo = (playerId)=>{};
-  export let loadHistory = false;
+  
+  // props to communicate with player container
+  export let mainView;
   export let updateUnseenMessages;
   export let mapClick;
-  export let mainView;
-
   export let setNotificationItem = ()=>{}; 
   export let setLockScreen = ()=>{};
-  
-  let currentPlayerNode = null;
-  
-  let div;
-  let autoscroll;
-  let items = [];
-  let inputValue;
-  let googleMapsAPIKey;
 
-  let fileServerURL;
-  let playerId;
-  
+  // optional props from authoring system
+  export let authoring;
+  export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
+  export let togglePlayerInfo = (playerId)=>{};
+  export let updatePlayerNodeId;  
+
+  let currentNode = null; // this is the full object of the current node stored in playerodeId
+  let items = []; // these are all the chat items currently displayed
+
+  let inputValue;
   let showItemsSince = Date.now();
   let showMoreItems = false;
   let beginningHistory = false;
-  let initialHistoryLoaded = false;
-  let execOnArrive = true;
+  
+  let div;
+  let autoscroll;
+  let autoTyping = false;
+  let googleMapsAPIKey;
+  let fileServerURL;
+  
+  
+  // reactive & lifecycle methods
 
-  const init = async (nodeId)=> {
-
-    playerId = await getPlayerId();
-    
-    inputValue = "";
-
+  onMount(async ()=>{
+    googleMapsAPIKey = await getConfig("googleMapsAPIKey");
     fileServerURL = await getConfig("fileServerURL");
-    
-    let joinNode = nodeId;
+  })
 
-    // if loadHistory -> pass into items
-    console.log("should we load history", loadHistory, initialHistoryLoaded);
-    if(loadHistory && !initialHistoryLoaded) {
-
-      let response = await fetch("/api/scriptNode/" + nodeId);
-      let requestedNode = await response.json();
-    
-      loadMoreItems(requestedNode.board);
-      scrollUp();
-
-      // find where player is now on this board
-      response = await fetch("/api/nodeLog?player="+playerId+"&board="+requestedNode.board);
-      let lastNode = await response.json();
-      console.log("lastNode", lastNode);
-      if(lastNode.docs.length) {
-        joinNode = lastNode.docs[0].node;
-        execOnArrive = false;
-      }
+  $: {
+    if(currentBoard._id) {
+      console.log("board changed, reset chat", currentBoard._id);
+      reset();
     }
+  }
 
-    if(joinNode != nodeId) {
-      setPlayerNodeId(joinNode);
-      return
+  const reset = ()=>{
+    currentNode = null;
+    items = [];
+    showItemsSince = Date.now();
+    let showMoreItems = false;
+    let beginningHistory = false;
+    inputValue = "";
+    init();
+  }
+
+  onDestroy(() => {
+    if(currentNode)
+      leaveRoom(currentNode._id);
+  })
+
+  const init = async ()=> {
+    
+    console.log("chat init method");
+  
+    let joinNodeId = currentBoard.startingNode;      
+    let execOnArrive = true;
+    
+    // load history 
+    loadMoreItems(currentBoard);
+    scrollUp();
+
+    // find where player is now on this board
+    let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
+    let lastNode = await response.json();
+    console.log("lastNode", lastNode);
+    if(lastNode.docs.length) {
+      joinNodeId = lastNode.docs[0].node;
+      execOnArrive = false; // if arrived here after history, don't exec onArrive
     }
+    
+    // loads node we want to be in and saves it
+    await setCurrentNode(joinNodeId, execOnArrive)
 
-    let response = await fetch("/api/scriptNode/" + joinNode);
-    currentPlayerNode = await response.json();
-
-    //console.log("init currentPlayerNode", currentPlayerNode._id, currentPlayerNode.name);
-
-    joinRoom(joinNode, execOnArrive);
-
-    console.log("setting up listener for chat");
+    // set up socket events
     listenForMessages(async (message)=>{
-      console.log("playerNodeId", playerNodeId);
       console.log("currentBoard", currentBoard);
+      console.log("currentNode", currentNode);
       console.log("message received", message);
 
       let item = {...message};
       if(!item.attachment) item.attachment = {};
       if(!item.params) item.params = {};
 
-      // if this was from a different board, show notification
+      // if this is a scheduled message but from a different board, show notification, don't add message to this board
       if(currentBoard._id != message.board) {
           console.log("warning, message is from a different board")
           setNotificationItem({...item, side: "left"});
@@ -98,15 +110,21 @@
           return;
       }
 
+      //if this was a scheduled item from a different node on the same board, switch back to that node without execOnArrive
+      if(currentBoard._id == message.board && currentNode._id != message.node) {
+          console.log("warning, message is from a different node")
+          await setCurrentNode(message.node, false);
+          setEditNodeId(message.node);  
+      }
+
       if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
           await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
       
+      // respond to moveTo message
       if(item.params.moveTo) {
-        setTimeout(()=>{
-          console.log("playerNodeId", playerNodeId);
+        setTimeout(async ()=>{
           console.log("moveTo", item.params.moveTo);
-          execOnArrive = true;
-          setPlayerNodeId(item.params.moveTo);
+          await setCurrentNode(item.params.moveTo, true);
           setEditNodeId(item.params.moveTo);  
         }, item.params.moveToDelay ? item.params.moveToDelay : 0);
       }
@@ -133,7 +151,7 @@
         scrollUp();
       }
 
-      if(message.message) {
+      if(item.message) {
 
         let isSystemMessage = message.system || message.label == "system";
         let showPlaceholder = !(isSystemMessage || message.params.option);
@@ -162,46 +180,28 @@
           }, 500);
       }
     
-      //if this item was from a different node on the same board, switch back to that node without execOnArrive
-      if(currentBoard._id == message.board && playerNodeId != message.node) {
-          console.log("warning, message is from a different node")
-          execOnArrive = false;
-          setPlayerNodeId(message.node);
-          setEditNodeId(message.node);  
-      }
-
       if(mainView=="map" || mainView == "archive") {
         setNotificationItem({...item, side: "left"});
         setLockScreen();
       }
 
     })    
-
-    googleMapsAPIKey = await getConfig("googleMapsAPIKey");
+    
   }
 
-  $: {
-    if(currentBoard) {
-      console.log("resetting initialHistoryLoaded");
-      initialHistoryLoaded = false;    
-      showItemsSince = Date.now();
-    }
+  const setCurrentNode = async (nodeId, execOnArrive=true)=>{
+  
+    let response = await fetch("/api/scriptNode/" + nodeId);
+    currentNode = await response.json();
+    
+    joinRoom(nodeId, execOnArrive);
+    
+    if(updatePlayerNodeId) updatePlayerNodeId(nodeId);
   }
 
-
-  $: {
-    if(!currentPlayerNode || 
-       (currentPlayerNode && (playerNodeId != currentPlayerNode._id))) {
-      console.log("playerNodeId changed", currentPlayerNode ? currentPlayerNode._id : "null", playerNodeId);
-      if(currentPlayerNode) {
-        leaveRoom(currentPlayerNode._id);    
-      }
-      init(playerNodeId);
-    }
-  }
 
   const loadMoreItems = async (board = currentBoard) => {
-      console.log("loadMoreItems", board);
+      console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
       let query = {
         board,
@@ -236,7 +236,6 @@
         if(!item.params.option) activeOptions = false;
       });
       items = items;
-      initialHistoryLoaded = true;
       updateUnseenMessages();
   } 
 
@@ -262,12 +261,6 @@
       side: rawItem.sender == getPlayerId() ? "right" : (isSystemMessage ? "system" : "left"),
     }
   }
-
-  onDestroy(() => {
-    if(currentPlayerNode)
-      leaveRoom(currentPlayerNode._id);
-    //stopListening();
-  })
 
   const scrollUp = ()=> {
     setTimeout(()=>{
@@ -298,9 +291,6 @@
     }
   }
 
-
-  let autoTyping = false;
-
   const autoType = (item) => {
     if(autoTyping) return;
     autoTyping = true;
@@ -329,14 +319,6 @@
     emitMessage(item);
     inputValue = "";
     scrollUp();
-  }
-
-  const reEnter = ()=> {
-    leaveRoom(currentPlayerNode._id);
-    items = [];
-    setTimeout(()=>{
-      init(currentPlayerNode._id);  
-    }, 50);
   }
 
   let attachmentMenuOpen = false;
@@ -472,10 +454,10 @@
 </div>
 
 {#if authoring}
-  <div class="chat-debug">{currentPlayerNode ? currentPlayerNode.name : ""}</div>
+  <div class="chat-debug">{currentNode ? currentNode.name : ""}</div>
   <div class="author-buttons">
     <!--button on:click={reEnter}>clear & re-enter</button-->
-    <button on:click={()=>setEditNodeId(currentPlayerNode._id)}>edit code</button>
+    <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
     <button on:click={()=>togglePlayerInfo(playerId)}>player info</button>
   </div>
 {/if}

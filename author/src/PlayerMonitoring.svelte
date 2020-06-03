@@ -5,11 +5,12 @@ import { token } from './stores.js';
 export let projectId;
 export let close;
 export let clearPlayerId;
+export let playerId;
 
 let nodeLogs = [];
 
 const loadPlayers = async ()=>{
-    console.log("loading players for", projectId);
+    console.log("loading players for project", projectId);
     const res = await fetch("/api/nodeLog?project=" + projectId + "&$embed=node&$embed=board");
     const json = await res.json();
     console.log(json);
@@ -23,7 +24,7 @@ $: {
 const deletePlayer = async(playerId)=>{
   if(confirm("permanently delete player?")) {
     const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
-    clearPlayerId(playerId);
+    await clearPlayerId(playerId);
     loadPlayers();
   }
 }
@@ -36,7 +37,7 @@ const deletePlayer = async(playerId)=>{
 
 <ul>
   {#each nodeLogs as nl}
-  <li>{nl.player} {nl.board.name}/{nl.node.name} <button on:click={()=>deletePlayer(nl.player)}>delete player</button></li>
+  <li>{nl.player} {nl.board.name}/{nl.node.name} {nl.player == playerId ? "(active)" : ""} <button on:click={()=>deletePlayer(nl.player)}>delete player</button></li>
   {/each}
 </ul>
 

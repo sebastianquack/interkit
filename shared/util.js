@@ -17,13 +17,20 @@ const createPlayer = async () => {
   return json;
 }
 
+export const refreshPlayerId = async () => {
+  console.log("removing local storage playerId ", localStorage.getItem('playerId'));
+  localStorage.setItem("playerId", null);
+  let newPlayerId = await findOrCreatePlayer();
+  return newPlayerId;
+}
+
 export const findOrCreatePlayer = async () => {
 
   let player;
   let playerId = localStorage.getItem('playerId');
   console.log("playerId found", playerId);
 
-  if(!playerId) {
+  if(!playerId || playerId == "null") {
     player = await createPlayer();
   } else {
     const res = await fetch("/api/player/" + playerId);

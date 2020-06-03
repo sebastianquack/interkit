@@ -6,16 +6,13 @@
   
   export let projectId;
   export let playerId;
-  export let setPlayerId;
   export let clearPlayerId;
   export let setEditNodeId;
   export let updatePlayerNodeId;
   
   let playerInfoOpen = false;
-
-  const togglePlayerInfo = (newPlayerId) => {
+  const togglePlayerInfo = () => {
     playerInfoOpen = true;
-    setPlayerId(newPlayerId);
   }
 
 </script>
@@ -26,6 +23,7 @@
     authoring={true}
     {togglePlayerInfo}
     {updatePlayerNodeId}
+    {playerId}
   />
 
   {#if playerInfoOpen && playerId}

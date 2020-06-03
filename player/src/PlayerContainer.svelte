@@ -12,30 +12,33 @@
   import LockScreen from './LockScreen.svelte';
   import { getConfig } from '../../shared/util.js';
 
+  // the two main props that this comonent reacts on
   export let projectId;
+  export let playerId;
+
+  // special props for using in authoring app
   export let authoring;
   export let togglePlayerInfo;
   export let setEditNodeId;
-  export let updatePlayerNodeId; // this is only to tell the authoring system that player has moved to new node
+  export let updatePlayerNodeId; // for tellig the authoring system when player has moved to new node
 
-  let playerNodeId = null; // this is not exposed to authoring
-  let setPlayerNodeId = (nodeId)=>{
-    playerNodeId = nodeId;
-    console.log("setPlayerNodeId on client");
-    if(updatePlayerNodeId) updatePlayerNodeId(nodeId);
-  }; 
-  let loading = true;
+
   let boards = [];
-  let currentBoard = null;
+  let currentBoard = null; // if this is set, the chat is open
+  
   let map;
   let markerItems;
   let documentItems;
-  let itemModal = null;
+  
   let mainView = "chat";
+  let itemModal = null;
   let showLockScreen = false;
   let notificationItem = null;
+  
+  let loading = true;
   let fileServerURL = "";
   let googleReady = false;
+
 
   window.googleReady = ()=>{
     console.log("googleReady");
@@ -58,9 +61,9 @@
       let board = boards[i];
       const query = {
         board: board._id, 
-        recipients: getPlayerId(),
+        recipients: playerId,
         scheduled: false,
-        seen: {"$nin": [getPlayerId()]}
+        seen: {"$nin": [playerId]}
       };
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));
       const mjson = await res.json();
@@ -80,71 +83,28 @@
   }
 
   const loadMarkers = async () => {
-    let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
+    let itemsRes = await fetch("/api/player/" + playerId + "/item");
     let itemsJson = await itemsRes.json();
-    markerItems = itemsJson.docs.filter(m=>m.type == "location");
+    if(itemsJson.docs)
+      markerItems = itemsJson.docs.filter(m=>m.type == "location");
+    else 
+      markerItems = [];
   }
 
   const loadDocuments = async () => {
-    let itemsRes = await fetch("/api/player/" + getPlayerId() + "/item");
+    let itemsRes = await fetch("/api/player/" + playerId + "/item");
     let itemsJson = await itemsRes.json();
-    documentItems = itemsJson.docs.filter(m=>m.type == "document");
+    if(itemsJson.docs)
+      documentItems = itemsJson.docs.filter(m=>m.type == "document");
   }
-
-  $: {
-    if(!playerNodeId) {
-      setTimeout(()=>{
-        if(!playerNodeId) initAppSocket();   
-      }, 500); // timeout needed to avoid race condition with chat component umounting
-      checkForUnseenMessages();    
-    }
-  }
-
-  const initAppSocket = ()=>{
-    console.log("initialising socket listener for root app component");
-    listenForMessages(async (message)=>{
-      if(playerNodeId) {
-        console.log("aborting, root listener not needed here");
-        return;
-      }
-
-      console.log("app received message", message)
-      setNotificationItem({...message, side: "left"});
-      setLockScreen();
-      await checkForUnseenMessages();    
-    });
-  }
-
-  onMount(async () => {
-    await initSocket();
-
-    if(projectId) {
-      const res = await fetch("/api/board?$where=" + JSON.stringify(
-        {"listed": true, "project": projectId}));
-      const json = await res.json();
-      boards = json.docs;
-      
-      console.log(boards);
-      if(boards.length == 1) {
-        playerNodeId = boards[0].startingNode;
-        console.log("opening starting node");
-        currentBoard = boards[0];
-      }
-    } 
-    
-    await loadMarkers();
-    fileServerURL = await getConfig("fileServerURL");
-    loading = false;
-  });
 
   const launch = (board) => {
-    console.log("launching", board)
+    console.log("launching board", board.name, board._id)
     currentBoard = board;
-    setPlayerNodeId(board.startingNode);
   }
 
   const openBoardFromNodeId = async (nodeId)=>{
-    let res = await fetch("/api/scriptNode/" + playerNodeId + "?$embed=board");
+    let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
     currentBoard = nodeJson.board;
   }
@@ -154,7 +114,6 @@
     console.log("launching from notification", boardId);
     let res = await fetch("/api/board/" + boardId);
     let json = await res.json();
-    setPlayerNodeId(nodeId);
     currentBoard = json;
     mainView = "chat";
   }
@@ -173,6 +132,59 @@
     mainView = "archive";
   }
 
+  const initPlayerContainerSocket = ()=>{
+    console.log("initialising socket listener for player container");
+    listenForMessages(async (message)=>{
+      console.log("player container received message", message)
+      setNotificationItem({...message, side: "left"});
+      setLockScreen();
+      await checkForUnseenMessages();    
+    });
+  }
+
+
+  // reactive & lifecycle calls
+
+
+  onMount(async () => {
+    
+    // for projects with only one listed board, automatically go to that board
+    if(projectId) {
+      const res = await fetch("/api/board?$where=" + JSON.stringify(
+        {"listed": true, "project": projectId}));
+      const json = await res.json();
+      boards = json.docs;
+      
+      if(boards.length == 1) {
+        console.log("project has only 1 listed board, using that");
+        currentBoard = boards[0];
+      }
+    } 
+    
+    fileServerURL = await getConfig("fileServerURL");
+    loading = false;
+  });
+
+  // this happens when player is switched or deleted in authoring
+  $: {
+    console.log("playerContainer: playerId changed", playerId);
+    currentBoard = null;
+    if(playerId) 
+      loadMarkers();
+  }
+
+  // resets message listener when player leaves board -> todo refactor, unsafe
+  $: {
+    if(!currentBoard) {
+      setTimeout(()=>{
+        initPlayerContainerSocket();   
+      }, 500); // timeout needed to avoid race condition with chat component umounting
+      checkForUnseenMessages();    
+    }
+  }
+
+
+
 </script>
 
 <div class="main-container">
@@ -180,9 +192,9 @@
 {#if !loading}
 
   <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
-    {#if playerNodeId && mainView == "chat"}
+    {#if currentBoard && mainView == "chat"}
         {#if boards.length > 1}
-          <button style="width: 2em" on:click={()=>{setPlayerNodeId(null);}}>{"<"}</button>
+          <button style="width: 2em" on:click={()=>{currentBoard = null}}>{"<"}</button>
         {/if}
         {#if currentBoard && boards.length > 1}
         &nbsp;<span
@@ -201,7 +213,7 @@
   </div>
 
   <div class="content-container">
-    {#if !playerNodeId}
+    {#if !currentBoard}
         <ul class="board-select">
           {#each boards as board}
             <li on:click={()=>{launch(board)}}>
@@ -212,10 +224,8 @@
         </ul>
     {:else}
         <Chat
-          {playerNodeId}
+          {playerId}
           {currentBoard}
-          {setPlayerNodeId}
-          loadHistory={true}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
           {setNotificationItem}
@@ -224,6 +234,7 @@
           {setEditNodeId}
           {authoring}
           {togglePlayerInfo}
+          {updatePlayerNodeId}
         />
       {/if}
   </div>
@@ -264,6 +275,11 @@
 {/if}
 
 </div>
+
+
+
+
+
 
 <style>
 

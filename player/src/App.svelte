@@ -1,12 +1,17 @@
 <script>
   import { onMount } from 'svelte';
+  import { initSocket, getPlayerId } from '../../shared/socketClient.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
   let projectId;
+  let playerId;
 
-  onMount(() => {    
+  onMount(async () => {    
     let searchParams = new URLSearchParams(window.location.search);
     projectId = searchParams.get("project");
+
+    await initSocket();
+    playerId = await getPlayerId();
   });
 
 </script>
@@ -14,12 +19,10 @@
 
 <div class="app-container">
 
-{#if projectId}   
+{#if projectId && playerId}   
 
-  
-    <PlayerContainer {projectId} />
-  
-  
+    <PlayerContainer {projectId} {playerId} />
+    
 {:else}
 
   <p style="margin: 16px">nothing to see here...</p>

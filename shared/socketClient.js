@@ -1,6 +1,6 @@
 import * as io from '../author/node_modules/socket.io-client';
 
-import { getConfig, findOrCreatePlayer } from './util.js';
+import { getConfig, findOrCreatePlayer, refreshPlayerId } from './util.js';
 
 let socket = null;
 let playerId;
@@ -27,7 +27,7 @@ export const initSocket = async () => {
     console.log("reconnect_attempt");  
   });
 
-  playerId = await findOrCreatePlayer();
+  playerId = await findOrCreatePlayer();  
 }
 
 // if socket or playerId isn't available yet, try again once after timeout - todo optimize

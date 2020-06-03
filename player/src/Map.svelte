@@ -34,6 +34,8 @@ const initMarkers = ()=>{
     })
     markers = [];
 
+    if(!markerItems) return;
+
     markerItems.forEach((p, index)=>{      
 
       let placePosition = {lat: p.value.lat, lng: p.value.lng};
