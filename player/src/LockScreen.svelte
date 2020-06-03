@@ -13,7 +13,7 @@
   export let notificationItem;
   export let openBoardForMessage;
 
-  import ItemBubble from '../../shared/ItemBubble.svelte';
+  import ItemBubble from './ItemBubble.svelte';
 
   const notificationTap = ()=>{
     if(notificationItem.board && notificationItem.node) {

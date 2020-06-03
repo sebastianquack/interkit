@@ -1,5 +1,4 @@
 <script>
-  import Chat from '../../shared/Chat.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
 
   import PlayerContainer from '../../player/src/PlayerContainer.svelte';

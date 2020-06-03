@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import {onMount, onDestroy } from 'svelte';
-import { getConfig } from './util.js';
+import { getConfig } from '../../shared/util.js';
 
 let videoElement;
 let mediaStream;

@@ -1,12 +1,10 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage, getPlayerId } from './socketClient.js';
-  import { getConfig } from './util.js';
+  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage, getPlayerId } from '../../shared/socketClient.js';
+  import { getConfig } from '../../shared/util.js';
 
   import ItemBubble from './ItemBubble.svelte';
-  import QRScanner from './QRScanner.svelte';
-  import Camera from './Camera.svelte';
-
+  import AttachmentToolbelt from './AttachmentToolbelt.svelte';
 
   // main props passed in from the outside
   export let playerId;
@@ -32,7 +30,8 @@
   let showItemsSince = Date.now();
   let showMoreItems = false;
   let beginningHistory = false;
-  
+
+  let attachmentMenuOpen = false;
   let div;
   let autoscroll;
   let autoTyping = false;
@@ -200,7 +199,6 @@
     if(updatePlayerNodeId) updatePlayerNodeId(nodeId);
   }
 
-
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
@@ -310,94 +308,6 @@
     }, delay * (item.message.length+5));
   }
 
-  const sendQRCode = (code) => {
-    let item = {
-      message: "[QR code scanned]",
-      attachment: {QRCode: code},
-      params: {}
-    }
-    items = items.concat({...item, side: "right"});
-    emitMessage(item);
-    inputValue = "";
-    scrollUp();
-  }
-
-  let attachmentMenuOpen = false;
-  const openAttachmentMenu = ()=> {
-    console.log("open attachment");
-    attachmentMenuOpen = true;
-  }
-  const closeAttachmentMenu = ()=>{
-    attachmentMenuOpen = false;
-  }
-
-  let QRScannerOpen = false
-  const openQRScanner = ()=> { QRScannerOpen = true; }
-  const closeQRScanner = ()=> {
-    QRScannerOpen = false;
-    closeAttachmentMenu();
-  }
-
-  let cameraOpen = false
-  const openCamera = ()=> {
-    cameraOpen = true;
-  }
-  const closeCamera = ()=> {
-    cameraOpen = false;
-    closeAttachmentMenu();
-  }
-
-  const getGPSLocation = ()=>{
-    if(navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position)=>{
-        console.log("gps", position.coords);
-
-        let mapUrl = "https://www.google.com/maps/@"+position.coords.latitude+","+position.coords.longitude+",18z";
-        let mapImgUrl = 
-          "https://maps.googleapis.com/maps/api/staticmap?center="
-          +position.coords.latitude+","+position.coords.longitude
-          +"&zoom=18&size=150x150"
-          //+"&markers=size:small%7Ccolor:black%7C"+position.coords.latitude+","+position.coords.longitude
-          +"&key="+googleMapsAPIKey
-          +"&style=element:geometry%7Ccolor:0xf5f5f5&style=element:labels.icon%7Cvisibility:off&style=element:labels.text.fill%7Ccolor:0x616161&style=element:labels.text.stroke%7Ccolor:0xf5f5f5&style=feature:administrative.land_parcel%7Celement:labels.text.fill%7Ccolor:0xbdbdbd&style=feature:poi%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:poi%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:poi.park%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:poi.park%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:road%7Celement:geometry%7Ccolor:0xffffff&style=feature:road.arterial%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:road.highway%7Celement:geometry%7Ccolor:0xdadada&style=feature:road.highway%7Celement:labels.text.fill%7Ccolor:0x616161&style=feature:road.local%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:transit.line%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:transit.station%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:water%7Celement:geometry%7Ccolor:0xc9c9c9&style=feature:water%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&";
-        
-        let item = {
-          attachment: {
-            mediatype: "GPS",
-            imgSrc: mapImgUrl,
-            lat: position.coords.latitude, 
-            lng: position.coords.longitude,
-            accuracy: position.coords.accuracy
-          },
-          params: {},
-        }
-
-        items = items.concat({...item, side: "right"});
-        emitMessage(item);
-        inputValue = "";
-      });
-    } else {
-      alert("geolocation not supported");
-    }
-    closeAttachmentMenu();
-  }
-
-  const sendImage = async (filename) => {
-    let fileServerURL = await getConfig("fileServerURL");
-    let item = {
-      attachment: {
-        mediatype: "image",
-        imgSrc: fileServerURL + filename,  
-        filename: filename
-      },
-      params: {}
-    }
-    items = items.concat({...item, side: "right"});
-    emitMessage(item);
-    inputValue = "";
-    scrollUp();
-  }
-
 </script>
 
 <div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
@@ -416,41 +326,21 @@
       {/each}
     </div>
 
-    <div class="input-container">      
     {#if !attachmentMenuOpen}
-        <button style="width: 2em" class="open-attachment" on:click={openAttachmentMenu}>📎</button>
+      <div class="input-container">      
+        <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}>📎</button>
         <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
-    {:else}
-        <button on:click={openCamera}>Camera</button>
-        <button on:click={openQRScanner}>QR Code</button>
-        <button on:click={getGPSLocation}>GPS Location</button>
-        <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
+      </div>
     {/if}
-    </div>  
-
-  {#if QRScannerOpen}
-    <div class="qr-scanner-container">
-      <button class="close-qr" on:click={closeQRScanner}>close</button>
-      <QRScanner
-        onScan={(code)=>{
-          closeQRScanner();
-          sendQRCode(code);
-        }}
-      />
-    </div>
-  {/if}
-
-  {#if cameraOpen}
-    <div class="qr-scanner-container">
-      <Camera
-        onUpload={async (imageURL)=>{
-          closeCamera();
-          await sendImage(imageURL);
-        }}
-        onClose={closeCamera}
-      />
-    </div>
-  {/if}
+    
+    <AttachmentToolbelt
+      {attachmentMenuOpen}
+      closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
+      {scrollUp}
+      {googleMapsAPIKey}
+      addItem={(i)=>items = items.concat({...i})}
+      clearInput={()=>inputValue = ""}
+    />
   
 </div>
 
@@ -516,12 +406,6 @@
     margin-right: 10px;
   }
 
-  .close-attachment {
-    position: absolute;
-    right: 0;
-    top: 10px;
-  }
-
   input {
     flex: auto;
     margin-bottom: 10px;
@@ -535,20 +419,6 @@
     left: 50%;
     transform: translateX(-50%);
     position: relative;
-  }
-
-  .qr-scanner-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-
-  .close-qr {
-    position: absolute;
-    top: 5px;
-    right: 5px;
   }
 
   .chat-debug {

@@ -4,7 +4,7 @@
 
 <script>
   import { onMount } from 'svelte';
-  import Chat from '../../shared/Chat.svelte';
+  import Chat from './Chat.svelte';
   import { initSocket, getPlayerId, listenForMessages } from '../../shared/socketClient.js';
   import Map from './Map.svelte';
   import Archive from './Archive.svelte';
