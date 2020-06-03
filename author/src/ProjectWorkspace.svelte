@@ -19,7 +19,10 @@
 
   
   let editNodeId = null;
-  const setEditNodeId = (nodeId)=>{editNodeId = nodeId};
+  const setEditNodeId = (nodeId)=>{
+    if(currentBoardData)
+      editNodeId = nodeId
+  };
 
   let playerNodeId = null;
   const setPlayerNodeId = (nodeId)=>{

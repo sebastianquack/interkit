@@ -58,7 +58,12 @@
   }
 
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
-  $: startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id);
+  
+  let startingNodeChanged = false;
+  $: {
+    if(currentBoardData)
+      startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id);
+  }
   
   async function save() {
 
