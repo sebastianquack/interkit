@@ -2,7 +2,7 @@
   import Chat from '../../shared/Chat.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
 
-  import PlayerClient from '../../player/src/PlayerClient.svelte';
+  import PlayerContainer from '../../player/src/PlayerContainer.svelte';
   
   export let projectId;
   export let playerId;
@@ -20,7 +20,7 @@
 
 </script>
   
-  <PlayerClient
+  <PlayerContainer
     {projectId}
     {setEditNodeId}
     authoring={true}

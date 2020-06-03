@@ -57,11 +57,13 @@
 
   <div class="horizontal-divider" 
     on:mousedown={startDrag}
-  ></div>
+  >
+    <slot name="horizontal-divider"></slot>
+  </div>
 
 </div>
 
-<div id="bottom-right" class="area" style="height: {100 - height}vh; {dragging ? 'user-select: none' : ''}">
+<div id="bottom-right" style="height: {100 - height}vh; {dragging ? 'user-select: none' : ''}">
 
   <slot name="bottom-right-work-area"></slot>
 
@@ -119,6 +121,7 @@
     top: 0;
     right: 0;
     border-left: 4px solid gray;
+    padding-bottom: 2em;
   }
 
   .horizontal-divider {
@@ -126,9 +129,14 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 4px;
-    background-color: gray;
+    background-color: #fff; 
+    border-top: 2px solid gray;
+    border-bottom: 2px solid gray;
     z-index: 200;
+    padding: 5px;
+    font-size: 80%;
+    text-align: right;
+    box-sizing: border-box;
   }
 
   .horizontal-divider:hover {
@@ -137,9 +145,11 @@
 
   #bottom-right {
     width: 50%;
+    position: absolute;
     bottom: 0;
     right: 0;
     border-left: 4px solid gray;
+    box-sizing: border-box;
   }
 
 </style>

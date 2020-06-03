@@ -277,15 +277,9 @@
   }
 
   .main-container {
-    position: absolute;
-    top: 0;
+    position: relative;
     width: 100%;
     height: 100%;
-    max-width: 800px;
-    background-color: white;
-    left: 50%;
-    transform: translate(-50%, 0);
-    padding: 8px;
     box-sizing: border-box;
   }
 
@@ -295,7 +289,7 @@
 
   .top-menu {
     height: 55px;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     padding: 10px;

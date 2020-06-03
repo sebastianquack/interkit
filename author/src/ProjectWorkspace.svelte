@@ -149,8 +149,7 @@ function onMessage() {
     
     <div class="project-title">
         <h2>{project.name}</h2>
-        <button on:click={close}>close</button>
-        <a target="_blank" href="{playerURL}?project={project._id}">project link</a>
+        <button on:click={close}>close</button><br>
     </div>
 
 
@@ -221,6 +220,10 @@ function onMessage() {
     {/if}
   </div>
 
+  <div slot="horizontal-divider">
+    <a target="_blank" href="{playerURL}?project={project._id}">external player</a>
+  </div>
+
   <div slot="bottom-right-work-area" class="h100">
     <PlaytestArea
       projectId={project._id}
@@ -241,13 +244,19 @@ function onMessage() {
   .project-title {
     position: absolute;
     z-index: 20;
+    text-align: left;
+  }
+
+  .project-title button {
+    vertical-align: top;
+    margin-left: 5px;
   }
 
 
   h2 {
     display: inline-block;
     margin: 0px;
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   #toggle-attachment-manager {
