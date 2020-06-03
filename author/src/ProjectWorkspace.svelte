@@ -19,9 +19,17 @@
 
   
   let editNodeId = null;
-  const setEditNodeId = (nodeId)=>{
-    if(currentBoardData)
-      editNodeId = nodeId
+  const setEditNodeId = async (nodeId)=>{
+    const res = await fetch("/api/scriptNode/" + nodeId);
+    const json = await res.json();
+    
+    if(!currentBoardData || currentBoardData._id != json.board) {
+      currentBoardId = json.board;  
+      loadBoardData()
+    }
+    
+    editNodeId = nodeId
+    
   };
 
   let playerNodeId = null;
