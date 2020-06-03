@@ -96,6 +96,9 @@
     // loads node we want to be in and saves it
     await setCurrentNode(joinNodeId, execOnArrive)
 
+    // make sure this has been loaded when we register the handler
+    fileServerURL = await getConfig("fileServerURL");
+
     // set up socket events
     registerMessageHandler(async (message)=>{
       console.log("currentBoard", currentBoard);
