@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { joinRoom, leaveRoom, listenForMessages, stopListening, emitMessage, getPlayerId } from '../../shared/socketClient.js';
+  import { joinRoom, leaveRoom, emitMessage, getPlayerId } from '../../shared/socketClient.js';
   import { getConfig } from '../../shared/util.js';
 
   import ItemBubble from './ItemBubble.svelte';
@@ -11,6 +11,7 @@
   export let currentBoard;
   
   // props to communicate with player container
+  export let registerMessageHandler;
   export let mainView;
   export let updateUnseenMessages;
   export let mapClick;
@@ -65,6 +66,8 @@
   }
 
   onDestroy(() => {
+    registerMessageHandler(null);
+    
     if(currentNode)
       leaveRoom(currentNode._id);
   })
@@ -93,7 +96,7 @@
     await setCurrentNode(joinNodeId, execOnArrive)
 
     // set up socket events
-    listenForMessages(async (message)=>{
+    registerMessageHandler(async (message)=>{
       console.log("currentBoard", currentBoard);
       console.log("currentNode", currentNode);
       console.log("message received", message);

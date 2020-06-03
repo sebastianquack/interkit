@@ -29,6 +29,8 @@
   let map;
   let markerItems;
   let documentItems;
+
+  let chatMessageHandler = null;
   
   let mainView = "chat";
   let itemModal = null;
@@ -133,15 +135,22 @@
   }
 
   const initPlayerContainerSocket = ()=>{
-    console.log("initialising socket listener for player container");
+    console.log("initialising socket message listener on player container");
     listenForMessages(async (message)=>{
-      console.log("player container received message", message)
-      setNotificationItem({...message, side: "left"});
-      setLockScreen();
-      await checkForUnseenMessages();    
+      if(chatMessageHandler) {
+        chatMessageHandler(message);
+      } else {
+        console.log("player container received message", message)
+        setNotificationItem({...message, side: "left"});
+        setLockScreen();
+        await checkForUnseenMessages();    
+      }
     });
   }
 
+  const registerMessageHandler = (handler) => {
+    chatMessageHandler = handler
+  }
 
   // reactive & lifecycle calls
 
@@ -238,6 +247,7 @@
           {authoring}
           {togglePlayerInfo}
           {updatePlayerNodeId}
+          {registerMessageHandler}
         />
       {/if}
   </div>
