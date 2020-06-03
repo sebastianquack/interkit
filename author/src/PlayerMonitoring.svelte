@@ -21,6 +21,10 @@ $: {
   if(projectId) loadPlayers();
 }
 
+$: {
+  if(playerId) loadPlayers();
+}
+
 const deletePlayer = async(playerId)=>{
   if(confirm("permanently delete player?")) {
     const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
@@ -33,7 +37,7 @@ const deletePlayer = async(playerId)=>{
 
 <div class="container">
 
-<h3>active players <button on:click={close}>close</button></h3> 
+<h3>active players <button on:click={loadPlayers}>reload</button> <button on:click={close}>close</button></h3> 
 
 <ul>
   {#each nodeLogs as nl}

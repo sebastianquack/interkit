@@ -3,8 +3,8 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket, joinRoom, getPlayerId } from '../../shared/socketClient.js';
-  import { getConfig, refreshPlayerId } from '../../shared/util.js';
+  import { initSocket, joinRoom, getPlayerId, refreshPlayerId } from '../../shared/socketClient.js';
+  import { getConfig } from '../../shared/util.js';
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';

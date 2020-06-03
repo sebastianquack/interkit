@@ -1,11 +1,17 @@
 import * as io from '../author/node_modules/socket.io-client';
 
-import { getConfig, findOrCreatePlayer, refreshPlayerId } from './util.js';
+import { getConfig, findOrCreatePlayer, removePlayerFromLocalStorage } from './util.js';
 
 let socket = null;
 let playerId;
 
 export const getPlayerId = () => {
+  return playerId;
+}
+
+export const refreshPlayerId = async () => {
+  removePlayerFromLocalStorage();
+  playerId = await findOrCreatePlayer();
   return playerId;
 }
 

@@ -17,11 +17,9 @@ const createPlayer = async () => {
   return json;
 }
 
-export const refreshPlayerId = async () => {
+export const removePlayerFromLocalStorage = () => {
   console.log("removing local storage playerId ", localStorage.getItem('playerId'));
   localStorage.setItem("playerId", null);
-  let newPlayerId = await findOrCreatePlayer();
-  return newPlayerId;
 }
 
 export const findOrCreatePlayer = async () => {
