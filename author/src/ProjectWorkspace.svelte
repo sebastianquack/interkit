@@ -52,6 +52,7 @@
   const clearPlayerId = async (id)=> {
     if(id == playerId) {
       playerNodeId = null;
+      playerId = null; // set to null first so attached player resets
       playerId = await refreshPlayerId();
     }
   }

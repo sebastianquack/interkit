@@ -156,7 +156,7 @@
       boards = json.docs;
       
       if(boards.length == 1) {
-        console.log("project has only 1 listed board, using that");
+        console.log("project has only 1 listed board, using that", boards[0]);
         currentBoard = boards[0];
       }
     } 
@@ -168,16 +168,19 @@
   // this happens when player is switched or deleted in authoring
   $: {
     console.log("playerContainer: playerId changed", playerId);
-    currentBoard = null;
     if(playerId) 
       loadMarkers();
+    else 
+      currentBoard = null;
   }
 
   // resets message listener when player leaves board -> todo refactor, unsafe
   $: {
+    console.log("playerContainer: currentBoard changed", currentBoard);
     if(!currentBoard) {
       setTimeout(()=>{
-        initPlayerContainerSocket();   
+        if(!currentBoard)
+          initPlayerContainerSocket();   
       }, 500); // timeout needed to avoid race condition with chat component umounting
       checkForUnseenMessages();    
     }

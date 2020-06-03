@@ -48,10 +48,11 @@
   })
 
   $: {
-    if(currentBoard._id) {
-      console.log("board changed, reset chat", currentBoard._id);
-      reset();
-    }
+    if(currentBoard)
+      if(currentBoard._id && playerId) {
+        console.log("board or player changed, re-init chat", currentBoard._id);
+        reset();
+      }
   }
 
   const reset = ()=>{
