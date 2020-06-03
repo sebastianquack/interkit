@@ -205,7 +205,7 @@
       console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
       let query = {
-        board,
+        board: board._id,
         recipients: playerId,
         timestamp: {$lt: showItemsSince},
         scheduled: {$ne: true}
