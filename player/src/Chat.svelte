@@ -209,6 +209,9 @@
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
+
+      if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
+
       let query = {
         board: board._id,
         recipients: playerId,

@@ -12,7 +12,7 @@
   export let googleMapsAPIKey;
   export let addItem;
   export let clearInput;
-  
+
   let QRScannerOpen = false
   const openQRScanner = ()=> { QRScannerOpen = true; }
   const closeQRScanner = ()=> {
@@ -79,6 +79,8 @@
 
   const sendImage = async (filename) => {
     let fileServerURL = await getConfig("fileServerURL");
+    console.log("fileServerURL", fileServerURL);
+
     let item = {
       attachment: {
         mediatype: "image",
