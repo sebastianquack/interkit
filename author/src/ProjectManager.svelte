@@ -1,15 +1,19 @@
 <script>
 
   import { onMount } from 'svelte';
+  import { push, replace } from 'svelte-spa-router';
 
   import ProjectWorkspace from './ProjectWorkspace.svelte';
   import { getConfig } from '../../shared/util.js';
   import {token, userId, loggedInUsername} from './stores.js';
   import Logout from './Logout.svelte';
 
+  export let params = {}
+
   let currentProject = null;
   let editProject = null;
   let projects = [];
+  let loading = true;
 
   let playerURL;
   let newEditor = "";
@@ -133,58 +137,71 @@
       }
   }
 
-  onMount(loadProjectList);
+  onMount(async () => {
+    await loadProjectList(); 
+    if (params.projectId) { 
+      currentProject = projects.find( ({_id}) => _id === params.projectId ) 
+    }
+    loading = false;
+  });
 
 </script>
 
+{#if loading}
 
-{#if currentProject}
-
-  <ProjectWorkspace
-    project={currentProject}
-    close={()=>currentProject = null}
-  />
+  <p>Loading ...</p>
 
 {:else}
 
-  {#if !editProject}
+  {#if currentProject}
 
-    <Logout/>
-  
-    {#if projects}
-      <h1>Projects</h1>
-      <ul>
-      {#each projects as project}
-        <li>
-          {project.name}
-          <button on:click={()=>{editProject = project;}}>✎</button>
-          <button on:click={()=>{currentProject = project;}}>open project</button>
-          <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
-      {/each}
-      </ul>
-    {/if}
-      
-    <button on:click={addProject}>new</button>
+    <ProjectWorkspace
+      project={currentProject}
+      close={()=> {replace('/'); currentProject = null}}
+    />
 
   {:else}
 
-    <button on:click={()=>{editProject = null}}>back</button>
+    {#if !editProject}
 
-    <h3>project name</h3>
-    <input type="text" bind:value={editProject.name}/>
-    <button on:click={saveProject}>save</button>
-
-    {#if editProject.users}
-      <h3>project editors</h3>
-      {#each editProject.users as user}
-        <ul>
-          <li>{user.user.username} <span on:click={()=>{removeEditor(user.user._id)}}>x</span></li>
-        </ul>
-      {/each}
-      <input type="text" bind:value={newEditor}/>
-      <button on:click={addEditor}>add editor</button>
-    {/if}
+      <Logout/>
     
+      {#if projects}
+        <h1>Projects</h1>
+        <ul>
+        {#each projects as project}
+          <li>
+            {project.name}
+            <button on:click={()=>{editProject = project;}}>✎</button>
+            <button on:click={()=>{push('/'+project._id); currentProject = project}}>open project</button>
+            <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
+        {/each}
+        </ul>
+      {/if}
+        
+      <button on:click={addProject}>new</button>
+
+    {:else}
+
+      <button on:click={()=>{editProject = null}}>back</button>
+
+      <h3>project name</h3>
+      <input type="text" bind:value={editProject.name}/>
+      <button on:click={saveProject}>save</button>
+
+      {#if editProject.users}
+        <h3>project editors</h3>
+        {#each editProject.users as user}
+          <ul>
+            <li>{user.user.username} <span on:click={()=>{removeEditor(user.user._id)}}>x</span></li>
+          </ul>
+        {/each}
+        <input type="text" bind:value={newEditor}/>
+        <button on:click={addEditor}>add editor</button>
+      {/if}
+      
+
+    {/if}
 
   {/if}
 
