@@ -31,27 +31,19 @@ cd -
 cd api && npm start
 ```
 
-4. prepare configs
-```sh
-cd admin && npm start
-# open http://localhost:3000
-```
-Log in with username `admin` and ADMIN_PASSWORD from api/.env and add this entry to `configs`:
-key `fileServerURL`, value `http://localhost:9002/dreamshiplocal/`
-
-5. run author
+4. run author
 ````sh
 cd author && npm run dev
 # open http://localhost:8080
 ````
 
-6. run player
+5. run player
 ````sh
 cd player && npm run dev
 # open http://localhost:9000
 ````
 
-7. more tools
+6. more tools
 - Mongo Express: `http://localhost:9001/`
 - Minio: `http://localhost:9002/`
 - Swagger API documentation: `http://localhost:9000/api`
