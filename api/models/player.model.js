@@ -20,7 +20,11 @@ module.exports = function (mongoose) {
     }, Log);
     await RestHapi.deleteMany(RestHapi.models.variable, variables.docs, Log);
 
-    // todo: messages!
+    // todo: messages?
+
+    let itemAssociations = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
+    await RestHapi.removeMany(RestHapi.models.player, playerId, RestHapi.models.item, "items", itemAssociations.docs)
+    
   }
   
   Schema.statics = {

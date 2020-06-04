@@ -94,10 +94,13 @@
   }
 
   const loadDocuments = async () => {
+    console.log("loading document items for player", playerId);
     let itemsRes = await fetch("/api/player/" + playerId + "/item");
     let itemsJson = await itemsRes.json();
-    if(itemsJson.docs)
+    if(itemsJson.docs) {
+      console.log(itemsJson.docs);
       documentItems = itemsJson.docs.filter(m=>m.type == "document");
+    }
   }
 
   const launch = (board) => {
