@@ -85,7 +85,7 @@
   }
 
   const loadMarkers = async () => {
-    let itemsRes = await fetch("/api/player/" + playerId + "/item");
+    let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
     if(itemsJson.docs)
       markerItems = itemsJson.docs.filter(m=>m.type == "location");
@@ -95,7 +95,7 @@
 
   const loadDocuments = async () => {
     console.log("loading document items for player", playerId);
-    let itemsRes = await fetch("/api/player/" + playerId + "/item");
+    let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
     if(itemsJson.docs) {
       console.log(itemsJson.docs);
