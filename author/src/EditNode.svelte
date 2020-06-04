@@ -31,7 +31,8 @@
     scriptNode = json;
     scriptNodeEdit = {...json};
 
-    startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
+    if(currentBoardData)
+      startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
 
     if(typeof scriptNodeEdit.multiPlayer == "undefined") {
       scriptNodeEdit.multiPlayer = false;

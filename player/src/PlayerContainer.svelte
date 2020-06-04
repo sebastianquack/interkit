@@ -50,7 +50,7 @@
   const setLockScreen = ()=>showLockScreen=true;
   
   const setNotificationItem = (item)=>{
-    console.log("setNotificationItem", item);
+    //console.log("setNotificationItem", item);
     if(!item.attachment) item.attachment = {};
     if(!item.params) item.params = {};
     notificationItem = item;
@@ -243,6 +243,7 @@
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
           {setNotificationItem}
+          {showLockScreen}
           {setLockScreen}
           {mainView}
           {setEditNodeId}

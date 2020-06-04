@@ -29,7 +29,10 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       required: true
     },
-    timestamp: {
+    timestamp: {              // primary sorting attribute
+      type: Types.Number
+    },
+    outputOrder: {            // secondary sorting if timestamp is identical
       type: Types.Number
     },
     system: {

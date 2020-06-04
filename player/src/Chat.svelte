@@ -16,6 +16,7 @@
   export let updateUnseenMessages;
   export let mapClick;
   export let setNotificationItem = ()=>{}; 
+  export let showLockScreen; 
   export let setLockScreen = ()=>{};
 
   // optional props from authoring system
@@ -112,7 +113,6 @@
       // if this comes from a different board, show notification, don't add message to this board
       if(currentBoard._id != message.board) {
           console.log("warning, message is from a different board")
-          setNotificationItem({...item, side: "left"});
           setLockScreen();
           return;
       }
@@ -142,30 +142,24 @@
           item.attachment.audioSrc = fileServerURL + item.attachment.filename;
         }
         items.push(item);
-        setNotificationItem(item);
-        items.sort((a,b)=>a.timestamp-b.timestamp);
-        items = items; 
+        sortItems();
         console.log(items);  
         scrollUp();
       }
 
+      let isSystemMessage = false;
+
       if(item.message) {
 
-        let isSystemMessage = message.system || message.label == "system";
+        isSystemMessage = message.system || message.label == "system";
         let showPlaceholder = !(isSystemMessage || message.params.option);
 
         items.push({...item, 
           side: isSystemMessage ? "system" : "left",
           placeholder: showPlaceholder,
         });
-        items.sort((a,b)=>a.timestamp-b.timestamp);
-        items = items;
+        sortItems();
         scrollUp();
-
-        setNotificationItem({...item, 
-          side: isSystemMessage ? "system" : "left",
-          placeholder: false,
-        });
 
         if(showPlaceholder)
           setTimeout(() => {
@@ -178,8 +172,8 @@
           }, 500);
       }
     
-      if(mainView=="map" || mainView == "archive") {
-        setNotificationItem({...item, side: "left"});
+      if(mainView=="map" || mainView == "archive" || showLockScreen) {
+        setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         setLockScreen();
       }
 
@@ -210,9 +204,9 @@
         scheduled: {$ne: true}
       }
       let limit = 10;
-      let response = await fetch("/api/message?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+      let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));
       let historyItems = await response.json();
-      console.log(historyItems.docs);
+      console.log("history loaded", historyItems.docs);
       if(historyItems.docs.length) {
         console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
         showItemsSince = historyItems.docs[historyItems.docs.length - 1].timestamp;
@@ -224,8 +218,11 @@
       } else {
         showMoreItems = true;
       }
-      let activeOptions = true; // show options only if they are the last ones at bottom
-      historyItems.docs.forEach(async item=>{        
+      // show options only if they are the last ones at bottom
+      // TODO: disable but still show old options!
+      let activeOptions = true; 
+      for(let i = 0; i < historyItems.docs.length; i++) {
+        let item = historyItems.docs[i];
         if(!item.params) item.params = {};
         if(!item.params.option || (activeOptions && item.params.option)) {
           let i = parseItem(item);
@@ -234,10 +231,20 @@
             await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
         }
         if(!item.params.option) activeOptions = false;
-      });
+      }
       items = items;
       updateUnseenMessages();
   } 
+
+  const sortItems = () => {
+    items.sort((a,b)=> {
+      let x = a.timestamp - b.timestamp;
+      return x == 0 ? a.outputOrder - b.outputOrder : x;
+    });
+    //items.sort((a,b)=>a.timestamp-b.timestamp);
+    items = items; 
+    console.log("sorted items", items);
+  }
 
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};

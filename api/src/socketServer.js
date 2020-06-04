@@ -239,11 +239,12 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
           console.log("emitMessage socket.room", socket.room);
-          emitInRoom(socket.room, {...result.outputs[i], recipients, node, board});
+          emitInRoom(socket.room, {...result.outputs[i], recipients, node, board, outputOrder: i});
         } else {
-          emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board}); 
+          emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
         }
       }
+      // TODO: move scheduled output events to here 
 
       // send off interface commands
 
@@ -254,7 +255,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
             recipients: [playerId], node, board});  
       }
 
-      //send off moveTo message
+      // handle moveTo requests
 
       if(result.moveTo) {
 
@@ -293,8 +294,12 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
               }, result.moveToDelay ? result.moveToDelay : 0);
 
               // TODO: experimental command to move all connected players to new room at once
-              // if(result.moveToAll) ...
-                                
+              /* if(result.moveToAll) ...
+
+              step 1: move all connected players
+              step 2: run onArrive scripts for all players (option in moveToAll - run onArrive once)
+              */
+
             } else {
               console.log("node " + result.moveTo + " not found");
               emitMessage(socket, {
