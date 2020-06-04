@@ -123,10 +123,10 @@ async function api() {
 
     // seed config entries
     db.seedConfig("fileServerURL", process.env.AWSEndpoint + "/" + process.env.Bucket + "/");
-    db.seedConfig("playerURL", "localhost:8081");
-    db.seedConfig("socketURL", "localhost:9000");
+    db.seedConfig("playerURL", "http://localhost:8081");
+    db.seedConfig("socketURL", "http://localhost:9000");
     db.seedConfig("defaultProject", "");
-    db.seedConfig("googleMapsKey", "");
+    db.seedConfig("googleMapsAPIKey", "");
     
     console.log("Server ready", server.info)
 

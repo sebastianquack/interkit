@@ -8,10 +8,11 @@ Log.logLevel = 'WARNING';
 // seeds config vars if needed
 exports.seedConfig = async (key, value) => {
   let config = await RestHapi.list(RestHapi.models.config, {key: key}, Log);  
-  console.log("found config ", key, value);
-  if(!config.docs.length) {
+  if(config.docs.length == 0) {
     console.log("seeding config ", key, value)
     await RestHapi.create(RestHapi.models.config, {key, value}, Log);  
+  } else {
+    console.log("found config ", config.docs[0].key, config.docs[0].value);
   }
 }
 
