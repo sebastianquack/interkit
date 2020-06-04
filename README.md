@@ -11,11 +11,11 @@ cd -
 
 2. npm install
 ```sh
-cd api && npm i && cd -
-cd shared && npm i && cd -
-cd author && npm i && cd -
-cd admin && npm i && cd -
-cd player && npm i && cd -
+cd api && npm i; cd -
+cd shared && npm i; cd -
+cd author && npm i; cd -
+cd admin && npm i; cd -
+cd player && npm i; cd -
 ```
 
 2. run local minio (S3 service) and mongodb
@@ -54,3 +54,4 @@ cd player && npm run dev
 7. more tools
 - Mongo Express: `http://localhost:9001/`
 - Minio: `http://localhost:9002/`
+- Swagger API documentation: `http://localhost:9000/api`
