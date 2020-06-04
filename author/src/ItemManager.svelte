@@ -126,6 +126,11 @@
     }
   }
 
+  const awarded = (item) => {
+    console.log(item.players);
+    return item.players.filter((p)=>p.player._id == playerId).length >= 1; 
+  }
+
 
   onMount(loadItems);
 
@@ -162,7 +167,7 @@
 {:else}
   <ul>
     {#each items as item}
-      <li>{item.key} ({item.type}) (awarded to {item.players.length} players) 
+      <li>{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
         <button on:click={()=>award(item._id)}>award</button> 
         <button on:click={()=>revoke(item._id)}>revoke</button> 
         <button on:click={()=>setEditItem(item)}>edit</button> 
