@@ -9,6 +9,7 @@
 
   let attachments = [];
   let fileServerURL;
+  let loading = true;
 
   const loadAttattchments = async () => {
     let result = await fetch("/api/file?project=" + projectId);
@@ -24,7 +25,10 @@
     fileServerURL = await getConfig("fileServerURL");
   }
 
-  onMount(loadAttattchments);
+  onMount( async ()=>{
+    await loadAttattchments()
+    loading = false
+  });
 
   let fileInput;
   let uploadProgress = "";
@@ -62,16 +66,28 @@
   <span>{uploadProgress}</span>
 {/if}
 
-
-<ul>
-  {#each attachments as attachment}
-    <li>{attachment.filename} 
-      <a target="_blank" title={fileServerURL + attachment.filename} href={fileServerURL + attachment.filename}>link</a>
-      <span class="link" on:click={()=>doDeleteFile(attachment)}>delete</span>
-    </li>
-  {/each}
-</ul>
-
+{#if loading }
+  <p> Loading ... </p>
+{:else}
+  <ul>
+    {#each attachments as attachment}
+      <li>
+        {attachment.filename}
+        {#if attachment.simpletype === "image"}
+          <img src={fileServerURL + attachment.filename} alt={attachment.filename} />
+        {:else if attachment.simpletype === "audio"}
+          <audio controls>
+            <source src={encodeURI(fileServerURL + attachment.filename)} type={attachment.mimetype}>
+          </audio>        
+        {:else}
+          <small>{attachment.filetype}</small>
+        {/if}
+        <a target="_blank" title={fileServerURL + attachment.filename} href={fileServerURL + attachment.filename}>link</a>
+        <span class="link" on:click={()=>doDeleteFile(attachment)}>delete</span>
+      </li>
+    {/each}
+  </ul>
+{/if}
 
 </div>
 
@@ -94,6 +110,12 @@
     overflow: scroll;
     width: 100%;
     background-color: #fff;
+  }
+
+  img {
+    width: 1em;
+    height: 1em;
+    object-fit: contain;
   }
 
   span.link {
