@@ -261,7 +261,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
         // limit amount of chained moves
         if(!socket.moveCounter) socket.moveCounter = 0;
 
-        if(socket.moveCounter < 2) {
+        if(socket.moveCounter < 4) {
           
           // find destination via name and board
           let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
