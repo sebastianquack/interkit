@@ -10,6 +10,8 @@ Log.logLevel = 'WARNING';
 
 let io = null;
 
+// socket-send message to a single player
+
 const emitMessage = async (emitter, data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
@@ -22,14 +24,18 @@ const emitMessage = async (emitter, data) => {
   emitter.emit('message', {...msgData, _id: id});         
 }
 
+// socket-send message to all players in a room 
+
 const emitInRoom = async (room, data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
   
   let m = await db.logMessage(msgData);
   io.in(room).emit('message', {...msgData, _id: m._id});         
-
 }
+
+
+// log a player to a node and run onArrive script if requested
 
 async function joinRoom(io, socket, data) {
   console.log("joining " + data.room);
@@ -44,12 +50,12 @@ async function joinRoom(io, socket, data) {
 
   await db.logPlayerToNode(data.playerId, newNode);
   
-  //console.log(newNode);
   if(newNode) {
-    //socket.emit('message', {system: true, message: "you are now in " + newNode.name});  
-    /*if(newNode.multiPlayer) {
+    // todo: make more customizable
+    /* socket.emit('message', {system: true, message: "you are now in " + newNode.name});  
+    if(newNode.multiPlayer) {
       socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived"});
-    }*/
+    } */
     if(data.execOnArrive)
       handleScript(io, socket, newNode, data.playerId, "onArrive");
   } else {
@@ -57,6 +63,8 @@ async function joinRoom(io, socket, data) {
   }
   
 }
+
+// get players connected to a room via socket and nodlog (perhaps it's enough to just check nodelog?)
 
 const getPlayerIdsForRoom = async (roomName) => {
   let playerIds = [];
@@ -91,6 +99,8 @@ const getPlayerIdsForRoom = async (roomName) => {
   return playerIds;
 }
 
+// set up socket event handling on server (called once on start)
+
 exports.init = (listener) => {
 
   io = require("socket.io")(listener)
@@ -98,9 +108,13 @@ exports.init = (listener) => {
   io.on('connection', function (socket) {
     console.log('socket connection');    
 
+
+    // player requests to join a node
+
     socket.on('joinRoom', async function(data) {
       console.log("signup request for room " + data.room);
       console.log("current room for this socket: " + socket.room);
+      
       // check if socket already has a room
       if(socket.room) {
         if(socket.room != data.room) {
@@ -108,7 +122,7 @@ exports.init = (listener) => {
           await socket.leave(socket.room);
         }
       }
-      // check if room needs to be changed
+      // check if room should be changed
       if(socket.room != data.room || data.allowRejoin) {
         try {
           joinRoom(io, socket, data);
@@ -117,6 +131,8 @@ exports.init = (listener) => {
         }
       }
     });
+
+    // player leaves a node
 
     socket.on('leaveRoom', async function(room) {
       console.log("removing socket from room " + room);
@@ -132,7 +148,8 @@ exports.init = (listener) => {
       //socket.playerId = null;
     });
 
-    // this is when user inputs something
+    // player input something
+    
     socket.on("message", async (data)=>{
       console.log("socket message received", data);
 
@@ -165,16 +182,13 @@ exports.init = (listener) => {
   });
 
   // check for scheduled messages, deliver and inform connected players via socket
+  
   const scheduleMessagesInterval = setInterval(async ()=>{
     let clients = Object.keys(io.sockets.sockets);
 
-    // just a ping to test sockets
-    /*clients.forEach((key)=>{
-      io.sockets.sockets[key].emit('message', {status: "ping"});         
-    })*/
-    
     let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
     messages.forEach((m)=>{
+      
       // check if this message is for a connected client
       clients.forEach((key)=> {
         if(io.sockets.sockets[key].playerId) {
@@ -194,12 +208,17 @@ exports.init = (listener) => {
 
 } 
 
+// runs a node's script in the sandbox and updates socket connected clients
+
 async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
   let node = currentNode._id;
   let board = currentNode.board;
 
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
+    
+    // error in script - send error message back to sender
+
     if(result.error) {
       emitMessage(socket, {
         message: result.error, 
@@ -208,9 +227,15 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
         node, board
       });
     }
+
+    // proccess collected script outputs
+    
     if(result.outputs) {
 
       let recipients = await db.getPlayersForNode(socket.room);
+      
+      // send off regular messages
+
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
           console.log("emitMessage socket.room", socket.room);
@@ -220,6 +245,8 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
         }
       }
 
+      // send off interface commands
+
       if(result.interfaceCommand) {
         emitMessage(socket, {params: {
               interfaceCommand: result.interfaceCommand
@@ -227,59 +254,73 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
             recipients: [playerId], node, board});  
       }
 
+      //send off moveTo message
+
       if(result.moveTo) {
-        
-        let newNodes = await RestHapi.list(RestHapi.models.scriptNode, {
-          name: result.moveTo,
-          board: currentNode.board
-        }, Log)
-        //console.log(newNodes);
-        
-        if(newNodes.docs.length == 1) {
-          let newNode = newNodes.docs[0];
-          console.log("moving player to room " + newNode.name);
-          if(newNode._id != currentNode._id) {
-            
-            
-            // inform others in the old room  
-            /*if(currentNode.multiPlayer) {
-              io.in(socket.room).emit('message', {system: true, message: "a human left to " + newNode.name});   
-            }*/
 
-            // tell sender to move to new room
-            console.log("emit moveTo message");
-            await emitMessage(socket, {system: true, params: {
-              moveTo: newNode._id,
-              moveToDelay: result.moveToDelay,
-            }, 
-            recipients: [playerId], node, board});
+        // limit amount of chained moves
+        if(!socket.moveCounter) socket.moveCounter = 0;
 
-            /* experimental
-            if(result.moveToAll) {
-              let recipients = await db.getPlayersForNode(currentNode._id);
-              await emitInRoom(currentNode._id, {system: true, params: {
-                moveTo: newNode._id,
-                moveToDelay: result.moveToDelay,
-            }, 
-            recipients: recipients, node, board});
-            */
-    
-            // inform others in the new room 
-            /*if(currentNode.multiPlayer) {
-              socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
-            }*/
-            //handleScript(io, socket, newNode, playerId, "onArrive");
-        
-          } else {
-            console.log("node " + result.moveTo + " not found");
+        if(socket.moveCounter < 2) {
+          
+          // find destination via name and board
+          let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
+            name: result.moveTo,
+            board: currentNode.board
+          }, Log)
+          
+          if(destinations.docs.length == 1) {
+            let destination = destinations.docs[0];
+            console.log("moving player to room " + destination.name);
+            if(destination._id != currentNode._id) {
+              
+              socket.moveCounter += 1;
+              
+              // inform others in the old room - todo: make more customizable 
+              /*if(currentNode.multiPlayer) {
+                io.in(socket.room).emit('message', {system: true, message: "a human left to " + newNode.name});   
+              }*/
+
+              // NEW: move player directly on backend
+              setTimeout(()=>{
+                joinRoom(io, socket, {playerId, room: destination._id, execOnArrive: true});
+
+                // inform others in the new room - todo: make more customizable
+                /*if(currentNode.multiPlayer) {
+                  socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
+                }*/
+
+              }, result.moveToDelay ? result.moveToDelay : 0);
+
+              // TODO: experimental command to move all connected players to new room at once
+              // if(result.moveToAll) ...
+                                
+            } else {
+              console.log("node " + result.moveTo + " not found");
+              emitMessage(socket, {
+                message: "node " + result.moveTo + " not found", 
+                system: true, 
+                recipients: [playerId],
+                node, board
+              });
+            }
+          }
+
+        } else {
+
+          console.log("too many moves, aborting")
             emitMessage(socket, {
-              message: "node " + result.moveTo + " not found", 
+              message: "too many chained moveTos in script, aborting", 
               system: true, 
               recipients: [playerId],
               node, board
             });
+            socket.moveCounter = 0;
           }
-        }
+
+      } else {
+        // reset move counter if no move requested
+        socket.moveCounter = 0;
       }
     }
  

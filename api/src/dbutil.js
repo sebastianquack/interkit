@@ -209,7 +209,7 @@ exports.scheduleMessage = (timeFromNowObj, data) => {
 
 // pass in messageModel and log so we are able to call it from outside of server application through helper script
 exports.deliverScheduledMessages = async (messageModel, log) => {
-  console.log("deliverScheduledMessages");
+  //console.log("deliverScheduledMessages");
   let messages = await RestHapi.list(messageModel, {$where: {scheduled: true }}, log)
   let deliveredMesssages = [];
   if(messages.docs.length) {
@@ -230,7 +230,7 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
       }
     };
   } else {
-    console.log("no messages scheduled");
+    //console.log("no messages scheduled");
   }
   return deliveredMesssages;
 }

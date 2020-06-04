@@ -145,7 +145,8 @@
         console.log("player container received message", message)
         setNotificationItem({...message, side: "left"});
         setLockScreen();
-        await checkForUnseenMessages();    
+        await checkForUnseenMessages();
+        // todo here: make sure we process or display moveTo messages somehow
       }
     });
   }

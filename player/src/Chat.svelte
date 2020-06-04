@@ -109,7 +109,7 @@
       if(!item.attachment) item.attachment = {};
       if(!item.params) item.params = {};
 
-      // if this is a scheduled message but from a different board, show notification, don't add message to this board
+      // if this comes from a different board, show notification, don't add message to this board
       if(currentBoard._id != message.board) {
           console.log("warning, message is from a different board")
           setNotificationItem({...item, side: "left"});
@@ -117,7 +117,7 @@
           return;
       }
 
-      //if this was a scheduled item from a different node on the same board, switch back to that node without execOnArrive
+      //if this comes from a different node on the same board, switch back to that node without execOnArrive
       if(currentBoard._id == message.board && currentNode._id != message.node) {
           console.log("warning, message is from a different node")
           await setCurrentNode(message.node, false);
@@ -127,15 +127,6 @@
       if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
           await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
       
-      // respond to moveTo message
-      if(item.params.moveTo) {
-        setTimeout(async ()=>{
-          console.log("moveTo", item.params.moveTo);
-          await setCurrentNode(item.params.moveTo, true);
-          setEditNodeId(item.params.moveTo);  
-        }, item.params.moveToDelay ? item.params.moveToDelay : 0);
-      }
-
       if(item.params.interfaceCommand) {
         if(item.params.interfaceCommand == "lock") {
           setLockScreen();
