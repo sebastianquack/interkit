@@ -139,11 +139,12 @@
 
   onMount(async () => {
     await loadProjectList(); 
-    if (params.projectId) { 
-      currentProject = projects.find( ({_id}) => _id === params.projectId ) 
-    }
     loading = false;
   });
+
+  $: {
+    currentProject = projects.find( ({_id}) => _id === params.projectId ) 
+  }
 
 </script>
 
@@ -157,7 +158,7 @@
 
     <ProjectWorkspace
       project={currentProject}
-      close={()=> {replace('/'); currentProject = null}}
+      close={()=> {replace('/')}}
     />
 
   {:else}
@@ -173,7 +174,7 @@
           <li>
             {project.name}
             <button on:click={()=>{editProject = project;}}>✎</button>
-            <button on:click={()=>{push('/'+project._id); currentProject = project}}>open project</button>
+            <button on:click={()=>{push('/'+project._id)}}>open project</button>
             <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
         {/each}
         </ul>
