@@ -10,6 +10,7 @@
   import EditNode from './EditNode.svelte';
   import PlayerMonitoring from './PlayerMonitoring.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
+  import ItemManager from './ItemManager.svelte';
   import PlaytestArea from './PlaytestArea.svelte';
 
   import WorkspaceFrame from './WorkspaceFrame.svelte';
@@ -168,8 +169,10 @@ function onMessage() {
 
 
     <button id="toggle-player-monitoring" on:click={()=>{toggleTab("players")}}>👥</button>
+    <button id="toggle-item-manager" on:click={()=>{toggleTab("items")}}>🧳</button>
     <button id="toggle-attachment-manager" on:click={()=>{toggleTab("attachments")}}>📎</button>
     
+
     <select bind:value={currentBoardId} on:change={loadBoardData}>
       <option value={null}>select a board</option>
       <option disabled>_________</option>
@@ -208,6 +211,14 @@ function onMessage() {
       <AttachmentManager
           projectId={project._id}
           close={()=>{tabNavigation = "boards"}}
+        />
+    {/if}
+
+    {#if tabNavigation == "items"}
+      <ItemManager
+          projectId={project._id}
+          close={()=>{tabNavigation = "boards"}}
+          {playerId}
         />
     {/if}
 

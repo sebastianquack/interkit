@@ -38,6 +38,8 @@ const initMarkers = ()=>{
 
     markerItems.forEach((p, index)=>{      
 
+      if(!(p.value.lat && p.value.lng)) return;
+
       let placePosition = {lat: p.value.lat, lng: p.value.lng};
 
       let icon = {

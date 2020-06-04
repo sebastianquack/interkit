@@ -3,7 +3,7 @@
   import { joinRoom, leaveRoom, emitMessage, getPlayerId } from '../../shared/socketClient.js';
   import { getConfig } from '../../shared/util.js';
 
-  import ItemBubble from './ItemBubble.svelte';
+  import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
 
   // main props passed in from the outside
@@ -27,7 +27,7 @@
   export let updatePlayerNodeId;  
 
   let currentNode = null; // this is the full object of the current node stored in playerodeId
-  let items = []; // these are all the chat items currently displayed
+  let chatItems = []; // these are all the chat chat items currently displayed
 
   let inputValue;
   let showItemsSince = Date.now();
@@ -59,7 +59,7 @@
 
   const reset = ()=>{
     currentNode = null;
-    items = [];
+    chatItems = [];
     showItemsSince = Date.now();
     let showMoreItems = false;
     let beginningHistory = false;
@@ -76,25 +76,26 @@
   })
 
   const init = async ()=> {
-    
     console.log("chat init method");
+    console.log("playerId", playerId);
+    console.log("currentBoard", currentBoard);
   
     let joinNodeId = currentBoard.startingNode;      
     let execOnArrive = true;
     
     // load history 
-    loadMoreItems(currentBoard);
+    await loadMoreItems(currentBoard); 
     scrollUp();
 
     // find where player is now on this board
     let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
     let lastNode = await response.json();
     console.log("lastNode", lastNode);
-    if(lastNode.docs.length) {
+    if(lastNode.docs.length > 0) {
       joinNodeId = lastNode.docs[0].node;
       execOnArrive = false; // if arrived here after history, don't exec onArrive
     }
-    
+
     // loads node we want to be in and saves it
     await setCurrentNode(joinNodeId, execOnArrive)
 
@@ -142,9 +143,9 @@
         if(item.attachment.mediatype == "audio") {
           item.attachment.audioSrc = fileServerURL + item.attachment.filename;
         }
-        items.push(item);
+        chatItems.push(item);
         sortItems();
-        console.log(items);  
+        console.log(chatItems);  
         scrollUp();
       }
 
@@ -155,7 +156,7 @@
         isSystemMessage = message.system || message.label == "system";
         let showPlaceholder = !(isSystemMessage || message.params.option);
 
-        items.push({...item, 
+        chatItems.push({...item, 
           side: isSystemMessage ? "system" : "left",
           placeholder: showPlaceholder,
         });
@@ -164,9 +165,9 @@
 
         if(showPlaceholder)
           setTimeout(() => {
-            items.forEach((comment, index)=> {
-              if(items[index].placeholder) {
-                items[index].placeholder = false;
+            chatItems.forEach((comment, index)=> {
+              if(chatItems[index].placeholder) {
+                chatItems[index].placeholder = false;
                 scrollUp();
               }
             });
@@ -227,24 +228,24 @@
         if(!item.params) item.params = {};
         if(!item.params.option || (activeOptions && item.params.option)) {
           let i = parseItem(item);
-          if(i) items.unshift(i);
+          if(i) chatItems.unshift(i);
           if(!item.seen || item.seen.indexOf(playerId) == -1)
             await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
         }
         if(!item.params.option) activeOptions = false;
       }
-      items = items;
+      chatItems = chatItems;
       updateUnseenMessages();
   } 
 
   const sortItems = () => {
-    items.sort((a,b)=> {
+    chatItems.sort((a,b)=> {
       let x = a.timestamp - b.timestamp;
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
     //items.sort((a,b)=>a.timestamp-b.timestamp);
-    items = items; 
-    console.log("sorted items", items);
+    chatItems = chatItems;
+    console.log("sorted items", chatItems);
   }
 
   const parseItem = (rawItem) => {
@@ -280,13 +281,13 @@
   const submitInput = ()=>{
     if (!inputValue) return;
 
-    items = items.concat({
+    chatItems = chatItems.concat({
       side: 'right',
       message: inputValue,
       attachment: {},
       params: {}
     });
-    items = items.filter((i)=>!(i.params && i.params.option));
+    chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
     scrollUp();
 
     emitMessage({message: inputValue});
@@ -324,8 +325,8 @@
     <div class="scrollable" bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
-      {#each items as item}
-        <ItemBubble 
+      {#each chatItems as item}
+        <ChatItemBubble 
           {item}
           onClick={()=>{
             if(item.params.option) autoType(item)
@@ -348,7 +349,7 @@
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}
       {googleMapsAPIKey}
-      addItem={(i)=>items = items.concat({...i})}
+      addItem={(i)=>chatItems = chatItems.concat({...i})}
       clearInput={()=>inputValue = ""}
     />
   

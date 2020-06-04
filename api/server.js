@@ -88,7 +88,7 @@ async function api() {
       version: "1.0.0",
       apiPath: 'custom_endpoints',
       authStrategy: Auth.strategy,
-      loglevel: 'WARNING',
+      loglevel: 'DEBUG',
       mongo: {
         URI: process.env.MONGODB_URI
       }

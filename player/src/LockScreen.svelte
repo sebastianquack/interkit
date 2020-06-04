@@ -13,7 +13,7 @@
   export let notificationItem;
   export let openBoardForMessage;
 
-  import ItemBubble from './ItemBubble.svelte';
+  import ChatItemBubble from './ChatItemBubble.svelte';
 
   const notificationTap = ()=>{
     if(notificationItem.board && notificationItem.node) {
@@ -26,7 +26,7 @@
 <div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
   {#if notificationItem} 
     <div id="notification" on:click={notificationTap}>
-      <ItemBubble item={notificationItem}/>
+      <ChatItemBubble item={notificationItem}/>
     </div>
   {/if}
   <div id="info">{info}</div>
