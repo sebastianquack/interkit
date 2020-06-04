@@ -5,7 +5,7 @@ export const userId = writablePersistent("userId");
 export const loggedInUsername = writablePersistent("loggedInUsername");
 
 function writablePersistent(name) {
-  const token = writable(localStorage.getItem(name) || null);
-  token.subscribe(val => localStorage.setItem(name, val || ""));
-  return token
+  const store = writable(localStorage.getItem(name) || null);
+  store.subscribe(val => localStorage.setItem(name, val || ""));
+  return store
 }

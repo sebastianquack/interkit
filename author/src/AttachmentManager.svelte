@@ -66,7 +66,7 @@
 <ul>
   {#each attachments as attachment}
     <li>{attachment.filename} 
-      <a href={fileServerURL + attachment.filename}>link</a>
+      <a target="_blank" title={fileServerURL + attachment.filename} href={fileServerURL + attachment.filename}>link</a>
       <span class="link" on:click={()=>doDeleteFile(attachment)}>delete</span>
     </li>
   {/each}
