@@ -5,6 +5,16 @@ const Moment = require('moment')
 const Log = RestHapi.getLogger('socket');
 Log.logLevel = 'WARNING';
 
+// seeds config vars if needed
+exports.seedConfig = async (key, value) => {
+  let config = await RestHapi.list(RestHapi.models.config, {key: key}, Log);  
+  console.log("found config ", key, value);
+  if(!config.docs.length) {
+    console.log("seeding config ", key, value)
+    await RestHapi.create(RestHapi.models.config, {key, value}, Log);  
+  }
+}
+
 const makeQuery = (scope, refs, key) => {
   let where = {
       key: key,

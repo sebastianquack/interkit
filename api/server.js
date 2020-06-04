@@ -6,6 +6,7 @@ const Path = require('path');
 const Inert = require('@hapi/inert');
 
 const SocketServer = require('./src/socketServer.js');
+const db = require('./src/dbutil.js');
 
 if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
@@ -119,7 +120,13 @@ async function api() {
       Log.log('seeding admin user')
       RestHapi.create(userModel, {username: "admin", password: process.env.ADMIN_PASSWORD}, Log)  
     }
-    
+
+    // seed config entries
+    db.seedConfig("fileServerURL", process.env.AWSEndpoint + "/" + process.env.Bucket + "/");
+    db.seedConfig("playerURL", "localhost:8081");
+    db.seedConfig("socketURL", "localhost:9000");
+    db.seedConfig("defaultProject", "");
+    db.seedConfig("googleMapsKey", "");
     
     console.log("Server ready", server.info)
 
