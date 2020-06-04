@@ -45,14 +45,18 @@
 #content {
   background-color: #fff;
   width: 100%;
+  max-height: 100%;
   position: relative;
   padding: 20px;
   box-sizing: border-box;
   flex-grow: 0.5;
+  flex-direction: column;
 }
 
 #content img {
   width: 100%;
+  max-height: 60%;
+  object-fit: contain;
 }
 
 #close {
