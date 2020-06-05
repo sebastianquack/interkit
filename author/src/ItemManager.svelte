@@ -32,18 +32,19 @@
       description: "",
       image: null,
       sound: null,
-      lat: null,
-      lng: null
+      lat: 50,
+      lng: 10
   }
 
   const createItem = () => {
     editItem = {
-      key: "",
+      key: "key",
       value: JSON.stringify(defaultValue),
       type: "",
       project: projectId,
       new: true
     }
+    coords = {lat: 50, lng: 10};
   }
 
   const setEditItem = (item) => {
@@ -112,7 +113,7 @@
     if(confirm("permanently remove item?")) {
       const res = await fetch("/api/item/" + id, {
         method: "DELETE",
-        headers: {'authorization': $token}
+        headers: {'authorization': $token},
       });
       if(res.ok) {
         loadItems();
@@ -148,7 +149,9 @@
   }
 
 
-  onMount(loadItems);
+  onMount(()=>{
+    loadItems();
+  });
 
 </script>
 

@@ -23,7 +23,8 @@ module.exports = function (mongoose) {
     // todo: messages?
 
     let itemAssociations = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
-    await RestHapi.removeMany(RestHapi.models.player, playerId, RestHapi.models.item, "items", itemAssociations.docs)
+    if(itemAssociations.docs.length)
+      await RestHapi.removeMany(RestHapi.models.player, playerId, RestHapi.models.item, "items", itemAssociations.docs)
     
   }
   

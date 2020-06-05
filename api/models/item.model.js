@@ -26,7 +26,8 @@ module.exports = function (mongoose) {
 
     let playerAssociations = await RestHapi.getAll(RestHapi.models.item, itemId, RestHapi.models.player, "players", {}, Log);
     console.log("foo", playerAssociations);
-    await RestHapi.removeMany(RestHapi.models.item, itemId, RestHapi.models.player, "players", playerAssociations.docs)
+    if(playerAssociations.docs.length)
+      await RestHapi.removeMany(RestHapi.models.item, itemId, RestHapi.models.player, "players", playerAssociations.docs)
     
   }
   

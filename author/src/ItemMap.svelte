@@ -24,7 +24,7 @@ const labelObj = (text) => {
 
 const initGoogleMap = ()=>{
     map = new google.maps.Map(mapContainer, {
-      zoom: 16,
+      zoom: 13,
       center: coords,
       streetViewControl: false, 
       fullscreenControl: false, 
@@ -39,6 +39,8 @@ const initGoogleMap = ()=>{
       anchor: {x:25, y:50}, // anchor
       labelOrigin: new google.maps.Point(25, 60)
     };
+
+    console.log(label);
     
     // add markers for user
     marker = new google.maps.Marker({
