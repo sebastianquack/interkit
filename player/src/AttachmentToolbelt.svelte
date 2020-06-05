@@ -12,6 +12,7 @@
   export let googleMapsAPIKey;
   export let addItem;
   export let clearInput;
+  export let projectId;
 
   let QRScannerOpen = false
   const openQRScanner = ()=> { QRScannerOpen = true; }
@@ -123,6 +124,7 @@
 {#if cameraOpen}
   <div class="qr-scanner-container">
     <Camera
+      {projectId}
       onUpload={async (imageURL)=>{
         closeCamera();
         await sendImage(imageURL);

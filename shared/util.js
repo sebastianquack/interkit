@@ -83,13 +83,19 @@ export const upload = async (file, progress, projectId = null) => {
   let uploadResponse = await axios.put(signedRequest, file, options)
   console.log("Response from s3", uploadResponse);
 
+  const entry = {
+    filename: fileName,
+    mimetype: fileType,
+    simpletype: fileType && fileType.indexOf("/") > 0 ? fileType.split("/")[0] : "",
+    path: fileName,
+    project: projectId
+  }
+
+  //console.log(entry)
+
   const res = await fetch("/api/file", {
       method: "post", 
-      body: JSON.stringify([{
-        filename: fileName,
-        path: fileName,
-        project: projectId
-      }])
+      body: JSON.stringify([entry])
   });
   const json = await res.json();  
   console.log("new file created", json);

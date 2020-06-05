@@ -244,6 +244,7 @@
     {:else}
         <Chat
           {playerId}
+          {projectId}
           {currentBoard}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}

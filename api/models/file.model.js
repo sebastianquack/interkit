@@ -7,6 +7,16 @@ module.exports = function (mongoose) {
       unique: false,
       required: true,
     },
+    mimetype: {
+      type: Types.String,
+      unique: false,
+      required: false,
+    },
+    simpletype: {
+      type: Types.String,
+      unique: false,
+      required: false,
+    },      
     path: {
       type: Types.String,
       unique: false,
@@ -14,7 +24,7 @@ module.exports = function (mongoose) {
     },
     project: {
       type: Types.ObjectId,
-      ref: "project"
+      ref: "project",
     }
   });
   

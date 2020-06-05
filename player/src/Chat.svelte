@@ -8,6 +8,7 @@
 
   // main props passed in from the outside
   export let playerId;
+  export let projectId;
   export let currentBoard;
   
   // props to communicate with player container
@@ -343,6 +344,7 @@
     {/if}
     
     <AttachmentToolbelt
+      {projectId}
       {attachmentMenuOpen}
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}

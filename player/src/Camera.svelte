@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import {onMount, onDestroy } from 'svelte';
-import { getConfig } from '../../shared/util.js';
+import { getConfig, upload } from '../../shared/util.js';
 
 let videoElement;
 let mediaStream;
@@ -11,6 +11,7 @@ let canvas;
 
 export let onClose;
 export let onUpload;
+export let projectId;
 
 const init = ()=> {
     videoElement = document.getElementById("video");
@@ -72,38 +73,42 @@ const send = async ()=> {
   let dataURL = canvasElement.toDataURL('image/jpeg', 0.75);
   let blob = dataURItoBlob(dataURL);
   var file = new File( [blob], fileName, { type: 'image/jpeg' } ); 
-  
-  let response = await axios.post("/api/s3_sign", {
-      fileName : fileName,
-      fileType : fileType
-  });
-  if(!response) return null;
-  console.log(response);
 
-  var returnData = response.data.data.returnData;
-  var signedRequest = returnData.signedRequest;
-  
-  console.log("Recieved a signed request " + signedRequest);
-  
-  let options = {
-      headers: {
-        'Content-Type': fileType
-      },
-      onUploadProgress: progressEvent => {console.log(progressEvent.loaded);}
-    };
-  
-  let uploadResponse = await axios.put(signedRequest, file, options)
-  console.log("Response from s3", uploadResponse);
+  console.log(file)
 
-  const res = await fetch("/api/file", {
-      method: "post", 
-      body: JSON.stringify([{
-        filename: fileName,
-        path: fileName
-      }])
-  });
-  const json = await res.json();  
-  console.log("new file created", json);
+  upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
+  
+//  let response = await axios.post("/api/s3_sign", {
+//      fileName : fileName,
+//      fileType : fileType
+//  });
+//  if(!response) return null;
+//  console.log(response);
+//
+//  var returnData = response.data.data.returnData;
+//  var signedRequest = returnData.signedRequest;
+//  
+//  console.log("Recieved a signed request " + signedRequest);
+//  
+//  let options = {
+//      headers: {
+//        'Content-Type': fileType
+//      },
+//      onUploadProgress: progressEvent => {console.log(progressEvent.loaded);}
+//    };
+//  
+//  let uploadResponse = await axios.put(signedRequest, file, options)
+//  console.log("Response from s3", uploadResponse);
+//
+//  const res = await fetch("/api/file", {
+//      method: "post", 
+//      body: JSON.stringify([{
+//        filename: fileName,
+//        path: fileName
+//      }])
+//  });
+//  const json = await res.json();  
+//  console.log("new file created", json);
 
   await onUpload(fileName);
 }
