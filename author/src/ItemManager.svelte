@@ -58,17 +58,28 @@
       coords = {lat: item.value.lat, lng: item.value.lng};
   }
 
-  const saveItem = async () => {
-    console.log(editItem);
-    let valueObj = {};
+  const updateCoords = (newCoords) => {
+    let i = parseItem();          
+    i.lat = newCoords.lat();
+    i.lng = newCoords.lng();
+    editItem.value = JSON.stringify(i);
+  }
+
+  const parseItem = () => {
+    let valueObj = undefined;
     try {
       valueObj = JSON.parse(editItem.value);
     } catch(e) {
       console.log(e)
     }
+    return valueObj;
+  }
+
+  const saveItem = async () => {
+    console.log(editItem);
     let saveItem = {...editItem, 
       type: editItem.type == "custom" ? customType : editItem.type, 
-      value: valueObj, 
+      value: parseItem(), 
       new: undefined,
       players: undefined
     };
@@ -167,7 +178,12 @@
   <CodeEditor bind:code={editItem.value}></CodeEditor>
 
   {#if editItem.type == "location"}
-    <ItemMap {coords} {googleReady} label={editItem.key}/>
+    <ItemMap 
+      {coords}
+      {updateCoords}
+      {googleReady} 
+      label={editItem.key}
+    />
   {/if}
 
   <button on:click={saveItem}>save</button>

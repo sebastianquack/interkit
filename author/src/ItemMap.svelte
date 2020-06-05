@@ -7,10 +7,20 @@ const mapStyles = require('../../shared/GoogleMapStyles.json')
 export let googleReady;
 export let coords;
 export let label;
+export let updateCoords;
 
 let map;
 let mapContainer;
 let marker;
+
+const labelObj = (text) => {
+  return {
+    color: "#000",
+    fontFamily: "sans-serif",
+    fontSize: "16px",
+    text,
+  }
+}
 
 const initGoogleMap = ()=>{
     map = new google.maps.Map(mapContainer, {
@@ -34,14 +44,16 @@ const initGoogleMap = ()=>{
     marker = new google.maps.Marker({
       position: coords,
       icon: icon,
-      label: {
-        color: "#000",
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        text: label,
-      },
+      draggable:true,
+      animation: google.maps.Animation.DROP,
+      label: labelObj(label),
       map
     })
+
+    google.maps.event.addListener(marker, 'dragend', ()=> {
+      let newPos = marker.getPosition();
+      updateCoords(newPos);
+    });
 
     console.log(coords);
 }
@@ -51,6 +63,10 @@ afterUpdate(()=>{
     initGoogleMap();
   }
 
+  if(map && marker) {
+    console.log("updating label");
+    marker.setLabel(labelObj(label));
+  }
 })
 
 </script>
