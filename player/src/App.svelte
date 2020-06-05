@@ -1,3 +1,7 @@
+<svelte:head>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
+</svelte:head>
+
 <script>
   import { onMount } from 'svelte';
   import { initSocket, getPlayerId } from '../../shared/socketClient.js';
@@ -6,6 +10,13 @@
 
   let projectId;
   let playerId;
+
+  let googleReady = false;
+
+  window.googleReady = ()=>{
+    console.log("googleReady");
+    googleReady = true;
+  }
 
   onMount(async () => {    
     let searchParams = new URLSearchParams(window.location.search);
@@ -29,7 +40,7 @@
 
 {#if projectId && playerId}   
 
-    <PlayerContainer {projectId} {playerId} />
+    <PlayerContainer {projectId} {playerId} {googleReady}/>
     
 {:else}
 

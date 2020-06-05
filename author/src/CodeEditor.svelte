@@ -35,4 +35,4 @@
 
 </script>
 
-<textarea bind:this={textArea} value={code}></textarea><br/>  
+<textarea bind:this={textArea} value={code}></textarea>  

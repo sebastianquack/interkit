@@ -1,3 +1,7 @@
+<svelte:head>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
+</svelte:head>
+
 <script>
 
   import { onMount } from 'svelte';
@@ -17,6 +21,13 @@
 
   let playerURL;
   let newEditor = "";
+
+  let googleReady = false;
+
+  window.googleReady = ()=>{
+    console.log("googleReady");
+    googleReady = true;
+  }
   
   const loadProjectList = async ()=>{
     if(!$userId) return;
@@ -159,6 +170,7 @@
     <ProjectWorkspace
       project={currentProject}
       close={()=> {replace('/')}}
+      {googleReady}
     />
 
   {:else}

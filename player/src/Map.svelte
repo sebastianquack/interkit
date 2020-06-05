@@ -2,7 +2,7 @@
 
 import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
 
-const mapStyles = require('./GoogleMapStyles.json')
+const mapStyles = require('../../shared/GoogleMapStyles.json')
 
 export let visible;
 export let googleReady;
@@ -16,6 +16,7 @@ let userMarker;
 let fitBoundsDone = false;
 
 const initGoogleMap = ()=>{
+    console.log("initGoogleMap");
     map = new google.maps.Map(mapContainer, {
       zoom: 1,
       center: {lat: 0, lng: 0},
@@ -24,6 +25,7 @@ const initGoogleMap = ()=>{
       mapTypeControl: false,
       styles: mapStyles // change default map styles
     });
+    console.log(map);
 }
 
 const initMarkers = ()=>{
@@ -79,6 +81,7 @@ const initMarkers = ()=>{
 }
 
 afterUpdate(()=>{
+  console.log("googleReady", googleReady);
   if(!map && googleReady) {
     initGoogleMap();
   }

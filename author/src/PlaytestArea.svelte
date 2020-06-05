@@ -8,7 +8,8 @@
   export let clearPlayerId;
   export let setEditNodeId;
   export let updatePlayerNodeId;
-  
+  export let googleReady;
+
   let playerInfoOpen = false;
   const togglePlayerInfo = () => {
     playerInfoOpen = true;
@@ -23,6 +24,7 @@
     {togglePlayerInfo}
     {updatePlayerNodeId}
     {playerId}
+    {googleReady}
   />
 
   {#if playerInfoOpen && playerId}

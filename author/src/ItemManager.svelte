@@ -5,10 +5,12 @@
   import { token } from './stores.js';
 
   import CodeEditor from './CodeEditor.svelte';
+  import ItemMap from './ItemMap.svelte';
 
   export let projectId;
   export let close;
   export let playerId;
+  export let googleReady;
 
   let items = [];
   
@@ -23,6 +25,7 @@
 
   let editItem = null;
   let customType = null;
+  let coords = null;
   let itemTypes = ["document", "location"]
 
   const defaultValue = {
@@ -51,6 +54,8 @@
       createdAt: undefined}
     if(editItem.type == "custom")
       customType = item.type;
+    if(editItem.type == "location")
+      coords = {lat: item.value.lat, lng: item.value.lng};
   }
 
   const saveItem = async () => {
@@ -159,7 +164,11 @@
     
   <br>
   <label>value</label><br>
-  <CodeEditor bind:code={editItem.value}></CodeEditor><br>
+  <CodeEditor bind:code={editItem.value}></CodeEditor>
+
+  {#if editItem.type == "location"}
+    <ItemMap {coords} {googleReady} label={editItem.key}/>
+  {/if}
 
   <button on:click={saveItem}>save</button>
   <button on:click={()=>editItem = null}>cancel</button>
@@ -202,6 +211,7 @@
     bottom: 0;
     left: 0;
     padding-left: 10px;
+    padding-right: 10px;
     box-sizing: border-box;
     overflow: scroll;
     width: 100%;

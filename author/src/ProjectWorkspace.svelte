@@ -17,8 +17,8 @@
   
   export let project;
   export let close;
+  export let googleReady;
 
-  
   let editNodeId = null;
   const setEditNodeId = async (nodeId)=>{
     const res = await fetch("/api/scriptNode/" + nodeId);
@@ -219,6 +219,7 @@ function onMessage() {
           projectId={project._id}
           close={()=>{tabNavigation = "boards"}}
           {playerId}
+          {googleReady}
         />
     {/if}
 
@@ -258,6 +259,7 @@ function onMessage() {
       {playerNodeId}
       {updatePlayerNodeId}
       {setEditNodeId}
+      {googleReady}
     />
   </div>
 

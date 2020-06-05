@@ -1,7 +1,3 @@
-<svelte:head>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
-</svelte:head>
-
 <script>
   import { onMount } from 'svelte';
   import Chat from './Chat.svelte';
@@ -21,7 +17,7 @@
   export let togglePlayerInfo;
   export let setEditNodeId;
   export let updatePlayerNodeId; // for tellig the authoring system when player has moved to new node
-
+  export let googleReady;
 
   let boards = [];
   let currentBoard = null; // if this is set, the chat is open
@@ -39,13 +35,7 @@
   
   let loading = true;
   let fileServerURL = "";
-  let googleReady = false;
-
-
-  window.googleReady = ()=>{
-    console.log("googleReady");
-    googleReady = true;
-  }
+  
 
   const setLockScreen = ()=>showLockScreen=true;
   
