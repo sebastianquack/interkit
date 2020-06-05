@@ -186,8 +186,10 @@
   // this happens when player is switched or deleted in authoring
   $: {
     console.log("playerContainer: playerId changed", playerId);
-    if(playerId) 
+    if(playerId) {
       loadMarkers();
+      checkForUnseenMessages();
+    }
     else 
       currentBoard = null;
   }
