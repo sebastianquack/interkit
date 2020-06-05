@@ -76,7 +76,7 @@ const send = async ()=> {
 
   console.log(file)
 
-  upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
+  await upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
   
 //  let response = await axios.post("/api/s3_sign", {
 //      fileName : fileName,
