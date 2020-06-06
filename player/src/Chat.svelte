@@ -20,6 +20,7 @@
   export let showLockScreen; 
   export let setLockScreen = ()=>{};
 
+
   // optional props from authoring system
   export let authoring;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}

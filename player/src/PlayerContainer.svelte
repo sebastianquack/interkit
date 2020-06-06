@@ -198,7 +198,7 @@
   <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
     {#if currentBoard && mainView == "chat"}
         {#if boards.length > 1}
-          <button style="width: 2em" on:click={()=>{currentBoard = null}}>{"<"}</button>
+          <button style="width: 2em" on:click={()=>{currentBoard = null; loadListedBoards()}}>{"<"}</button>
         {/if}
         {#if currentBoard && boards.length > 1}
         &nbsp;<span
