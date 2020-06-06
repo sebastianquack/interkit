@@ -10,6 +10,22 @@ module.exports = function (mongoose) {
     }
   });
 
+  // sets up board logs for new player with current listed configuration of boards
+  const configureBoardLogs = async (playerId) => {
+    console.log("create board logs for ", playerId)
+
+    let boards = await RestHapi.list(RestHapi.models.board, {}, Log);
+
+    for(let board of boards.docs) {
+      await RestHapi.create(RestHapi.models.boardLog, {
+        player: playerId, 
+        board: board._id, 
+        project: board.project,
+        listed: board.listed
+      })
+    }
+  }
+
   const removeAssociatedData = async (playerId) => {
     console.log("deleting associated data for player ", playerId);
 
@@ -40,6 +56,12 @@ module.exports = function (mongoose) {
         items: {
           type: "MANY_MANY",
           model: "item"
+        }
+      },
+      create: {
+        post: async (document, request, result, Log)  => {
+          await configureBoardLogs(document._id);
+          return document;
         }
       },
       delete: {

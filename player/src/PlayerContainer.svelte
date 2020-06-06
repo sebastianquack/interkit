@@ -6,7 +6,7 @@
   import Archive from './Archive.svelte';
   import Modal from './Modal.svelte';
   import LockScreen from './LockScreen.svelte';
-  import { getConfig } from '../../shared/util.js';
+  import { getConfig, logPlayerToProject } from '../../shared/util.js';
 
   // the two main props that this comonent reacts on
   export let projectId;
@@ -47,6 +47,22 @@
   }
 
   const setItemModal = (item)=>itemModal = item;
+
+  // for projects with only one listed board, automatically go to that board    
+  const loadListedBoards = async () => {
+
+    await logPlayerToProject(playerId, projectId);
+
+    const res = await fetch("/api/boardLog?player=" + playerId + "&project=" + projectId + "&listed=true&$embed=board");
+    const json = await res.json();
+    console.log("loadListedBoards", json);
+    boards = json.docs.map(log=>log.board);
+    
+    if(boards.length == 1) {
+      console.log("project has only 1 listed board, using that", boards[0]);
+      currentBoard = boards[0];
+    } 
+  }
 
   const checkForUnseenMessages = async () => {
     for(let i = 0; i < boards.length; i++) {
@@ -154,19 +170,6 @@
 
   onMount(async () => {
     
-    // for projects with only one listed board, automatically go to that board
-    if(projectId) {
-      const res = await fetch("/api/board?$where=" + JSON.stringify(
-        {"listed": true, "project": projectId}));
-      const json = await res.json();
-      boards = json.docs;
-      
-      if(boards.length == 1) {
-        console.log("project has only 1 listed board, using that", boards[0]);
-        currentBoard = boards[0];
-      }
-    } 
-    
     fileServerURL = await getConfig("fileServerURL");
     loading = false;
 
@@ -179,6 +182,11 @@
     if(playerId) {
       loadMarkers();
       checkForUnseenMessages();
+
+      if(projectId) {
+        loadListedBoards();        
+      } 
+    
     }
     else 
       currentBoard = null;
@@ -188,6 +196,7 @@
   $: {
     console.log("playerContainer: currentBoard changed", currentBoard);
     if(!currentBoard) {
+      loadListedBoards();
       checkForUnseenMessages();    
     }
   }

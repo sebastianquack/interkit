@@ -227,6 +227,41 @@ exports.getItemForPlayerByKey = asnyc (playerId, key) => {
 }
 */
 
+
+exports.listBoardForPlayer = async (playerId, boardName, projectId, listed=true) => {
+
+  let boards = await RestHapi.list(RestHapi.models.board, {
+    name: boardName,
+    project: projectId
+  }, Log)
+
+  if(boards.docs.length == 1) {
+
+    let board = boards.docs[0];
+
+    let boardLog = await RestHapi.list(RestHapi.models.boardLog, {
+      player: playerId,
+      board: board._id,
+      project: projectId
+    }, Log)
+
+    if(boardLog.docs.length == 1) {
+      await RestHapi.update(RestHapi.models.boardLog, boardLog.docs[0]._id, {listed}, Log)
+    } else {
+      await RestHapi.create(RestHapi.models.boardLog, {
+        player: playerId,
+        board: board._id,
+        project: projectId,
+        listed
+      }, Log);
+    }
+
+  } else {
+    console.log("couldn't find board to log to player")
+  }
+
+}
+
 // uses moment add, ie moment().add({days:7,months:1}); // with object literal
 
 exports.scheduleMessage = (timeFromNowObj, data) => {

@@ -49,6 +49,15 @@ export const findOrCreatePlayer = async () => {
 
 }
 
+// find or create project log for given player and project (pass in ids)
+export const logPlayerToProject = async (player, project) => {
+  const res = await fetch("/api/projectLog?&player=" + player + "&project=" + project);
+  const json = await res.json();  
+  if(!json.docs.length) {
+    const res2 = await fetch("/api/projectLog", {method: "post", body: JSON.stringify({player, project})});    
+  }
+}
+
 function getFileExtension (file) {
     const filenameParts = file.name.split('.')
     return filenameParts[filenameParts.length - 1].toLowerCase()

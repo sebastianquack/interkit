@@ -76,6 +76,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           db.setVar("board", {boardId: node.board}, key, value); 
         },
       },
+      boards: {
+        list: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, true),
+        unlist: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, false)
+      },
       output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
       scheduleOutput: (timeFromNowObj, message, label=varCache.board.narrator) => { 
         db.scheduleMessage(timeFromNowObj, {recipients: [playerId], message, label, node: node._id, board: node.board}) },
@@ -91,6 +95,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
       interface: (key) => { result.interfaceCommand = key },
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
+      
       input: input
     }  
   });
