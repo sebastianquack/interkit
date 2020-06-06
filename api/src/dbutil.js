@@ -200,6 +200,13 @@ exports.removeItemFromPlayer = async (playerId, projectId, key) => {
   }
 }
 
+// retrieve one item
+exports.getItem = async (key, project) => {
+  let item = await RestHapi.list(RestHapi.models.item, {key, project}, Log);
+  console.log(item);
+  if(item.docs.length > 0) return item.docs[0]
+  return null;
+}
 
 // retrieves a players items
 exports.getItemsForPlayer = async (playerId) => {

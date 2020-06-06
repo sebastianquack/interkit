@@ -53,4 +53,24 @@ board.set("varname", value) // for all players in all nodes
 player.name // used as label in multiplayer
 board.narrator // used as default label for messages sent to player
 
+// items
+createOrUpdateItem({
+      key: "Zielgebiet",
+      type: "location", // location is shown on map, document in archive
+      value: {
+        lat: 52.493606, 
+        lng: 13.438209,
+        description: "Hier wurde eine hohe Wahrscheinlichkeit für Lebensform B78-C# gemessen.",
+        sound: "twitscher.mp3",
+      }
+    });
+awardItem("Zielgebiet");
+removeItem("Zielgebiet");
+
+async function onMessage() { // async needed for loading items
+  let item = await getItem("Zielgebiet") // get the current value of an item 
+}
+
+distance(input.attachment, item.value) // calculate distance between user's posiiton and item or other position
+
 `;

@@ -205,7 +205,7 @@ exports.init = (listener) => {
     // player input something
     
     socket.on("message", async (data)=>{
-      console.log("socket message received", data);
+      console.log("socket message received", data, socket.room);
 
       let id = mongoose.Types.ObjectId(socket.room);
       let currentNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)

@@ -1,5 +1,6 @@
 const {VM} = require('vm2');
 const db = require('./dbutil.js');
+const geolib = require('geolib');
 
 /*const itemToAttachment = async (playerId, key) {
   let item = await db.getItemForPlayerByKey(playerId, key);
@@ -86,8 +87,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       createOrUpdateItem: (payload) => { db.createOrUpdateItem(payload, project._id) },
       awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
       removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },
+      getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
       interface: (key) => { result.interfaceCommand = key },
+      distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       input: input
     }  
   });
