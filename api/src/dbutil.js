@@ -124,11 +124,24 @@ exports.logPlayerToNode = async (playerId, node) => {
   }  
 }
 
+exports.setPlayerAttribute = async (playerId, attribute, value) => {
+  let player = await RestHapi.find(RestHapi.models.player, playerId, null, Log);
+  let query = {};
+  query[attribute] = value;
+  await RestHapi.update(RestHapi.models.player, playerId, query, Log);
+}
+
+exports.getPlayerAttribute = async (playerId, attribute) => {
+  let player = await RestHapi.find(RestHapi.models.player, playerId, null, Log);
+  return player[attribute];
+}
+
 exports.getPlayersForNode = async (nodeId) => {
   let query = {
     node: mongoose.Types.ObjectId(nodeId),  
   }
   let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
+  //console.log("nodeLogItem", nodeLogItem);
   let playerIds = nodeLogItem.docs.map((doc)=>doc.player);
   return playerIds;
 }

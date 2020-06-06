@@ -69,7 +69,8 @@
 
   onDestroy(() => {
     registerMessageHandler(null);
-    updatePlayerNodeId(null);
+    if(updatePlayerNodeId)
+      updatePlayerNodeId(null);
     
     if(currentNode)
       leaveRoom(currentNode._id);
@@ -82,6 +83,8 @@
   
     let joinNodeId = currentBoard.startingNode;      
     let execOnArrive = true;
+
+    console.log("startingNode", joinNodeId)
     
     // load history 
     await loadMoreItems(currentBoard); 
@@ -122,8 +125,14 @@
       //if this comes from a different node on the same board, switch back to that node without execOnArrive
       if(currentBoard._id == message.board && currentNode._id != message.node) {
           console.log("warning, message is from a different node")
-          await setCurrentNode(message.node, false);
-          setEditNodeId(message.node);  
+          if(message.recipients.includes(playerId)) {
+            await setCurrentNode(message.node, false);
+            setEditNodeId(message.node);    
+          } else {
+            console.log("message wasn't for me, ignoring");
+            return;
+          }
+          
       }
 
       if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)

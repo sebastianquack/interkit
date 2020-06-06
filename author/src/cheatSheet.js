@@ -18,6 +18,8 @@ image("image.jpg") // sends an image
 audio("audio.mp3") // sends an audio file
 
 moveTo("node") // moves player to another node on the same board
+moveTo("node", 100) // move player to another node afer 100ms delay
+moveTo("node", 0, true) // moves all players in this node to another node (with 0 delay)
 
 // schedule a message to be delivered to the player in the future      
 scheduleOutput({hours:1, minutes:30}, "hi again", "paul"})

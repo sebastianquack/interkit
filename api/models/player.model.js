@@ -5,6 +5,9 @@ module.exports = function (mongoose) {
   let modelName = "player";
   let Types = mongoose.Schema.Types;
   let Schema = new mongoose.Schema({  
+    moveCounter: {
+      type: Types.Number,
+    }
   });
 
   const removeAssociatedData = async (playerId) => {

@@ -53,7 +53,8 @@
     currentBoardData = boardData;
   }
   const reloadBoardData = ()=>{
-    if(currentBoardData) currentBoardData.expired = true;
+    //if(currentBoardData) currentBoardData.expired = true;
+    loadBoardData();
   }
 
   let playerId;

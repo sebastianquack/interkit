@@ -21,7 +21,8 @@ const emitMessage = async (emitter, data) => {
     let m = await db.logMessage(msgData);
     id = m._id;
   }
-  emitter.emit('message', {...msgData, _id: id});         
+  if(emitter)
+    emitter.emit('message', {...msgData, _id: id});         
 }
 
 // socket-send message to all players in a room 
@@ -39,11 +40,13 @@ const emitInRoom = async (room, data) => {
 
 async function joinRoom(io, socket, data) {
   console.log("joining " + data.room);
-  await socket.join(data.room);
-  
-  socket.room = data.room;
-  socket.playerId = data.playerId;
-  
+  if(socket) {
+    await socket.join(data.room);
+    
+    socket.room = data.room;
+    socket.playerId = data.playerId;
+  }
+    
   console.log("trying to find this room in db");
   let id = mongoose.Types.ObjectId(data.room);
   let newNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
@@ -61,10 +64,61 @@ async function joinRoom(io, socket, data) {
   } else {
     console.log("room " + data.room + " not found!");
   }
-  
 }
 
-// get players connected to a room via socket and nodlog (perhaps it's enough to just check nodelog?)
+// move a set of players to a new room
+// step 1: move all players
+// step 2: run onArrive scripts for all players (todo: option for only once)
+
+async function joinRoomMulti(io, socket, data) {
+  console.log("multi joining ", data);
+  
+  console.log("moving sockets...");  
+  // move all connected sockets over
+  let clients = io.sockets.adapter.rooms[data.fromNode._id].sockets;   
+  for (let clientId in clients ) {
+     console.log("socket id", clientId);  
+     //this is the socket of each client in the current room.
+     let clientSocket = io.sockets.connected[clientId];
+     await clientSocket.join(data.toNode._id);
+     clientSocket.room = data.toNode._id;
+  }
+ 
+  // move nodelogs
+  let playerIds = await db.getPlayersForNode(data.fromNode._id);
+  console.log("moving player nodelogs", playerIds);
+
+  for(let playerId of playerIds) {
+    console.log(playerId);
+    await db.logPlayerToNode(playerId, data.toNode);
+  }
+
+  // run onArrive script for all players
+  if(data.execOnArrive) {
+    for(let playerId of playerIds) {    
+      let s = getSocketForPlayerId(playerId)
+      //console.log("found socket", s);
+      handleScript(io, s, data.toNode, playerId, "onArrive");
+    }
+  }
+}
+
+
+// get socket from playerId
+
+const getSocketForPlayerId = (id) => { 
+  let sockets = io.sockets.connected;
+  for (let socketId in sockets) {
+    let socket = io.sockets.connected[socketId];
+     //this is the socket of each client in the room.
+     if(socket.playerId == id)
+      return socket;
+  }
+  return null
+}
+
+
+// get players connected to a room via socket and nodlog (todo: perhaps it's enough to just check nodelog?)
 
 const getPlayerIdsForRoom = async (roomName) => {
   let playerIds = [];
@@ -212,11 +266,15 @@ exports.init = (listener) => {
 
 async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
+  console.log("handleScript playerId", playerId)
+
   let node = currentNode._id;
   let board = currentNode.board;
 
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
     
+    console.log("script result", result);
+
     // error in script - send error message back to sender
 
     if(result.error) {
@@ -232,14 +290,14 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
     
     if(result.outputs) {
 
-      let recipients = await db.getPlayersForNode(socket.room);
+      let recipients = await db.getPlayersForNode(node);
       
       // send off regular messages
 
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
-          console.log("emitMessage socket.room", socket.room);
-          emitInRoom(socket.room, {...result.outputs[i], recipients, node, board, outputOrder: i});
+          console.log("emitMessage socket.room", node);
+          emitInRoom(node, {...result.outputs[i], recipients, node, board, outputOrder: i});
         } else {
           emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
         }
@@ -260,13 +318,17 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
       if(result.moveTo) {
 
         // limit amount of chained moves
-        if(!socket.moveCounter) socket.moveCounter = 0;
+        let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
+        if(!moveCounter) {
+          db.setPlayerAttribute(playerId, "moveCounter", 0);  
+          moveCounter = 0;
+        }
 
-        if(socket.moveCounter < 4) {
+        if(moveCounter < 4) {
           
           // find destination via name and board
           let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
-            name: result.moveTo,
+            name: result.moveToOptions.destination,
             board: currentNode.board
           }, Log)
           
@@ -275,7 +337,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
             console.log("moving player to room " + destination.name);
             if(destination._id != currentNode._id) {
               
-              socket.moveCounter += 1;
+              await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
               
               // inform others in the old room - todo: make more customizable 
               /*if(currentNode.multiPlayer) {
@@ -284,26 +346,25 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
               // NEW: move player directly on backend
               setTimeout(()=>{
-                joinRoom(io, socket, {playerId, room: destination._id, execOnArrive: true});
 
-                // inform others in the new room - todo: make more customizable
-                /*if(currentNode.multiPlayer) {
-                  socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
-                }*/
+                if(!result.moveToOptions.all) {
+                  // move single player to different node
+                  joinRoom(io, socket, {playerId, room: destination._id, execOnArrive: true});
+                  // inform others in the new room - todo: make more customizable
+                  /*if(currentNode.multiPlayer) {
+                    socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
+                  }*/
+                } else {
+                  // experimental:  move multiple players from one room to another
+                  joinRoomMulti(io, socket, {fromNode: currentNode, toNode: destination, execOnArrive: true});
+                }
 
-              }, result.moveToDelay ? result.moveToDelay : 0);
-
-              // TODO: experimental command to move all connected players to new room at once
-              /* if(result.moveToAll) ...
-
-              step 1: move all connected players
-              step 2: run onArrive scripts for all players (option in moveToAll - run onArrive once)
-              */
+              }, result.moveToOptions.delay ? result.moveToOptions.delay : 0);              
 
             } else {
-              console.log("node " + result.moveTo + " not found");
+              console.log("node " + result.moveToOptions.destination + " not found");
               emitMessage(socket, {
-                message: "node " + result.moveTo + " not found", 
+                message: "node " + result.moveToOptions.destination + " not found", 
                 system: true, 
                 recipients: [playerId],
                 node, board
@@ -320,12 +381,12 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
               recipients: [playerId],
               node, board
             });
-            socket.moveCounter = 0;
+            await db.setPlayerAttribute(playerId, "moveCounter", 0)
           }
 
       } else {
         // reset move counter if no move requested
-        socket.moveCounter = 0;
+        await db.setPlayerAttribute(playerId, "moveCounter", 0)
       }
     }
  
