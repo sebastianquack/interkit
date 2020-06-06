@@ -1,17 +1,20 @@
 <script>
 
 import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
+import { getConfig } from '../../shared/util.js';
 
 const mapStyles = require('../../shared/GoogleMapStyles.json')
 
 export let googleReady;
 export let coords;
+export let zoom;
 export let label;
 export let updateCoords;
 
 let map;
 let mapContainer;
 let marker;
+let defaultZoom;
 
 const labelObj = (text) => {
   return {
@@ -24,7 +27,7 @@ const labelObj = (text) => {
 
 const initGoogleMap = ()=>{
     map = new google.maps.Map(mapContainer, {
-      zoom: 13,
+      zoom,
       center: coords,
       streetViewControl: false, 
       fullscreenControl: false, 
@@ -37,10 +40,8 @@ const initGoogleMap = ()=>{
       scaledSize: {height: 50, width: 50}, // scaled size
       origin: {x:0, y:0}, // origin
       anchor: {x:25, y:50}, // anchor
-      labelOrigin: new google.maps.Point(25, 60)
+      labelOrigin: {x:25, y:60}
     };
-
-    console.log(label);
     
     // add markers for user
     marker = new google.maps.Marker({
@@ -56,9 +57,10 @@ const initGoogleMap = ()=>{
       let newPos = marker.getPosition();
       updateCoords(newPos);
     });
-
-    console.log(coords);
 }
+
+
+// lifecycle methods
 
 afterUpdate(()=>{
   if(!map && googleReady && coords) {

@@ -13,6 +13,15 @@
   export let googleReady;
 
   let items = [];
+  let defaultPos;
+  let defaultZoom;
+  
+  let editItem = null;
+  let customType = null;
+  let coords = null;
+  let itemTypes = ["document", "location"];
+  let defaultValue;
+
   
   const loadItems = async () => {
     let result = await fetch("/api/item?project=" + projectId + "&$embed=players");
@@ -23,18 +32,19 @@
     }
   }
 
-  let editItem = null;
-  let customType = null;
-  let coords = null;
-  let itemTypes = ["document", "location"]
-
-  const defaultValue = {
+  onMount(async ()=>{
+    loadItems();
+    defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
+    console.log(defaultPos);
+    defaultValue = {
       description: "",
       image: null,
       sound: null,
-      lat: 50,
-      lng: 10
-  }
+      ...defaultPos
+    }
+    defaultZoom = await getConfig("defaultZoom");
+    console.log(defaultZoom)
+  });
 
   const createItem = () => {
     editItem = {
@@ -44,7 +54,7 @@
       project: projectId,
       new: true
     }
-    coords = {lat: 50, lng: 10};
+    coords = defaultPos;
   }
 
   const setEditItem = (item) => {
@@ -149,10 +159,6 @@
   }
 
 
-  onMount(()=>{
-    loadItems();
-  });
-
 </script>
 
 <div class="container">
@@ -183,6 +189,7 @@
   {#if editItem.type == "location"}
     <ItemMap 
       {coords}
+      zoom={defaultZoom}
       {updateCoords}
       {googleReady} 
       label={editItem.key}

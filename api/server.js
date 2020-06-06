@@ -127,6 +127,9 @@ async function api() {
     db.seedConfig("socketURL", "http://localhost:9000");
     db.seedConfig("defaultProject", "");
     db.seedConfig("googleMapsAPIKey", "");
+    db.seedConfig("defaultLat", 10, "number");
+    db.seedConfig("defaultLng", 50, "number");
+    db.seedConfig("defaultZoom", 15, "number");
     
     console.log("Server ready", server.info)
 

@@ -6,11 +6,11 @@ const Log = RestHapi.getLogger('socket');
 Log.logLevel = 'WARNING';
 
 // seeds config vars if needed
-exports.seedConfig = async (key, value) => {
+exports.seedConfig = async (key, value, type="text") => {
   let config = await RestHapi.list(RestHapi.models.config, {key: key}, Log);  
   if(config.docs.length == 0) {
     console.log("seeding config ", key, value)
-    await RestHapi.create(RestHapi.models.config, {key, value}, Log);  
+    await RestHapi.create(RestHapi.models.config, {key, value, type}, Log);  
   } else {
     console.log("found config ", config.docs[0].key, config.docs[0].value);
   }
