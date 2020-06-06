@@ -98,10 +98,7 @@
       joinNodeId = lastNode.docs[0].node;
       execOnArrive = false; // if arrived here after history, don't exec onArrive
     }
-
-    // loads node we want to be in and saves it
-    await setCurrentNode(joinNodeId, execOnArrive)
-
+    
     // make sure this has been loaded when we register the handler
     fileServerURL = await getConfig("fileServerURL");
 
@@ -188,8 +185,11 @@
         setLockScreen();
       }
 
-    })    
-    
+    })
+
+    // loads node we want to be in and saves it
+    await setCurrentNode(joinNodeId, execOnArrive)
+        
   }
 
   const setCurrentNode = async (nodeId, execOnArrive=true)=>{

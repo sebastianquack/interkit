@@ -181,27 +181,13 @@
     console.log("playerContainer: playerId changed", playerId);
     if(playerId) {
       loadMarkers();
-      checkForUnseenMessages();
 
       if(projectId) {
         loadListedBoards();        
+        checkForUnseenMessages();    
       } 
-    
-    }
-    else 
-      currentBoard = null;
-  }
-
-  // resets message listener when player leaves board -> todo refactor, unsafe
-  $: {
-    console.log("playerContainer: currentBoard changed", currentBoard);
-    if(!currentBoard) {
-      loadListedBoards();
-      checkForUnseenMessages();    
     }
   }
-
-
 
 </script>
 
