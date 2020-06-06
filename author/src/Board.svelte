@@ -107,9 +107,11 @@
     <button on:click={saveBoard}>save</button>
     <br>
 
-    <VarList scope="board" ids={{board: currentBoardData._id}}/>
+    {#if !currentBoardData.new}
+      <VarList scope="board" ids={{board: currentBoardData._id}}/>
+    {/if}
 
-    <button on:click={()=>editMode = false}>close</button>
+    <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button>
 
     </div>
     
