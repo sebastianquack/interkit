@@ -73,7 +73,7 @@ module.exports = function (mongoose) {
     scope: {
       type: Types.String,
       required: true,
-      enum: ['player','playerNode', 'node', 'board'],
+      enum: ['player', 'playerNode', 'node', 'board'],
       default: "player",
     },
     player: {

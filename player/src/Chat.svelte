@@ -69,6 +69,7 @@
   }
 
   onDestroy(() => {
+    console.log("chat onDestroy");
     registerMessageHandler(null);
     if(updatePlayerNodeId)
       updatePlayerNodeId(null);
@@ -116,6 +117,7 @@
       // if this comes from a different board, show notification, don't add message to this board
       if(currentBoard._id != message.board) {
           console.log("warning, message is from a different board")
+          setNotificationItem(message);
           setLockScreen();
           return;
       }

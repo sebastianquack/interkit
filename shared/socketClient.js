@@ -75,7 +75,7 @@ export const leaveRoom = (room) => {
 export const listenForMessages = (callback) => {
   //console.log("listenForMessages");
   reTry(()=>{
-    socket.off('message');
+    //socket.off('message');
     socket.on('message', callback);
   });
 }
