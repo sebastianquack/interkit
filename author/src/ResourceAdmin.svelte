@@ -32,6 +32,7 @@
     let saveEntry = {...editEntry, 
       new: undefined,
       createdAt: undefined,
+      updatedAt: undefined,
       project: projectId
     };
     
