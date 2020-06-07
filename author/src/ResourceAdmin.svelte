@@ -62,7 +62,7 @@
 
   const deleteEntry = async (id) => {
     if(confirm(`permanently remove ${resourceName}?`)) {
-      const res = await fetch(`api/${resourceName}/` + id, {
+      const res = await fetch(`/api/${resourceName}/` + id, {
         method: "DELETE",
         headers: {'authorization': $token},
       });
