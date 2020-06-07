@@ -11,6 +11,7 @@
   import PlayerMonitoring from './PlayerMonitoring.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
   import ItemManager from './ItemManager.svelte';
+  import PageManager from './PageManager.svelte';
   import PlaytestArea from './PlaytestArea.svelte';
 
   import WorkspaceFrame from './WorkspaceFrame.svelte';
@@ -70,9 +71,11 @@
   let boards = [];
   let playerURL;
   let editMode = false;
+  
   let tabNavigation = "boards";
   const toggleTab = (tab) => {if(tabNavigation == tab) tabNavigation = "boards"; else tabNavigation = tab}
-  
+  const closeTab = ()=>{tabNavigation = "boards"}
+
   const loadBoardList = async ()=>{
     const res = await fetch("/api/board?project=" + project._id);
     const json = await res.json();
@@ -169,11 +172,12 @@ function onMessage() {
     </div>
 
 
+    <button class="project-menu-toggle" on:click={()=>{toggleTab("pages")}}>📄</button>
     <button id="toggle-player-monitoring" on:click={()=>{toggleTab("players")}}>👥</button>
     <button id="toggle-item-manager" on:click={()=>{toggleTab("items")}}>🧳</button>
     <button id="toggle-attachment-manager" on:click={()=>{toggleTab("attachments")}}>📎</button>
     
-
+    
     <select bind:value={currentBoardId} on:change={loadBoardData}>
       <option value={null}>select a board</option>
       <option disabled>_________</option>
@@ -211,14 +215,14 @@ function onMessage() {
     {#if tabNavigation == "attachments"}
       <AttachmentManager
           projectId={project._id}
-          close={()=>{tabNavigation = "boards"}}
+          close={closeTab}
         />
     {/if}
 
     {#if tabNavigation == "items"}
       <ItemManager
           projectId={project._id}
-          close={()=>{tabNavigation = "boards"}}
+          close={closeTab}
           {playerId}
           {googleReady}
         />
@@ -229,7 +233,14 @@ function onMessage() {
         projectId={project._id}
         {clearPlayerId}
         {playerId}
-        close={()=>{tabNavigation = "boards"}}
+        close={closeTab}
+      />
+    {/if}
+
+    {#if tabNavigation == "pages"}
+      <PageManager
+        projectId={project._id}
+        close={closeTab}
       />
     {/if}
 
