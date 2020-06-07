@@ -84,6 +84,11 @@
   }
 
   const loadBoardData = async ()=>{
+    if(currentBoardId == "new") {
+      createBoard();
+      return;
+    }
+
     console.log("reloading board data", currentBoardId);
     editMode = false;
     tabNavigation = "boards";
@@ -184,12 +189,9 @@ function onMessage() {
     {#each boards as board}
       <option value={board._id}>{board.name}</option>
     {/each}
+      <option disabled>_________</option>
+      <option value={"new"}>new board</option>
     </select>
-    <button on:click={createBoard}>new board</button>
-
-    {#if currentBoardData && !currentBoardData.new}
-      <button on:click={deleteBoard}>delete board</button> 
-    {/if}
 
   </div>
 
@@ -209,6 +211,7 @@ function onMessage() {
         {loadBoardData}
         {loadBoardList}
         {playerURL}
+        {deleteBoard}
       />
       {/if}
 

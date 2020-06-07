@@ -23,6 +23,7 @@
   export let loadBoardList;
 
   export let createNode;
+  export let deleteBoard;
 
   let editMode;
 
@@ -98,7 +99,7 @@
 
     <div class="scroll">
 
-    <h2>edit board</h2>
+    <h2>edit board <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button></h2>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
@@ -111,7 +112,11 @@
       <VarList scope="board" ids={{board: currentBoardData._id}}/>
     {/if}
 
-    <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button>
+    {#if currentBoardData && !currentBoardData.new}
+      <button on:click={deleteBoard}>delete board</button> 
+    {/if}
+
+    
 
     </div>
     
@@ -152,6 +157,11 @@
   button, input, h2 {
     position: relative;
     z-index: 1;
+  }
+
+  h2 button {
+    margin-left: 5px;
+    font-size: 16px;
   }
 
   .edit-headline h2 {
