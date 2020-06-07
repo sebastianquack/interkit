@@ -12,7 +12,7 @@
   let editEntry = null;
   
   const loadEntries = async () => {
-    let result = await fetch(`api/${resourceName}?project=` + projectId);
+    let result = await fetch(`/api/${resourceName}?project=` + projectId);
     let json = await result.json();
     if(json.docs) {       
       entries = json.docs;
