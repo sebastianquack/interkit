@@ -68,13 +68,12 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 75%; 
+  width: 85%; 
   bottom: 0;
   background-color: #fff;
   padding: 20px;
   box-sizing: border-box;
   z-index: 10;
-  box-shadow: 2px 0px gray;
 }
 
 .menu-entries {
