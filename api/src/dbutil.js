@@ -19,19 +19,21 @@ exports.seedConfig = async (key, value, type="text") => {
 const makeQuery = (scope, refs, key) => {
   let where = {
       key: key,
-      scope: scope
+      scope: scope,
+      project: mongoose.Types.ObjectId(refs.project)
   };
-  if(refs.playerId) where.player = mongoose.Types.ObjectId(refs.playerId);
-  if(refs.boardId) where.board = mongoose.Types.ObjectId(refs.boardId);
-  if(refs.nodeId) where.node = mongoose.Types.ObjectId(refs.nodeId);
+  if(refs.player) where.player = mongoose.Types.ObjectId(refs.player);
+  if(refs.board) where.board = mongoose.Types.ObjectId(refs.board);
+  if(refs.node) where.node = mongoose.Types.ObjectId(refs.node);
   return where;
 }
 
 const checkRefs = (scope, refs) => {
-  return scope == "player" && refs.playerId 
-          || scope == "board" && refs.boardId
-          || scope == "node" && refs.nodeId
-          || scope == "playerNode" && refs.nodeId && refs.playerId
+  return scope == "player" && refs.player && refs.project
+          || scope == "board" && refs.board && refs.project
+          || scope == "node" && refs.node && refs.project
+          || scope == "playerNode" && refs.node && refs.player && refs.project
+          || scope == "project" && refs.project
 }
 
 exports.setVar = async (scope, refs, key, value) => {
@@ -53,6 +55,8 @@ exports.setVar = async (scope, refs, key, value) => {
         value: value 
       }, Log);  
     }
+  } else {
+    console.log("setVar got wrong refs")
   }
 }
 
@@ -68,6 +72,8 @@ exports.getVars = async (scope, refs) => {
         varObj[v.key] = v.value;
       })
     return varObj;
+  } else {
+    console.log("getVars got wrong refs")
   }
 }
 
@@ -86,7 +92,34 @@ exports.getVar = async (scope, refs, key) => {
     } else {
       return undefined;
     }
+  } else {
+    console.log("getVar got wrong refs")
   }
+}
+
+exports.embedVars = async (content, projectId, playerId=null) => {
+
+  const replaceVars = async (regex, content, scope, refs) => {
+
+    while ((m = regex.exec(content)) !== null) {
+      console.log("found project var ", m[1]);
+      console.log("string to replace", m[0]);
+      let value = await exports.getVar(scope, refs, m[1])
+      console.log("value", value);
+      if(!value) value = "[var "+m[1]+" not found]";
+      content = content.replace(m[0], value);
+    } 
+
+    return content;
+  }
+  
+  let regexProjectVars = /(?:\{project\.)(.+?)(?:\})/g    
+  content = await replaceVars(regexProjectVars, content, "project", {project: projectId});
+
+  let regexPlayerVars = /(?:\{player\.)(.+?)(?:\})/g    
+  content = await replaceVars(regexPlayerVars, content, "player", {player: playerId, project: projectId});
+
+  return content;
 }
 
 exports.getBoard = async (boardId) => {

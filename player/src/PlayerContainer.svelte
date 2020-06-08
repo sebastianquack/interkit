@@ -290,6 +290,7 @@
   {#if menuOpen}
   <Menu
     {projectId}
+    {playerId}
     onClose={()=>menuOpen=false}
   />
   {/if}

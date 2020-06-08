@@ -73,7 +73,7 @@ module.exports = function (mongoose) {
     scope: {
       type: Types.String,
       required: true,
-      enum: ['player', 'playerNode', 'node', 'board'],
+      enum: ['player', 'playerNode', 'node', 'board', 'project'],
       default: "player",
     },
     player: {
@@ -88,6 +88,10 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       ref: "board"
     },
+    project: {
+      type: Types.ObjectId,
+      ref: "project"
+    }
   });
   
   Schema.statics = {
@@ -109,6 +113,10 @@ module.exports = function (mongoose) {
           type: "MANY_ONE",
           model: "board"
         },
+        project: {
+          type: "MANY_ONE",
+          model: "project"
+        }
       },
       extraEndpoints: [
         valueUpdate

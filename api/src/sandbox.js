@@ -24,14 +24,15 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     moveTo: null
   };
 
-  let varCache = {
-    player: await db.getVars("player", {playerId}),
-    node: await db.getVars("node", {nodeId: node._id}),
-    playerNode: await db.getVars("playerNode", {nodeId: node._id, playerId}),
-    board: await db.getVars("board", {boardId: node.board}),
-  }
-
   let project = await db.getProjectForNode(node);
+  
+  let varCache = {
+    player: await db.getVars("player", {player: playerId, project: project._id}),
+    node: await db.getVars("node", {node: node._id, project: project._id}),
+    playerNode: await db.getVars("playerNode", {nodeId: node._id, playerId, project: project._id}),
+    board: await db.getVars("board", {board: node.board, project: project._id}),
+    project: await db.getVars("project", {project: project._id}),
+  }
   
   // default values
   if(!varCache.board.narrator) varCache.board.narrator = "narrator";
@@ -52,28 +53,35 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         ...varCache.player,
         set: function (key, value) { 
           this[key] = value;
-          db.setVar("player", {playerId}, key, value); 
+          db.setVar("player", {player: playerId, project: project._id}, key, value); 
         },
       },
       here: {
         ...varCache.node,
         set: function (key, value) { 
           this[key] = value;
-          db.setVar("node", {nodeId: node._id}, key, value); 
+          db.setVar("node", {node: node._id, project: project._id}, key, value); 
         },
       },
       playerHere: {
         ...varCache.playerNode,
         set: function (key, value) { 
           this[key] = value;
-          db.setVar("playerNode", {playerId, nodeId: node._id}, key, value); 
+          db.setVar("playerNode", {player: playerId, node: node._id, project: project._id}, key, value); 
         },
       },
       board: {
         ...varCache.board,
         set: function (key, value) { 
           this[key] = value;
-          db.setVar("board", {boardId: node.board}, key, value); 
+          db.setVar("board", {board: node.board, project: project._id}, key, value); 
+        },
+      },
+      project: {
+        ...varCache.project,
+        set: function (key, value) { 
+          this[key] = value;
+          db.setVar("project", {project: project._id}, key, value); 
         },
       },
       boards: {

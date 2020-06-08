@@ -5,12 +5,13 @@
 
   export let onClose;
   export let projectId;
+  export let playerId;
 
   let pages = [];
   let currentPage = null;
 
   onMount(async ()=>{
-    let res = await fetch("/api/page?$sort=menuOrder&project=" + projectId)
+    let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId)
     let json = await res.json();
     if(json.docs) pages = json.docs;
   })
@@ -34,7 +35,7 @@
 
     <div class="page-container">
       <button class="close-button" on:click={()=>{currentPage=null; onClose()}}>{"close"}</button>    
-      {@html marked(currentPage.content)}
+      {@html marked(currentPage.contentWithVars)}
     </div>
 
   {/if}

@@ -30,11 +30,12 @@
 
   const saveEntry = async () => {
     let saveEntry = {...editEntry, 
-      new: undefined,
-      createdAt: undefined,
-      updatedAt: undefined,
       project: projectId
     };
+
+    Object.keys(saveEntry).forEach(key=>{
+      if(!(key in defaultValue)) saveEntry[key] = undefined;
+    })
     
     let response;
     if(editEntry.new) {
@@ -80,8 +81,6 @@
 
 </script>
 
-<div class="container">
-
 <h3>{resourceName}<button on:click={close}>close</button></h3>
 
 {#if loading }
@@ -111,8 +110,6 @@
 {/if}
 
 
-</div>
-
 
 
 <style>
@@ -120,18 +117,6 @@
   h3 button {
     margin-left: 5px;
     font-size: 16px;
-  }
-
-  .container {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    padding-left: 10px;
-    box-sizing: border-box;
-    overflow: scroll;
-    width: 100%;
-    background-color: #fff;
   }
 
   span.link {
