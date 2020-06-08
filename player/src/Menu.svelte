@@ -53,6 +53,7 @@
   width: 100%;
   bottom: 0;
   z-index: 11;
+  background-color: rgb(0,0,0, 0.75);
 }
 
 
@@ -67,7 +68,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 66%; 
+  width: 75%; 
   bottom: 0;
   background-color: #fff;
   padding: 20px;
