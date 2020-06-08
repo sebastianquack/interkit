@@ -34,7 +34,7 @@
     };
 
     Object.keys(saveEntry).forEach(key=>{
-      if(!(key in defaultValue)) saveEntry[key] = undefined;
+      if(!(key in defaultValue || key == "project")) saveEntry[key] = undefined;
     })
     
     let response;
