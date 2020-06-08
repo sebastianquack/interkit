@@ -1,13 +1,15 @@
 <script>
   import { onMount } from 'svelte';
-  import Chat from './Chat.svelte';
+  import { getConfig, logPlayerToProject } from '../../shared/util.js';
   import { initSocket, getPlayerId, listenForMessages } from '../../shared/socketClient.js';
+  
+  import Chat from './Chat.svelte';
   import Map from './Map.svelte';
   import Archive from './Archive.svelte';
   import Modal from './Modal.svelte';
   import LockScreen from './LockScreen.svelte';
-  import { getConfig, logPlayerToProject } from '../../shared/util.js';
-
+  import Menu from './Menu.svelte';
+  
   // the two main props that this comonent reacts on
   export let projectId;
   export let playerId;
@@ -35,8 +37,8 @@
   
   let loading = true;
   let fileServerURL = "";
+  let menuOpen = false;
   
-
   const setLockScreen = ()=>showLockScreen=true;
   
   const setNotificationItem = (item)=>{
@@ -143,6 +145,11 @@
     mainView = "archive";
   }
 
+  const toggleMenu = () => {
+    menuOpen = true;
+  }
+
+
   const initPlayerContainerSocket = ()=>{
     console.log("initialising socket message listener on player container");
     listenForMessages(async (message)=>{
@@ -196,6 +203,7 @@
 {#if !loading}
 
   <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
+    <button class="menu-button" on:click={toggleMenu}>{"menu"}</button>
     {#if currentBoard && mainView == "chat"}
         {#if boards.length > 1}
           <button style="width: 2em" on:click={()=>{currentBoard = null; loadListedBoards()}}>{"<"}</button>
@@ -279,6 +287,13 @@
     {openBoardForMessage}
   />
 
+  {#if menuOpen}
+  <Menu
+    {projectId}
+    onClose={()=>menuOpen=false}
+  />
+  {/if}
+
 {/if}
 
 </div>
@@ -336,8 +351,13 @@
     top: 10px;
   }
 
-  .menu-buttons-right button {
+  .top-menu button {
     box-shadow: 2px 2px #ddd;
+  }
+
+  .menu-button {
+    margin-right: 2px;
+    color: #000;
   }
 
   .content-container {
