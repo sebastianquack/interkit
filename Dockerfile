@@ -31,6 +31,6 @@ WORKDIR /app/api
 
 RUN ls -l public/*
 
-EXPOSE 8000
-ENV PORT=8000
+EXPOSE 9000
+ENV PORT=9000
 CMD ["npm", "start" ]

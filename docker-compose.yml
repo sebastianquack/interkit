@@ -3,8 +3,15 @@ version: "2.1"
 services:
   app:
     build: .
+    env_file:
+      - ./api/.env    
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017
+      - PORT=9000
+      #- AWSEndpoint=http://minio:9002
     ports:
-      - 8888:8000
+      - 9000:9000
     depends_on:
       mongo:
         condition: service_healthy
@@ -17,14 +24,14 @@ services:
     #  MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
       - ./services/data/mongo:/data/db:cached
-    ports:
-      - 27017:27017
+    expose:
+      - 27017
     # default port is 27017
     healthcheck:
       test: echo 'db.runCommand({serverStatus:1}).ok' | mongo mongo:27017 --quiet
       interval: 5s
       timeout: 5s
-      retries: 15
+      retries: 6
 
   minio:
     image: minio/minio:RELEASE.2020-06-01T17-28-03Z

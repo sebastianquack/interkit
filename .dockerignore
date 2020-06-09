@@ -1,6 +1,9 @@
 # node & npm
 **/node_modules
 
+# dotenv
+**/.env
+
 # build directories (note: keep public/ for svelte)
 admin/build
 api/public
