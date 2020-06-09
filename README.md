@@ -43,6 +43,12 @@ cd player && npm run dev
 # open http://localhost:9000
 ````
 
+5. run admin
+````sh
+cd admin && npm start
+# open http://localhost:3000
+````
+
 6. more tools
 - Mongo Express: `http://localhost:9001/`
 - Minio: `http://localhost:9002/`
