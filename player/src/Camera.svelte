@@ -77,38 +77,6 @@ const send = async ()=> {
   console.log(file)
 
   await upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
-  
-//  let response = await axios.post("/api/s3_sign", {
-//      fileName : fileName,
-//      fileType : fileType
-//  });
-//  if(!response) return null;
-//  console.log(response);
-//
-//  var returnData = response.data.data.returnData;
-//  var signedRequest = returnData.signedRequest;
-//  
-//  console.log("Recieved a signed request " + signedRequest);
-//  
-//  let options = {
-//      headers: {
-//        'Content-Type': fileType
-//      },
-//      onUploadProgress: progressEvent => {console.log(progressEvent.loaded);}
-//    };
-//  
-//  let uploadResponse = await axios.put(signedRequest, file, options)
-//  console.log("Response from s3", uploadResponse);
-//
-//  const res = await fetch("/api/file", {
-//      method: "post", 
-//      body: JSON.stringify([{
-//        filename: fileName,
-//        path: fileName
-//      }])
-//  });
-//  const json = await res.json();  
-//  console.log("new file created", json);
 
   await onUpload(fileName);
 }

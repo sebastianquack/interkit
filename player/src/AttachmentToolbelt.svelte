@@ -5,6 +5,7 @@
 
   import QRScanner from './QRScanner.svelte';
   import Camera from './Camera.svelte';
+  import AudioRecorder from './AudioRecorder.svelte';
 
   export let attachmentMenuOpen;
   export let closeAttachmentMenu;
@@ -14,11 +15,12 @@
   export let clearInput;
   export let projectId;
 
-  let QRScannerOpen = false
-  const openQRScanner = ()=> { QRScannerOpen = true; }
-  const closeQRScanner = ()=> {
-    QRScannerOpen = false;
-    closeAttachmentMenu();
+  let toolOpen = null;
+  const openTool = (tool) => {
+    toolOpen = tool;
+  }
+  const closeTool = () => {
+    toolOpen = null;
   }
 
   const sendQRCode = (code) => {
@@ -32,15 +34,6 @@
     emitMessage(item);
     clearInput();
     scrollUp();
-  }
-
-  let cameraOpen = false
-  const openCamera = ()=> {
-    cameraOpen = true;
-  }
-  const closeCamera = ()=> {
-    cameraOpen = false;
-    closeAttachmentMenu();
   }
 
   const getGPSLocation = ()=>{
@@ -78,14 +71,15 @@
     closeAttachmentMenu();
   }
 
-  const sendImage = async (filename) => {
+  const sendAttachment = async (filename, mediatype) => {
     let fileServerURL = await getConfig("fileServerURL");
     console.log("fileServerURL", fileServerURL);
 
     let item = {
       attachment: {
-        mediatype: "image",
-        imgSrc: fileServerURL + filename,  
+        mediatype,
+        imgSrc: mediatype == "image" ? fileServerURL + filename : undefined,  
+        audioSrc: mediatype == "audio" ? fileServerURL + filename : undefined,
         filename: filename
       },
       params: {}
@@ -97,39 +91,54 @@
     scrollUp();
   }
 
+
 </script>
 
 
 {#if attachmentMenuOpen}
   <div class="input-container">      
-      <button on:click={openCamera}>Camera</button>
-      <button on:click={openQRScanner}>QR Code</button>
+      <button on:click={()=>{openTool("camera")}}>Photo</button>
+      <button on:click={()=>{openTool("audio")}}>Audio</button>
+      <button on:click={()=>{openTool("qr-code")}}>QR Code</button>
       <button on:click={getGPSLocation}>GPS Location</button>
       <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
   </div>  
 {/if}
   
-{#if QRScannerOpen}
-  <div class="qr-scanner-container">
-    <button class="close-qr" on:click={closeQRScanner}>close</button>
+{#if toolOpen == "qr-code"}
+  <div class="tool-container">
+    <button class="close-qr" on:click={closeTool}>close</button>
     <QRScanner
       onScan={(code)=>{
-        closeQRScanner();
+        closeTool();
         sendQRCode(code);
       }}
     />
   </div>
 {/if}
 
-{#if cameraOpen}
-  <div class="qr-scanner-container">
+{#if toolOpen == "camera"}
+  <div class="tool-container">
     <Camera
       {projectId}
       onUpload={async (imageURL)=>{
-        closeCamera();
-        await sendImage(imageURL);
+        closeTool();
+        await sendAttachment(imageURL, "image");
       }}
-      onClose={closeCamera}
+      onClose={closeTool}
+    />
+  </div>
+{/if}
+
+{#if toolOpen == "audio"}
+  <div class="tool-container">
+    <AudioRecorder
+      {projectId}
+      onUpload={async (audioURL)=>{
+        closeTool();
+        await sendAttachment(audioURL, "audio");
+      }}
+      onClose={closeTool}
     />
   </div>
 {/if}
@@ -170,7 +179,7 @@
     top: 10px;
   }
 
-  .qr-scanner-container {
+  .tool-container {
     position: absolute;
     top: 0;
     left: 0;
