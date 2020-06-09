@@ -8,6 +8,8 @@ const Inert = require('@hapi/inert');
 const SocketServer = require('./src/socketServer.js');
 const db = require('./src/dbutil.js');
 
+console.log("  NODE_ENV: " + process.env.NODE_ENV)
+
 if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
 }
@@ -93,6 +95,8 @@ async function api() {
         URI: process.env.MONGODB_URI
       }
     };
+
+    console.log("  Mongo URI: " + config.mongo.URI)
 
     await server.register(Auth);
     await server.register({
