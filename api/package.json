@@ -5,24 +5,26 @@
     "main": "server.js",
     "license": "MIT",
     "dependencies": {
-        "@hapi/inert": "^5.2.0",
-        "aws-sdk": "^2.480.0",
+        "@hapi/boom": "^9.1.0",
+        "@hapi/hapi": "^19.1.1",
+        "@hapi/inert": "^6.0.1",
+        "@hapi/joi": "^17.1.1",
+        "aws-sdk": "^2.693.0",
         "bcryptjs": "^2.4.3",
         "dotenv-safe": "^6.0.0",
         "geolib": "^3.3.1",
-        "hapi": "^17.6.0",
-        "hapi-auth-jwt2": "^8.6.1",
-        "hapi-require-https": "^3.0.1",
-        "js-beautify": "^1.10.3",
+        "hapi-auth-jwt2": "^10.1.0",
+        "hapi-require-https": "^5.0.0",
+        "js-beautify": "^1.11.0",
         "moment": "^2.26.0",
-        "mongoose": "^5.2.13",
+        "mongoose": "^5.9.18",
         "path": "^0.12.7",
-        "rest-hapi": "^1.9.0",
+        "rest-hapi": "^2.1.1",
         "socket.io": "^2.3.0",
-        "vm2": "^3.8.4"
+        "vm2": "^3.9.2"
     },
     "devDependencies": {
-        "nodemon": "^1.18.4"
+        "nodemon": "^1.19.4"
     },
     "scripts": {
         "dev": "nodemon ./server.js localhost 9000",

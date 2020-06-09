@@ -44,7 +44,10 @@
     if(currentBoardData.new) {
       response = await fetch("/api/board", {
         method: "POST",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify([{
           name: currentBoardData.name,
           description: currentBoardData.description,
@@ -62,7 +65,10 @@
     } else {
       response = await fetch("/api/board/" + currentBoardData._id, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           _id: currentBoardData._id,
           name: currentBoardData.name,

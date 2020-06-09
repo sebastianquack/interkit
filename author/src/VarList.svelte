@@ -39,7 +39,10 @@ const updateVar = async (v)=>{
     console.log(newValue, typeof newValue);
     const res = await fetch("/api/variable/" + v._id + "/valueUpdate", {
       method: "PUT",
-      headers: {'authorization': $token},
+      headers: {
+        'authorization': $token,
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({value: newValue})
     });
     if(res.ok) {

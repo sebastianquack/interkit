@@ -99,7 +99,10 @@
     if(editItem.new) {
       response = await fetch("/api/item", {
         method: "POST",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify([saveItem])
       });
       if(response.ok) {
@@ -109,7 +112,10 @@
     } else {
       response = await fetch("/api/item/" + editItem._id, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(saveItem)
       });
     }
