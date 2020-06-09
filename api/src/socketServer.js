@@ -10,7 +10,38 @@ Log.logLevel = 'WARNING';
 
 let io = null;
 
-// socket-send message to a single player
+// new: we store the sockets associated with players like so {playerId1: socket1, playerId2: socket2, ...}
+let playerSockets = {}
+
+// new: we send messages to individual sockets depending on recipients
+
+const sendMessage = async (data) => {
+  
+  // prepare data for logging and sending
+  let msgData = {...data, timestamp: Date.now()};
+  if(!msgData.params) msgData.params = {};
+
+  console.log("sendMessage", msgData);
+
+  // get an id for the message
+  let msgId = data._id;
+  if(!msgId) {
+    let m = await db.logMessage(msgData);
+    msgId = m._id;
+  }
+  
+  // send to all recipients that are currently connected on socket
+  for(playerId of data.recipients) {
+    if(playerSockets[playerId]) {
+      console.log("emitting to", playerId);
+      playerSockets[playerId].emit('message', {...msgData, _id: msgId})      
+    }
+  }
+}
+
+
+/*
+// OLD: socket-send message to a single player
 
 const emitMessage = async (emitter, data) => {
   let msgData = {...data, timestamp: Date.now()};
@@ -25,7 +56,7 @@ const emitMessage = async (emitter, data) => {
     emitter.emit('message', {...msgData, _id: id});         
 }
 
-// socket-send message to all players in a room 
+// OLD: socket-send message to all players in a room 
 
 const emitInRoom = async (room, data) => {
   let msgData = {...data, timestamp: Date.now()};
@@ -34,35 +65,37 @@ const emitInRoom = async (room, data) => {
   let m = await db.logMessage(msgData);
   io.in(room).emit('message', {...msgData, _id: m._id});         
 }
-
+*/
 
 // log a player to a node and run onArrive script if requested
 
-async function joinRoom(io, socket, data) {
-  console.log("joining " + data.room);
-  if(socket) {
+async function joinRoom(data) {
+  console.log("joining " + data.nodeId);
+  /*if(socket) {
     await socket.join(data.room);
     
     socket.room = data.room;
     socket.playerId = data.playerId;
-  }
+  }*/
     
-  console.log("trying to find this room in db");
-  let id = mongoose.Types.ObjectId(data.room);
+  console.log("trying to find this node in db");
+  let id = mongoose.Types.ObjectId(data.nodeId);
   let newNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
 
-  await db.logPlayerToNode(data.playerId, newNode);
-  
   if(newNode) {
     // todo: make more customizable
     /* socket.emit('message', {system: true, message: "you are now in " + newNode.name});  
     if(newNode.multiPlayer) {
       socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived"});
     } */
+    
+    await db.logPlayerToNode(data.playerId, newNode);
+
     if(data.execOnArrive)
-      handleScript(io, socket, newNode, data.playerId, "onArrive", data.arriveFrom);
+      handleScript(newNode, data.playerId, "onArrive", data.arriveFrom);
+  
   } else {
-    console.log("room " + data.room + " not found!");
+    console.log("node " + data.room + " not found!");
   }
 }
 
@@ -70,9 +103,10 @@ async function joinRoom(io, socket, data) {
 // step 1: move all players
 // step 2: run onArrive scripts for all players (todo: option for only once)
 
-async function joinRoomMulti(io, socket, data) {
+async function joinRoomMulti(data) {
   console.log("multi joining ", data);
-  
+
+  /*
   console.log("moving sockets...");  
   // move all connected sockets over
   let clients = io.sockets.adapter.rooms[data.fromNode._id].sockets;   
@@ -83,9 +117,11 @@ async function joinRoomMulti(io, socket, data) {
      await clientSocket.join(data.toNode._id);
      clientSocket.room = data.toNode._id;
   }
+  */
  
-  // move nodelogs
   let playerIds = await db.getPlayersForNode(data.fromNode._id);
+
+  // move nodelogs
   console.log("moving player nodelogs", playerIds);
 
   for(let playerId of playerIds) {
@@ -96,16 +132,17 @@ async function joinRoomMulti(io, socket, data) {
   // run onArrive script for all players
   if(data.execOnArrive) {
     for(let playerId of playerIds) {    
-      let s = getSocketForPlayerId(playerId)
+      //let s = getSocketForPlayerId(playerId)
       //console.log("found socket", s);
-      handleScript(io, s, data.toNode, playerId, "onArrive");
+      //handleScript(io, s, data.toNode, playerId, "onArrive");
+      handleScript(data.toNode, playerId, "onArrive");
     }
   }
 }
 
 
-// get socket from playerId
-
+// OLD: get socket from playerId
+/*
 const getSocketForPlayerId = (id) => { 
   let sockets = io.sockets.connected;
   for (let socketId in sockets) {
@@ -116,21 +153,22 @@ const getSocketForPlayerId = (id) => {
   }
   return null
 }
+*/
 
 
-// get players connected to a room via socket and nodlog (todo: perhaps it's enough to just check nodelog?)
+// get players connected to a room 
 
 const getPlayerIdsForRoom = async (roomName) => {
   let playerIds = [];
   
-  let clients = io.sockets.adapter.rooms[roomName].sockets;   
+  /*let clients = io.sockets.adapter.rooms[roomName].sockets;   
   for (let clientId in clients ) {
      //this is the socket of each client in the room.
      let clientSocket = io.sockets.connected[clientId];
      playerIds.push(clientSocket.playerId);
   }
 
-  console.log("playerIds", playerIds);
+  console.log("playerIds", playerIds);*/
 
   //get users who are not currently connected but 
   //who's last node on this board is this node
@@ -163,12 +201,24 @@ exports.init = (listener) => {
     console.log('socket connection');    
 
 
+    // new: this is called once when PlayerContainer mounts on client 
+    // - limitation for now, player can only have one socket 
+    
+    socket.on('registerPlayer', async (data) => {
+      console.log('registerPlayer');
+      playerSockets[data.playerId] = socket;
+      console.log(Object.keys(playerSockets))
+    })
+
     // player requests to join a node
 
     socket.on('joinRoom', async function(data) {
-      console.log("signup request for room " + data.room);
-      console.log("current room for this socket: " + socket.room);
+      console.log("signup request for node " + data.nodeId);
+      //console.log("current room for this socket: " + socket.room);
       
+      joinRoom(data);
+
+      /* OLD
       // check if socket already has a room
       if(socket.room) {
         if(socket.room != data.room) {
@@ -183,40 +233,49 @@ exports.init = (listener) => {
         } catch(error) {
           console.log(error);
         }
-      }
+      }*/
     });
 
     // player leaves a node
 
-    socket.on('leaveRoom', async function(room) {
-      console.log("removing socket from room " + room);
+    socket.on('leaveRoom', async function(data) {
+      console.log("removing player from room " + data.nodeId + " - not implemented");
 
-      let id = mongoose.Types.ObjectId(room);
+      let id = mongoose.Types.ObjectId(data.nodeId);
       let node = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
       /*if(node.multiPlayer) {
         socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human left"});  
       }*/
+
+      // TODO: run onLeave script
+
       
-      socket.leave(room);
+      /*OLD socket.leave(room);
       socket.room = null;
+      */
       //socket.playerId = null;
     });
 
     // player input something
     
     socket.on("message", async (data)=>{
-      console.log("socket message received", data, socket.room);
+      console.log("socket message received", data);
 
-      let id = mongoose.Types.ObjectId(socket.room);
+      let id = mongoose.Types.ObjectId(data.node);
       let currentNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
 
-      // echo input to other players in multiplayer mode
+      // echo input to other players in multiplayer mode 
       if(currentNode.multiPlayer && (data.message || data.attachment)) {
-        let name = await db.getVar("player", {playerId: data.sender}, "name");
-        emitMessage(socket.broadcast.in(socket.room), 
+        let name = await db.getVar("player", {player: data.sender, project: data.project}, "name");
+        
+        let recipients = await db.getPlayersForNode(currentNode._id)
+        recipients = recipients.filter((id)=>id != data.sender);
+
+        //emitMessage(socket.broadcast.in(socket.room), 
+        sendMessage(
           {...data, 
             label: name ? name : "unknown player", 
-            recipients: await db.getPlayersForNode(socket.room),
+            recipients,
             node: currentNode._id, 
             board: currentNode.board
           });
@@ -229,7 +288,7 @@ exports.init = (listener) => {
           timestamp: Date.now()
         });
       }
-      handleScript(io, socket, currentNode, data.sender, "onMessage", data);
+      handleScript(currentNode, data.sender, "onMessage", data);
 
     });
   
@@ -241,8 +300,12 @@ exports.init = (listener) => {
     let clients = Object.keys(io.sockets.sockets);
 
     let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
-    messages.forEach((m)=>{
+    
+    for(let m of messages) {
+    
+      await sendMessage(m);
       
+      /*
       // check if this message is for a connected client
       clients.forEach((key)=> {
         if(io.sockets.sockets[key].playerId) {
@@ -253,18 +316,20 @@ exports.init = (listener) => {
           }
           if(includes) {
             console.log("connected player found, emitting via socket");            
-            emitMessage(io.sockets.sockets[key], m);
+            
+            //emitMessage(io.sockets.sockets[key], m);
           }
         }
-      });
-    })
+      });*/
+    
+    }
   }, 10000);
 
 } 
 
 // runs a node's script in the sandbox and updates socket connected clients
 
-async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
+async function handleScript(currentNode, playerId, hook, msgData) {
 
   console.log("handleScript playerId", playerId)
 
@@ -278,7 +343,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
     // error in script - send error message back to sender
 
     if(result.error) {
-      emitMessage(socket, {
+      sendMessage({
         message: result.error, 
         system: true, 
         recipients: [playerId],
@@ -296,10 +361,12 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
       for(let i = 0; i < result.outputs.length; i++) {
         if(currentNode.multiPlayer) {
-          console.log("emitMessage socket.room", node);
-          emitInRoom(node, {...result.outputs[i], recipients, node, board, outputOrder: i});
+          //console.log("emitMessage socket.room", node);
+          //emitInRoom(node, {...result.outputs[i], recipients, node, board, outputOrder: i});
+          sendMessage({...result.outputs[i], recipients, node, board, outputOrder: i})
         } else {
-          emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
+          //emitMessage(socket, {...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
+          sendMessage({...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
         }
       }
       // TODO: move scheduled output events to here 
@@ -307,7 +374,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
       // send off interface commands
 
       if(result.interfaceCommand) {
-        emitMessage(socket, {params: {
+        sendMessage({params: {
               interfaceCommand: result.interfaceCommand
             }, 
             recipients: [playerId], node, board});  
@@ -349,21 +416,21 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
 
                 if(!result.moveToOptions.all) {
                   // move single player to different node
-                  joinRoom(io, socket, {playerId, room: destination._id, execOnArrive: true});
+                  joinRoom({playerId, nodeId: destination._id, execOnArrive: true});
                   // inform others in the new room - todo: make more customizable
                   /*if(currentNode.multiPlayer) {
                     socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived from " + currentNode.name});    
                   }*/
                 } else {
                   // experimental:  move multiple players from one room to another
-                  joinRoomMulti(io, socket, {fromNode: currentNode, toNode: destination, execOnArrive: true});
+                  joinRoomMulti({fromNode: currentNode, toNode: destination, execOnArrive: true});
                 }
 
               }, result.moveToOptions.delay ? result.moveToOptions.delay : 0);              
 
             } else {
               console.log("node " + result.moveToOptions.destination + " not found");
-              emitMessage(socket, {
+              sendMessage({
                 message: "node " + result.moveToOptions.destination + " not found", 
                 system: true, 
                 recipients: [playerId],
@@ -375,7 +442,7 @@ async function handleScript(io, socket, currentNode, playerId, hook, msgData) {
         } else {
 
           console.log("too many moves, aborting")
-            emitMessage(socket, {
+            sendMessage({
               message: "too many chained moveTos in script, aborting", 
               system: true, 
               recipients: [playerId],

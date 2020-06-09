@@ -14,6 +14,7 @@
   export let addItem;
   export let clearInput;
   export let projectId;
+  export let currentNode;
 
   let toolOpen = null;
   const openTool = (tool) => {
@@ -27,7 +28,8 @@
     let item = {
       message: "[QR code scanned]",
       attachment: {QRCode: code},
-      params: {}
+      params: {},
+      node: currentNode._id, board: currentNode.board, project: projectId
     }
 
     addItem({...item, side: "right"});
@@ -59,6 +61,7 @@
             accuracy: position.coords.accuracy
           },
           params: {},
+          node: currentNode._id, board: currentNode.board, project: projectId
         }
 
         addItem({...item, side: "right"});
@@ -82,7 +85,8 @@
         audioSrc: mediatype == "audio" ? fileServerURL + filename : undefined,
         filename: filename
       },
-      params: {}
+      params: {},
+      node: currentNode._id, board: currentNode.board, project: projectId
     }
     
     addItem({...item, side: "right"});

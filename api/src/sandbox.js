@@ -29,7 +29,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
   let varCache = {
     player: await db.getVars("player", {player: playerId, project: project._id}),
     node: await db.getVars("node", {node: node._id, project: project._id}),
-    playerNode: await db.getVars("playerNode", {nodeId: node._id, playerId, project: project._id}),
+    playerNode: await db.getVars("playerNode", {node: node._id, player: playerId, project: project._id}),
     board: await db.getVars("board", {board: node.board, project: project._id}),
     project: await db.getVars("project", {project: project._id}),
   }
