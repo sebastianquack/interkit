@@ -22,7 +22,8 @@ const sendMessage = async (data) => {
   if(!msgData.params) msgData.params = {};
 
   console.log("sendMessage", msgData);
-
+  console.log("playerSockets", playerSockets);
+  
   // get an id for the message
   let msgId = data._id;
   if(!msgId) {
@@ -39,6 +40,7 @@ const sendMessage = async (data) => {
       io.to(playerSockets[playerId]).emit('message', {...msgData, _id: msgId});
     }
   }
+  console.log("done emitting");
 }
 
 
@@ -202,6 +204,15 @@ exports.init = (listener) => {
   io.on('connection', function (socket) {
     console.log('socket connection');    
 
+    socket.on('disconnect', (reason) => {
+      console.log("disconnect event for socket ", socket.io);
+      // todo remove from playerSockets object
+      /*for (const [playerId, socketId] of playerSockets) {
+        if(socketId == socket.io) {
+          playerSockets[playerId] = null;
+        }
+      }*/
+    });
 
     // new: this is called once when PlayerContainer mounts on client 
     // - limitation for now, player can only have one socket 
