@@ -25,7 +25,7 @@ const init = ()=> {
       let source = audioCtx.createMediaStreamSource(stream);
 
       audioRecorder = new WebAudioRecorder(source, {
-        workerDir: "js/",     // must end with slash
+        workerDir: "/",     // must end with slash
         encoding: audioType
       });
 
