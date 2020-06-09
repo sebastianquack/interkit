@@ -205,7 +205,7 @@ exports.init = (listener) => {
     console.log('socket connection');    
 
     socket.on('disconnect', (reason) => {
-      console.log("disconnect event for socket ", socket.io);
+      console.log("disconnect event for socket ", socket.id);
       // todo remove from playerSockets object
       /*for (const [playerId, socketId] of playerSockets) {
         if(socketId == socket.io) {
