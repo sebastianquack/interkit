@@ -99,8 +99,8 @@
   <div class="input-container">      
       <button on:click={()=>{openTool("camera")}}>Photo</button>
       <button on:click={()=>{openTool("audio")}}>Audio</button>
-      <button on:click={()=>{openTool("qr-code")}}>QR Code</button>
-      <button on:click={getGPSLocation}>GPS Location</button>
+      <button on:click={()=>{openTool("qr-code")}}>QR</button>
+      <button on:click={getGPSLocation}>GPS</button>
       <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
   </div>  
 {/if}
