@@ -60,7 +60,7 @@ async function joinRoom(io, socket, data) {
       socket.broadcast.in(socket.room).emit('message', {system: true, message: "a human arrived"});
     } */
     if(data.execOnArrive)
-      handleScript(io, socket, newNode, data.playerId, "onArrive");
+      handleScript(io, socket, newNode, data.playerId, "onArrive", data.arriveFrom);
   } else {
     console.log("room " + data.room + " not found!");
   }

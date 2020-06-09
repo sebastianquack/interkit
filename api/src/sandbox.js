@@ -104,7 +104,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       interface: (key) => { result.interfaceCommand = key },
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      input: input
+      input: input,
+      from: msgData
     }  
   });
 
@@ -115,10 +116,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
   // expand script to execute appropriate hook
   switch(hook) {
     case "onMessage":
-      runScript += `; if(typeof onMessage === "function") onMessage();`; 
+      runScript += `; if(typeof onMessage === "function") onMessage(input);`; 
       break;
     case "onArrive":
-      runScript += `; if(typeof onArrive === "function") onArrive();`; 
+      runScript += `; if(typeof onArrive === "function") onArrive(from);`; 
       break;
   }
   //console.log("runScript", runScript);

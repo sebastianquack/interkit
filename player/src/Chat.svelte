@@ -121,6 +121,8 @@
           setLockScreen();
           return;
       }
+      // todo: make sure to process interface commands from other boards here correctly
+
 
       //if this comes from a different node on the same board, switch back to that node without execOnArrive
       if(currentBoard._id == message.board && currentNode._id != message.node) {
