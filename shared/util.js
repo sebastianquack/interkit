@@ -14,7 +14,13 @@ export const getConfig = async (key) => {
 }
 
 const createPlayer = async () => {
-  const res = await fetch("/api/player", {method: "post", body: "{}"});
+  const res = await fetch("/api/player", {
+    method: "POST", 
+    headers: {
+      'Content-Type': 'application/json'
+    },    
+    body: JSON.stringify({})
+  });
   const json = await res.json();  
   console.log("new player created", json);
   return json;
@@ -54,7 +60,12 @@ export const logPlayerToProject = async (player, project) => {
   const res = await fetch("/api/projectLog?&player=" + player + "&project=" + project);
   const json = await res.json();  
   if(!json.docs.length) {
-    const res2 = await fetch("/api/projectLog", {method: "post", body: JSON.stringify({player, project})});    
+    const res2 = await fetch("/api/projectLog", {
+      method: "post", 
+      headers: {
+        'Content-Type': 'application/json'
+      },      
+      body: JSON.stringify({player, project})});    
   }
 }
 
@@ -107,6 +118,9 @@ export const upload = async (file, progress, projectId = null) => {
 
   const res = await fetch("/api/file", {
       method: "post", 
+      headers: {
+        'Content-Type': 'application/json'
+      },      
       body: JSON.stringify([entry])
   });
   const json = await res.json();  

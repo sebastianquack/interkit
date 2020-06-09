@@ -41,7 +41,10 @@
     if(editEntry.new) {
       response = await fetch(`/api/${resourceName}`, {
         method: "POST",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify([saveEntry])
       });
       if(response.ok) {
@@ -51,7 +54,10 @@
     } else {
       response = await fetch(`/api/${resourceName}/` + editEntry._id, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(saveEntry)
       });
     }

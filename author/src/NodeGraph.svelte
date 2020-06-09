@@ -12,7 +12,10 @@
   const saveNodePosition = async (id, x, y)=> {
     await fetch("/api/scriptNode/" + id, {
           method: 'PUT',
-          headers: {'authorization': $token},
+          headers: {
+            'authorization': $token,
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({posX: x, posY: y})
         })    
   }  
@@ -27,7 +30,10 @@
   const saveCanvasOffset = async (x, y)=> {
     await fetch("/api/board/" + currentBoardData._id, {
           method: 'PUT',
-          headers: {'authorization': $token},
+          headers: {
+            'authorization': $token,
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({offsetX: x, offsetY: y})
         })    
   }
@@ -35,7 +41,10 @@
   const saveCanvasZoom = async (z)=> {
     await fetch("/api/board/" + currentBoardData._id, {
           method: 'PUT',
-          headers: {'authorization': $token},
+          headers: {
+            'authorization': $token,
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({zoom: z})
         })    
   }

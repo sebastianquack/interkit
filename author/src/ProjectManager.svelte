@@ -74,7 +74,10 @@
     if(editProject.new) {
       let response = await fetch("/api/project", {
         method: "POST",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify([{
           name: editProject.name,
         }])
@@ -87,14 +90,20 @@
         let projectId = json[0]._id;
         await fetch("/api/project/" + projectId + "/user/" + $userId, {
           method: "PUT",
-          headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
           body: JSON.stringify({})
         });
       }
     } else {
       await fetch("/api/project/" + editProject._id, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           _id: editProject._id,
           name: editProject.name,
@@ -140,7 +149,10 @@
       if(confirm("remove editor from this project?")) {
         let res = await fetch("/api/project/" + editProject._id + "/user/" + id, {
               method: "DELETE",
-              headers: {'authorization': $token},
+              headers: {
+                'authorization': $token,
+                'Content-Type': 'application/json'
+              },
               body: JSON.stringify({})
             });
         editProject.users = editProject.users.filter(u => u.user._id != id);

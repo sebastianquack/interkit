@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require("@hapi/joi");
 const RestHapi = require("rest-hapi");
 
 module.exports = function(server, mongoose, logger) {
@@ -39,7 +39,7 @@ module.exports = function(server, mongoose, logger) {
     const Log = logger.bind("Login");
     const User = mongoose.model("user");
 
-    const Boom = require("boom");
+    const Boom = require("@hapi/boom");
 
     Log.note("Generating Login endpoint");
 

@@ -1,0 +1,59 @@
+version: "2.1"
+
+services:
+  app:
+    build: .
+    env_file:
+      - ./api/.env    
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017
+      - PORT=9000
+      #- AWSEndpoint=http://minio:9002
+    ports:
+      - 9000:9000
+    depends_on:
+      mongo:
+        condition: service_healthy
+  
+
+  mongo:
+    image: mongo:4.2
+    #environment:
+    #  MONGO_INITDB_ROOT_USERNAME: root
+    #  MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./services/data/mongo:/data/db:cached
+    expose:
+      - 27017
+    # default port is 27017
+    healthcheck:
+      test: echo 'db.runCommand({serverStatus:1}).ok' | mongo mongo:27017 --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
+  minio:
+    image: minio/minio:RELEASE.2020-06-01T17-28-03Z
+    entrypoint: sh
+    command: -c 'mkdir -p /data/dreamshiplocal && /usr/bin/minio server /data'
+    env_file:
+      - ./services/minio.env
+    volumes:
+      - ./services/data/minio:/data:cached
+    ports:
+      - 9002:9000
+
+  # configure public bucket
+  minio-mc-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file:
+      - ./services/minio.env
+    entrypoint: >
+      /bin/sh -c "
+      sleep 15;
+      /usr/bin/mc config host add minio http://minio:9000 $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY};
+      /usr/bin/mc policy set public minio/dreamshiplocal;
+      "

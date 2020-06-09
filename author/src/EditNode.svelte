@@ -75,7 +75,10 @@
       if(startingNodeEdit) {
         response = await fetch("/api/board/" + currentBoardData._id, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           startingNode: scriptNodeEdit._id,
           })
@@ -84,7 +87,10 @@
       } else {
         response = await fetch("/api/board/" + currentBoardData._id + "/removeStartingNode", {
         method: "PUT",
-        headers: {'authorization': $token}
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         });
       }
 
@@ -114,7 +120,10 @@
 
       let response = await fetch("/api/scriptNode/" + scriptNodeEdit._id, {
         method: 'PUT',
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           name: scriptNodeEdit.name, 
           script: scriptNodeEdit.script,

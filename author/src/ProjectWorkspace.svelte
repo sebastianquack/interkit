@@ -147,7 +147,10 @@ function onMessage() {
     }
     let response = await fetch("/api/scriptNode", {
         method: "POST",
-        headers: {'authorization': $token},
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+          },
         body: JSON.stringify(newNode)
     });
     if(response.ok) {

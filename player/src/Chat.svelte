@@ -138,7 +138,12 @@
       }
 
       if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {method: "PUT"});
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {
+            method: "PUT",
+            headers: {
+              'Content-Type': 'application/json'
+            },            
+          });
       
       if(item.params.interfaceCommand) {
         if(item.params.interfaceCommand == "lock") {
@@ -244,7 +249,12 @@
           let i = parseItem(item);
           if(i) chatItems.unshift(i);
           if(!item.seen || item.seen.indexOf(playerId) == -1)
-            await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {method: "PUT"});
+            await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
+              method: "PUT",
+              headers: {
+                'Content-Type': 'application/json'
+              },              
+              });
         }
         if(!item.params.option) activeOptions = false;
       }
