@@ -81,7 +81,7 @@ onDestroy(()=>{
       {/if}
 
       {#if status == "recording" && audioRecorder.isRecording()}
-        <button on:click={()=>{audioRecorder.canceltRecording()}}>cancel recording</button>
+        <button on:click={()=>{audioRecorder.cancelRecording()}}>cancel recording</button>
         <button on:click={()=>{audioRecorder.finishRecording()}}>finish recording</button>
         {timeDisplay}
       {/if}
