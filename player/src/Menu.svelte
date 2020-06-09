@@ -91,7 +91,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 100%; 
+  width: 85%; 
   background-color: #fff;
   padding: 20px;
   box-sizing: border-box;
