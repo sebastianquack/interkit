@@ -40,7 +40,7 @@ cd author && npm run dev
 5. run player
 ````sh
 cd player && npm run dev
-# open http://localhost:9000
+# open http://localhost:8081
 ````
 
 5. run admin
