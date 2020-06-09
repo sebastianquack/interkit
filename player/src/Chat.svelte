@@ -75,7 +75,7 @@
       updatePlayerNodeId(null);
     
     if(currentNode)
-      leaveRoom(currentNode._id);
+      leaveRoom(playerId, currentNode._id);
   })
 
   const init = async ()=> {
@@ -121,6 +121,8 @@
           setLockScreen();
           return;
       }
+      // todo: make sure to process interface commands from other boards here correctly
+
 
       //if this comes from a different node on the same board, switch back to that node without execOnArrive
       if(currentBoard._id == message.board && currentNode._id != message.node) {
@@ -168,7 +170,7 @@
       if(item.message) {
 
         isSystemMessage = message.system || message.label == "system";
-        let showPlaceholder = !(isSystemMessage || message.params.option);
+        let showPlaceholder = !(isSystemMessage || item.params.option);
 
         chatItems.push({...item, 
           side: isSystemMessage ? "system" : "left",
@@ -218,7 +220,7 @@
 
       let query = {
         board: board._id,
-        recipients: playerId,
+        $or: [{recipients: playerId}, {sender: playerId}],
         timestamp: {$lt: showItemsSince},
         scheduled: {$ne: true}
       }
@@ -312,7 +314,7 @@
     chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
     scrollUp();
 
-    emitMessage({message: inputValue});
+    emitMessage({message: inputValue, node: currentNode._id, board: currentBoard._id, project: projectId});
     inputValue = "";
   }
 
@@ -366,7 +368,9 @@
     {/if}
     
     <AttachmentToolbelt
+      {playerId}
       {projectId}
+      {currentNode}
       {attachmentMenuOpen}
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}

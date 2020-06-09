@@ -17,6 +17,8 @@ export const refreshPlayerId = async () => {
 
 export const initSocket = async () => {
 
+  playerId = await findOrCreatePlayer(); 
+
   let socketURL = await getConfig("socketURL");
 
   socket = io(socketURL);
@@ -27,13 +29,14 @@ export const initSocket = async () => {
   
   socket.on('connect', async function(){
     console.log("socket connect");
+    registerPlayer(playerId);
   });
     
   socket.on('reconnect_attempt', () => {
     console.log("reconnect_attempt");  
   });
 
-  playerId = await findOrCreatePlayer();  
+  
 }
 
 // if socket or playerId isn't available yet, try again once after timeout - todo optimize
@@ -52,23 +55,29 @@ const reTry = (action) => {
   }
 }
 
+export const registerPlayer = (playerId) => {
+  console.log("registerPlayer", playerId);
+  socket.emit('registerPlayer', {playerId});
+}
+
 // ask server to put us in a room
-export const joinRoom = (room, execOnArrive=true, allowRejoin=false) => {
-  console.log("joinRoom", room);
+export const joinRoom = (nodeId, execOnArrive=true, allowRejoin=false, arriveFrom=null) => {
+  console.log("joinRoom", nodeId);
   reTry(()=>{
     socket.emit('joinRoom', {
-      room, 
+      nodeId, 
       playerId,
       execOnArrive,
-      allowRejoin
+      allowRejoin,
+      arriveFrom
     }); 
   });
 }
 
-export const leaveRoom = (room) => {
+export const leaveRoom = (playerId, nodeId) => {
   reTry(()=>{
     //socket.off('message');
-    socket.emit('leaveRoom', room); // ask server to remove us from a room
+    socket.emit('leaveRoom', {playerId, nodeId}); // ask server to remove us from a room
   });
 }
 

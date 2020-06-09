@@ -124,6 +124,7 @@
 
   const openBoardForMessage = async (boardId, nodeId)=>{
     showLockScreen = false;
+    itemModal = null;
     console.log("launching from notification", boardId);
     let res = await fetch("/api/board/" + boardId);
     let json = await res.json();
@@ -271,6 +272,7 @@
   />
 
   <Modal
+    {projectId}
     visible={itemModal}
     item={itemModal}
     {fileServerURL}

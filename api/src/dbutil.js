@@ -56,7 +56,7 @@ exports.setVar = async (scope, refs, key, value) => {
       }, Log);  
     }
   } else {
-    console.log("setVar got wrong refs")
+    console.log("setVar got wrong refs", scope, refs)
   }
 }
 
@@ -73,7 +73,7 @@ exports.getVars = async (scope, refs) => {
       })
     return varObj;
   } else {
-    console.log("getVars got wrong refs")
+    console.log("getVars got wrong refs", scope, refs)
   }
 }
 
@@ -93,7 +93,7 @@ exports.getVar = async (scope, refs, key) => {
       return undefined;
     }
   } else {
-    console.log("getVar got wrong refs")
+    console.log("getVar got wrong refs", scope, refs)
   }
 }
 
@@ -134,7 +134,7 @@ exports.getProjectForNode = async (node) => {
 }
 
 exports.logMessage = async (data) => {
-  console.log("logMessage", data);
+  //console.log("logMessage", data);
   let message = await RestHapi.create(RestHapi.models.message, data, Log);  
   return message;
 }

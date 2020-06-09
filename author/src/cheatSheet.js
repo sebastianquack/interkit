@@ -1,11 +1,11 @@
 export const cheatSheet = 
 `// called when player enters node
-function onArrive() {
+function onArrive(from) {
   /* do stuff here... */
 }
 
 // called when player inputs something 
-function onMessage() { 
+function onMessage(input) { 
   /* do stuff here... */
 }
 
@@ -62,6 +62,7 @@ createOrUpdateItem({
         lng: 13.438209,
         description: "Hier wurde eine hohe Wahrscheinlichkeit für Lebensform B78-C# gemessen.",
         sound: "twitscher.mp3",
+        buttons: [{label: "tap me", node: "boardName/nodeName"}]
       }
     });
 awardItem("Zielgebiet");

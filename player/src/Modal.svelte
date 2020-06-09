@@ -1,9 +1,35 @@
 <script>
 
+  import {joinRoom} from '../../shared/socketClient.js';
+
   export let onClose;
   export let visible;
   export let item;
   export let fileServerURL;
+  export let projectId;
+
+  const handleButton = async (button) => {
+
+    let parts = button.node.split("/"); // button.node is in format "boardName/nodeName"
+    if(!parts.length == 2) {
+      console.log("handleButton called with bad format", boardAndNode);
+      return;
+    }
+
+    let boardRes = await fetch("/api/board?name=" + parts[0] + "&project=" + projectId);
+    let boardJSON = await boardRes.json();
+
+    if(boardJSON.docs.length != 1) return;
+
+    let nodeRes = await fetch("/api/scriptNode?name=" + parts[1] + "&board=" + boardJSON.docs[0]._id)
+    let nodeJSON = await nodeRes.json();
+
+    if(nodeJSON.docs.length != 1) return;
+
+    console.log("node found", nodeJSON);
+    
+    joinRoom(nodeJSON.docs[0]._id, true, true, {item, button});
+  }
 
 </script>
 
@@ -21,6 +47,11 @@
           <source src={fileServerURL + item.value.sound} type="audio/mpeg">
         </audio> 
       {/if}
+      {#if item.value.buttons}
+        {#each item.value.buttons as button}
+          <button on:click={()=>{handleButton(button)}}>{button.label}</button>
+        {/each}
+      {/if} 
     {/if}
   </div>
 </div>
