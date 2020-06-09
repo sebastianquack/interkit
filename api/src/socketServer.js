@@ -34,7 +34,9 @@ const sendMessage = async (data) => {
   for(playerId of data.recipients) {
     if(playerSockets[playerId]) {
       console.log("emitting to", playerId);
-      playerSockets[playerId].emit('message', {...msgData, _id: msgId})      
+      //playerSockets[playerId].emit('message', {...msgData, _id: msgId})      
+
+      io.to(playerSockets[playerId]).emit('message', {...msgData, _id: msgId});
     }
   }
 }
@@ -206,7 +208,7 @@ exports.init = (listener) => {
     
     socket.on('registerPlayer', async (data) => {
       console.log('registerPlayer');
-      playerSockets[data.playerId] = socket;
+      playerSockets[data.playerId] = socket.id;
       console.log(Object.keys(playerSockets))
     })
 
