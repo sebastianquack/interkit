@@ -1,0 +1,9 @@
+# node & npm
+**/node_modules
+
+# build directories (note: keep public/ for svelte)
+admin/build
+api/public
+
+# other
+services
