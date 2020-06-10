@@ -162,12 +162,12 @@
   const initPlayerContainerSocket = ()=>{
     console.log("re-initialising socket message listener on player container");
     listenForMessages(async (message)=>{
-      console.log("player container received message");
+      //console.log("player container received message");
       if(chatMessageHandler) {
-        console.log("handing off to chatMessageHandler");
+        //console.log("handing off to chatMessageHandler");
         chatMessageHandler(message);
       } else {
-        console.log("no chat message handler registered")
+        console.log("player container: msg received but no chat message handler registered")
         setNotificationItem({...message, side: "left"});
         setLockScreen();
         await checkForUnseenMessages();

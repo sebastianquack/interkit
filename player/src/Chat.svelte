@@ -41,6 +41,8 @@
   let autoTyping = false;
   let googleMapsAPIKey;
   let fileServerURL;
+
+  let messageQueue = []; // queue messages for sequencial processing if many come in fast via socket
   
   
   // reactive & lifecycle methods
@@ -104,104 +106,16 @@
 
     // set up socket events
     registerMessageHandler(async (message)=>{
-      //console.log("currentBoard", currentBoard);
-      //console.log("currentNode", currentNode);
-      console.log("chat message received", message);
+      console.log("chat message received, putting in queue");
+      messageQueue.push(message);
+      console.log("messageQueue.length", messageQueue.length);
 
-      let item = {...message};
-      if(!item.attachment) item.attachment = {};
-      if(!item.params) item.params = {};
-
-      // if this comes from a different board, show notification, don't add message to this board
-      if(currentBoard._id != message.board) {
-          console.log("warning, message is from a different board", item)
-          if(!item.params.interfaceCommand) {
-            console.log("displaying as notification")
-            setNotificationItem(message);
-            setLockScreen();
-            return;
-          }
+      if(messageQueue.length == 1) {
+        console.log("start processing queue");
+        handleMessage(messageQueue[0]);  
+      } else {
+        console.log("message handler busy, waiting...");
       }
-      // todo: make sure to process interface commands from other boards here correctly
-
-
-      //if this comes from a different node on the same board, quietly switch to that node
-      if(currentBoard._id == message.board && currentNode._id != message.node) {
-          console.log("warning, message is from a different node")
-          if(message.recipients.includes(playerId)) {
-            await setCurrentNode(message.node);
-            setEditNodeId(message.node);    
-          } else {
-            console.log("message wasn't for me, ignoring");
-            return;
-          }
-          
-      }
-
-      if(!item.seen || item.seen.indexOf(playerId) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-            method: "PUT",
-            headers: {
-              'Content-Type': 'application/json'
-            },            
-          });
-      
-      if(item.params.interfaceCommand) {
-        if(item.params.interfaceCommand == "alert") {
-          displayAlert(item.params.interfaceOptions);
-        }
-
-        if(item.params.interfaceCommand == "lock") {
-          setLockScreen();
-        }
-      }
-
-      if(item.attachment.mediatype) {
-        item.side = "left";
-        if(item.attachment.mediatype == "image") {
-          item.attachment.imgSrc = fileServerURL + item.attachment.filename;
-        }
-        if(item.attachment.mediatype == "audio") {
-          item.attachment.audioSrc = fileServerURL + item.attachment.filename;
-        }
-        chatItems.push(item);
-        sortItems();
-        console.log(chatItems);  
-        scrollUp();
-      }
-
-      let isSystemMessage = false;
-
-      if(item.message) {
-
-        isSystemMessage = message.system || message.label == "system";
-        let showPlaceholder = !(isSystemMessage || item.params.option);
-
-        chatItems.push({...item, 
-          side: isSystemMessage ? "system" : "left",
-          placeholder: showPlaceholder,
-        });
-        sortItems();
-        scrollUp();
-
-        if(showPlaceholder)
-          setTimeout(() => {
-            chatItems.forEach((comment, index)=> {
-              if(chatItems[index].placeholder) {
-                chatItems[index].placeholder = false;
-                scrollUp();
-              }
-            });
-          }, 500);
-      }
-    
-      if(mainView=="map" || mainView == "archive" || showLockScreen) {
-        if(!item.params.interfaceCommand == "alert") {
-          setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
-          setLockScreen();  
-        }
-      }
-
     })
 
     // loads node we want to be in and saves it
@@ -211,11 +125,117 @@
       joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
   }
 
+  const handleMessage = async (message) => {
+    console.log("handling message", message);
+
+    let item = {...message};
+    if(!item.attachment) item.attachment = {};
+    if(!item.params) item.params = {};
+
+    // if this comes from a different board, show notification, don't add message to this board
+    if(currentBoard._id != message.board) {
+        console.log("warning, message is from a different board", item)
+        if(!item.params.interfaceCommand) {
+          console.log("displaying as notification")
+          setNotificationItem(message);
+          setLockScreen();
+          return;
+        }
+    }
+
+    //if this comes from a different node on the same board, quietly switch to that node
+    if(currentBoard._id == message.board && currentNode._id != message.node) {
+        console.log("warning, message is from a different node")
+        if(message.recipients.includes(playerId)) {
+          await setCurrentNode(message.node);
+          setEditNodeId(message.node);    
+        } else {
+          console.log("message wasn't for me, ignoring");
+          return;
+        }
+    }
+
+    if(!item.seen || item.seen.indexOf(playerId) == -1)
+        await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json'
+          },            
+        });
+
+    if(item.params.interfaceCommand) {
+      if(item.params.interfaceCommand == "alert") {
+        displayAlert(item.params.interfaceOptions);
+      }
+
+      if(item.params.interfaceCommand == "lock") {
+        setLockScreen();
+      }
+    }
+
+    if(item.attachment.mediatype) {
+      item.side = "left";
+      if(item.attachment.mediatype == "image") {
+        item.attachment.imgSrc = fileServerURL + item.attachment.filename;
+      }
+      if(item.attachment.mediatype == "audio") {
+        item.attachment.audioSrc = fileServerURL + item.attachment.filename;
+      }
+      chatItems.push(item);
+      sortItems();
+      console.log(chatItems);  
+      scrollUp();
+    }
+
+    let isSystemMessage = false;
+
+    if(item.message) {
+
+      isSystemMessage = message.system || message.label == "system";
+      let showPlaceholder = !(isSystemMessage || item.params.option);
+
+      chatItems.push({...item, 
+        side: isSystemMessage ? "system" : "left",
+        placeholder: showPlaceholder,
+      });
+      sortItems();
+      scrollUp();
+
+      if(showPlaceholder)
+        setTimeout(() => {
+          chatItems.forEach((comment, index)=> {
+            if(chatItems[index].placeholder) {
+              chatItems[index].placeholder = false;
+              scrollUp();
+            }
+          });
+        }, 500);
+    }
+
+    if(mainView=="map" || mainView == "archive" || showLockScreen) {
+      if(!item.params.interfaceCommand == "alert") {
+        setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
+        setLockScreen();  
+      }
+    }
+
+    console.log("messageHandler done, shifting...")
+    messageQueue.shift() // remove the message at position 0
+    console.log("messageQueue.length", messageQueue.length)
+    if(messageQueue.length >= 1) {
+      handleMessage(messageQueue[0]);
+    } else {
+      console.log("reached end of message queue");
+    }
+  }
+
   // simply loads and sets the curret node
   const setCurrentNode = async (nodeId)=>{
+    console.log("loading currentNode");
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentNode = await response.json();
-    if(updatePlayerNodeId) updatePlayerNodeId(nodeId);
+    console.log("currentNode set to", currentNode.name);
+    if(updatePlayerNodeId) updatePlayerNodeId(nodeId); // this is just to keep authoring interface up to date with player
   }
 
   const loadMoreItems = async (board = currentBoard) => {
@@ -275,7 +295,7 @@
     });
     //items.sort((a,b)=>a.timestamp-b.timestamp);
     chatItems = chatItems;
-    console.log("sorted items", chatItems);
+    //console.log("sorted items", chatItems);
   }
 
   const parseItem = (rawItem) => {

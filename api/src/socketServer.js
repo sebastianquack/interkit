@@ -233,7 +233,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
       // send off interface commands
 
       if(result.interfaceCommand) {
-        sendMessage({params: {
+        await sendMessage({params: {
               interfaceCommand: result.interfaceCommand,
               interfaceOptions: result.interfaceOptions
             }, 
@@ -247,7 +247,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         // limit amount of chained moves
         let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
         if(!moveCounter) {
-          db.setPlayerAttribute(playerId, "moveCounter", 0);  
+          await db.setPlayerAttribute(playerId, "moveCounter", 0);  
           moveCounter = 0;
         }
 
@@ -267,22 +267,22 @@ async function handleScript(currentNode, playerId, hook, msgData) {
               await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
               
               // move player directly on backend
-              setTimeout(()=>{
+              setTimeout(async ()=>{
 
                 if(!result.moveToOptions.all) {
                   // move single player to different node
-                  joinNode({playerId, nodeId: destination._id, execOnArrive: true});
+                  await joinNode({playerId, nodeId: destination._id, execOnArrive: true});
                   
                 } else {
                   // move multiple players at once
-                  joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: true});
+                  await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: true});
                 }
 
               }, result.moveToOptions.delay ? result.moveToOptions.delay : 0);              
 
             } else {
               console.log("node " + result.moveToOptions.destination + " not found");
-              sendMessage({
+              await sendMessage({
                 message: "node " + result.moveToOptions.destination + " not found", 
                 system: true, 
                 recipients: [playerId],
@@ -294,7 +294,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         } else {
 
           console.log("too many moves, aborting")
-            sendMessage({
+            await sendMessage({
               message: "too many chained moveTos in script, aborting", 
               system: true, 
               recipients: [playerId],

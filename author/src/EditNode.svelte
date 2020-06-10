@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy, tick, beforeUpdate } from 'svelte';
+  import { joinNode } from '../../shared/socketClient.js';
   import { token } from './stores.js';
   import CodeMirror from 'codemirror';
   import 'codemirror/lib/codemirror.css';
@@ -10,9 +11,9 @@
 
   import { cheatSheet } from "./cheatSheet.js";
 
+  export let playerId;
   export let editNodeId;
   export let setEditNodeId;
-  export let setPlayerNodeId;
   export let reloadBoardData;
   export let currentBoardData;
 
@@ -156,6 +157,11 @@
 
   let showHelp = false;
 
+  const doMoveTo = (nodeId) => {
+    joinNode(playerId, nodeId, true, true);      
+  }
+  
+
 </script>
 
 
@@ -174,7 +180,7 @@
   <div class="edit-headline">
     <h2>{scriptNodeEdit.name}</h2>
     <button on:click="{()=>{editTitle=true}}">✎</button>
-    <button on:click={()=>{setPlayerNodeId(scriptNodeEdit._id)}}>move player here</button>
+    <button on:click={()=>{doMoveTo(scriptNodeEdit._id)}}>move player here</button>
   </div>
 {:else}
   <input bind:value={scriptNodeEdit.name}><br/>

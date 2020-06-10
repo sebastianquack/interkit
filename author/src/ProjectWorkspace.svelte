@@ -3,7 +3,7 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket, joinNode } from '../../shared/socketClient.js';
+  import { initSocket } from '../../shared/socketClient.js';
   import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
 
   import Board from './Board.svelte';
@@ -35,14 +35,8 @@
   };
 
   let playerNodeId = null;
-  const setPlayerNodeId = (nodeId)=>{
-    playerNodeId = nodeId
-
-    // register player on server and allow rejoin
-    joinNode(playerId, playerNodeId, true, true);
-  };
-
   const updatePlayerNodeId = (nodeId)=>{
+    console.log("updatePlayerNodeId", nodeId);
     playerNodeId = nodeId
   }
 
@@ -257,10 +251,10 @@ function onReceive(input) {
     <EditNode
       {editNodeId}
       {setEditNodeId}
-      {setPlayerNodeId}
       {reloadBoardData}
       {currentBoardData}
       {createNode}
+      {playerId}
     />
     {/if}
   </div>
