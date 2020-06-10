@@ -206,23 +206,23 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     
     if(result.outputs) {
 
-      let recipients = await db.getPlayersForNode(node);
-
-      // send off regular messages
+      let recipients = {
+        "all": await db.getPlayersForNode(node),
+        "sender": [playerId]
+      }
+      recipients["others"] = recipients["all"].filter(r=>r!=playerId); 
 
       for(let i = 0; i < result.outputs.length; i++) {
-        
-        if(result.outputs[i].to == "all")
-          await sendMessage({...result.outputs[i], recipients, node, board, outputOrder: i})
+        let output = result.outputs[i];
+        let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
 
-        if(result.outputs[i].to == "sender")
-          await sendMessage({...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
-
-        if(result.outputs[i].to == "others")
-          await sendMessage({...result.outputs[i], recipients: recipients.filter(r=>r!=playerId), node, board, outputOrder: i}); 
+        if(!output.scheduleFor) {
+          await sendMessage(msgObj); // send now
+        } else {
+          await db.scheduleMessage(output.scheduleFor, msgObj); // send later
+        }
       
       }
-      // TODO: move scheduled output events to here 
 
       // send off interface commands
 

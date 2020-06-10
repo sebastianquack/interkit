@@ -20,7 +20,7 @@ function onReceive(input) {
 
 send.text("hello") // sends message with default narrator 
 send.text("hello", {label: "paul"}) // with custom label
-send.text("hello", {scheduledIn: {hours:1, minutes:30, seconds: 25}}) // send in the future -- not implemented yet
+send.text("hello", {scheduledIn: {hours:1, minutes:30, seconds: 25}}) // send in the future, works also for images etc.
 
 send.system("hello") // styles message as system message
 

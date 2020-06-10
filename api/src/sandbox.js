@@ -134,6 +134,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             key: options.key ? options.key : undefined
           },
           to: options.to ? options.to : "sender",
+          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
         })},       
         
         image: (filename, options={}) => { result.outputs.push({
@@ -143,13 +144,15 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
               alt: options.alt ? options.alt : undefined,
             }, 
             label: options.label ? options.label : varCache.board.narrator,
-            to: options.to ? options.to : "sender"
+            to: options.to ? options.to : "sender",
+            scheduleFor: options.scheduleFor ? options.scheduleFor : null,
         })},
 
         audio: (filename, options={}) => { result.outputs.push({
           attachment: {mediatype: "audio", filename: options.filename}, 
           label: options.label ? options.label : varCache.board.narrator,
-          to: options.to ? options.to : "sender"
+          to: options.to ? options.to : "sender",
+          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
         })},  
       },
 
