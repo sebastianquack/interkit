@@ -135,7 +135,7 @@
     let newNode = {
       name: name,
       board: boardId,
-      script: `function onArrive(from) {
+      script: `function onArrive() {
 
 }
 
