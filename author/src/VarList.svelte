@@ -13,7 +13,7 @@ const loadVars = async ()=>{
     let embed = scope == "playerNode" ? "&$embed=node" : ""
     const res = await fetch("/api/variable?$where=" + JSON.stringify(query) + embed);
     const json = await res.json();
-    console.log(json);
+    //console.log(json);
     if(json.docs) vars = json.docs;
 }  
 

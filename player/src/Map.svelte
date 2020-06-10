@@ -6,7 +6,7 @@ const mapStyles = require('../../shared/GoogleMapStyles.json')
 
 export let visible;
 export let googleReady;
-export let map;
+export let map = null;
 export let markerItems;
 export let setItemModal;
 
@@ -25,7 +25,7 @@ const initGoogleMap = ()=>{
       mapTypeControl: false,
       styles: mapStyles // change default map styles
     });
-    console.log(map);
+    //console.log(map);
 }
 
 const initMarkers = ()=>{
@@ -81,7 +81,7 @@ const initMarkers = ()=>{
 }
 
 afterUpdate(()=>{
-  console.log("googleReady", googleReady);
+  //console.log("googleReady", googleReady);
   if(!map && googleReady) {
     initGoogleMap();
   }

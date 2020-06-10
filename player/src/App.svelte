@@ -4,8 +4,8 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { initSocket, getPlayerId } from '../../shared/socketClient.js';
-  import { getConfig } from '../../shared/util.js';
+  import { initSocket } from '../../shared/socketClient.js';
+  import { getConfig, findOrCreatePlayer } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
   let projectId;
@@ -29,8 +29,9 @@
       }
     }
 
-    await initSocket();
-    playerId = await getPlayerId();
+    playerId = await findOrCreatePlayer();
+    await initSocket(playerId);
+    
   });
 
 </script>

@@ -3,8 +3,8 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket, joinRoom, getPlayerId, refreshPlayerId } from '../../shared/socketClient.js';
-  import { getConfig } from '../../shared/util.js';
+  import { initSocket, joinNode } from '../../shared/socketClient.js';
+  import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';
@@ -39,7 +39,7 @@
     playerNodeId = nodeId
 
     // register player on server and allow rejoin
-    joinRoom(playerNodeId, true, true);
+    joinNode(playerId, playerNodeId, true, true);
   };
 
   const updatePlayerNodeId = (nodeId)=>{
@@ -161,10 +161,10 @@ function onMessage() {
   }
 
   onMount(async () => {
-     await initSocket();
-     playerId = getPlayerId();
-     console.log("playerId set for project workspace", playerId);
-     loadBoardList();
+    playerId = await findOrCreatePlayer();
+    await initSocket(playerId);
+    console.log("playerId set for project workspace", playerId);
+    loadBoardList();
   });
 
 
@@ -213,7 +213,6 @@ function onMessage() {
         {createNode}
         {loadBoardData}
         {loadBoardList}
-        {playerURL}
         {deleteBoard}
       />
       {/if}
@@ -274,7 +273,6 @@ function onMessage() {
       projectId={project._id}
       {playerId}
       {clearPlayerId}
-      {playerNodeId}
       {updatePlayerNodeId}
       {setEditNodeId}
       {googleReady}

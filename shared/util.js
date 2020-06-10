@@ -52,7 +52,12 @@ export const findOrCreatePlayer = async () => {
     localStorage.setItem('playerId', player._id);
     return player._id;
   }
+}
 
+export const refreshPlayerId = async () => {
+  removePlayerFromLocalStorage();
+  let playerId = await findOrCreatePlayer();
+  return playerId;
 }
 
 // find or create project log for given player and project (pass in ids)

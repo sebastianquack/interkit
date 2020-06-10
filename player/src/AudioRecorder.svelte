@@ -4,7 +4,7 @@ import axios from 'axios';
 import {onMount, onDestroy } from 'svelte';
 import { getConfig, upload } from '../../shared/util.js';
 
-require('./WebAudioRecorder.min.js');
+require('./WebAudioRecorder/WebAudioRecorder.min.js');
 
 export let onClose;
 export let projectId;

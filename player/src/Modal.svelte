@@ -1,12 +1,13 @@
 <script>
 
-  import {joinRoom} from '../../shared/socketClient.js';
+  import {joinNode} from '../../shared/socketClient.js';
 
   export let onClose;
   export let visible;
   export let item;
   export let fileServerURL;
   export let projectId;
+  export let playerId;
 
   const handleButton = async (button) => {
 
@@ -28,7 +29,7 @@
 
     console.log("node found", nodeJSON);
     
-    joinRoom(nodeJSON.docs[0]._id, true, true, {item, button});
+    joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
   }
 
 </script>

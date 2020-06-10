@@ -8,11 +8,11 @@
   let textArea;
   let editor;
   let editorChanged = false;
-  export let code;
+  export let code = "";
   export let readOnly = false;
   
   onMount(()=>{
-    console.log("mount");
+    //console.log("mount");
     editor = CodeMirror.fromTextArea(textArea, {
       lineNumbers: true,
       mode:  "javascript",

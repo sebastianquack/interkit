@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { getConfig, logPlayerToProject } from '../../shared/util.js';
-  import { initSocket, getPlayerId, listenForMessages } from '../../shared/socketClient.js';
+  import { initSocket, getPlayerId, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
   import Map from './Map.svelte';
@@ -152,14 +152,14 @@
 
 
   const initPlayerContainerSocket = ()=>{
-    console.log("initialising socket message listener on player container");
+    console.log("re-initialising socket message listener on player container");
     listenForMessages(async (message)=>{
-      console.log("player container received message", message)
+      console.log("player container received message");
       if(chatMessageHandler) {
         console.log("handing off to chatMessageHandler");
         chatMessageHandler(message);
       } else {
-        console.log("player container received message", message)
+        console.log("no chat message handler registered")
         setNotificationItem({...message, side: "left"});
         setLockScreen();
         await checkForUnseenMessages();
@@ -171,6 +171,7 @@
   const registerMessageHandler = (handler) => {
     console.log("registerMessageHandler", handler);
     chatMessageHandler = handler
+    initPlayerContainerSocket();
   }
 
   // reactive & lifecycle calls
@@ -181,7 +182,9 @@
     fileServerURL = await getConfig("fileServerURL");
     loading = false;
 
-    initPlayerContainerSocket();
+    doWhenConnected(()=>{
+      initPlayerContainerSocket();  
+    })
   });
 
   // this happens when player is switched or deleted in authoring
@@ -259,20 +262,19 @@
     bind:map={map}
     {googleReady}
     visible={mainView=="map"}
-    onClose={openChat}
     {markerItems}
     {setItemModal}
   />
 
   <Archive
     visible={mainView=="archive"}
-    onClose={openChat}
     items={documentItems}
     {setItemModal}
   />
 
   <Modal
     {projectId}
+    {playerId}
     visible={itemModal}
     item={itemModal}
     {fileServerURL}

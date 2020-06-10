@@ -39,7 +39,7 @@
         headers: {'authorization': $token},
       });
       const json = await res.json();
-      console.log(json);
+      //console.log(json);
       if(json.docs) {
         projects = json.docs;
       } else {

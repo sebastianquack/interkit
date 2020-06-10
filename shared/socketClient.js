@@ -1,23 +1,20 @@
 import * as io from '../author/node_modules/socket.io-client';
 
-import { getConfig, findOrCreatePlayer, removePlayerFromLocalStorage } from './util.js';
+import { getConfig } from './util.js';
 
 let socket = null;
-let playerId;
+let connectedCallback = null;
 
-export const getPlayerId = () => {
-  return playerId;
+export const doWhenConnected = (callback) => {
+  if(socket && socket.connected) {
+    callback();
+  } else {
+    console.log("no socket connection yet, saving callback")
+    connectedCallback = callback;  
+  }
 }
 
-export const refreshPlayerId = async () => {
-  removePlayerFromLocalStorage();
-  playerId = await findOrCreatePlayer();
-  return playerId;
-}
-
-export const initSocket = async () => {
-
-  playerId = await findOrCreatePlayer(); 
+export const initSocket = async (playerId) => {
 
   let socketURL = await getConfig("socketURL");
 
@@ -30,29 +27,12 @@ export const initSocket = async () => {
   socket.on('connect', async function(){
     console.log("socket connect");
     registerPlayer(playerId);
+    if(connectedCallback) connectedCallback();
   });
     
   socket.on('reconnect_attempt', () => {
     console.log("reconnect_attempt");  
   });
-
-  
-}
-
-// if socket or playerId isn't available yet, try again once after timeout - todo optimize
-const reTry = (action) => {
-  if(socket && playerId)
-    action();
-  else {
-    console.log("no socket or playerId");
-    setTimeout(()=>{
-      console.log("trying second time");
-      if(socket) 
-        action();
-      else 
-        console.log("no socket or playerId, giving up");
-    }, 2000);
-  }
 }
 
 export const registerPlayer = (playerId) => {
@@ -61,49 +41,29 @@ export const registerPlayer = (playerId) => {
 }
 
 // ask server to put us in a room
-export const joinRoom = (nodeId, execOnArrive=true, allowRejoin=false, arriveFrom=null) => {
-  console.log("joinRoom", nodeId);
-  reTry(()=>{
-    socket.emit('joinRoom', {
-      nodeId, 
-      playerId,
-      execOnArrive,
-      allowRejoin,
-      arriveFrom
-    }); 
-  });
+export const joinNode = (playerId, nodeId, execOnArrive=true, allowRejoin=false, arriveFrom=null) => {
+  console.log("joinNode", nodeId);
+  console.log("socket.connected? ", socket.connected);
+  socket.emit('joinNode', {
+    nodeId, 
+    playerId,
+    execOnArrive,
+    allowRejoin,
+    arriveFrom
+  }); 
 }
 
-export const leaveRoom = (playerId, nodeId) => {
-  reTry(()=>{
-    //socket.off('message');
-    socket.emit('leaveRoom', {playerId, nodeId}); // ask server to remove us from a room
-  });
+export const leaveNode = (playerId, nodeId) => {
+  socket.emit('leaveNode', {playerId, nodeId}); // ask server to remove us from a room
 }
 
 export const listenForMessages = (callback) => {
-  //console.log("listenForMessages");
-  reTry(()=>{
-    //socket.off('message');
-    socket.on('message', callback);
-  });
-}
-
-export const stopListening = () => {
-  console.log("stopListening");
-  reTry(()=>{
-    socket.off('message');
-  });
+  socket.off('message');
+  socket.on('message', callback);
 }
 
 export const emitMessage = (msgData) => {
   console.log("emitting", msgData);
-  reTry(()=>{
-    socket.emit('message', {
-      ...msgData,
-      sender: playerId,
-      seen: [playerId],
-    });
-  });
+  socket.emit('message', msgData);
 }
 

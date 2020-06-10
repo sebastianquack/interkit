@@ -37,7 +37,7 @@ const checkRefs = (scope, refs) => {
 }
 
 exports.setVar = async (scope, refs, key, value) => {
-  console.log("setVar", scope, refs, key, value);
+  //console.log("setVar", scope, refs, key, value);
 
   if(checkRefs(scope, refs)) {
 
@@ -140,7 +140,7 @@ exports.logMessage = async (data) => {
 }
 
 exports.logPlayerToNode = async (playerId, node) => {
-  console.log("logPlayerToNode", playerId, node._id);
+  //console.log("logPlayerToNode", playerId, node._id);
 
   let project = await exports.getProjectForNode(node);
   let query = {

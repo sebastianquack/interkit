@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { joinRoom, leaveRoom, emitMessage, getPlayerId } from '../../shared/socketClient.js';
+  import { joinNode, leaveNode, emitMessage } from '../../shared/socketClient.js';
   import { getConfig } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
@@ -75,7 +75,7 @@
       updatePlayerNodeId(null);
     
     if(currentNode)
-      leaveRoom(playerId, currentNode._id);
+      leaveNode(playerId, currentNode._id);
   })
 
   const init = async ()=> {
@@ -83,11 +83,9 @@
     console.log("playerId", playerId);
     console.log("currentBoard", currentBoard);
   
-    let joinNodeId = currentBoard.startingNode;      
-    let execOnArrive = true;
+    let nodeId = currentBoard.startingNode;       
+    let firstTimeOnBoard = true // flag to see if we are on the board for the very first time
 
-    console.log("startingNode", joinNodeId)
-    
     // load history 
     await loadMoreItems(currentBoard); 
     scrollUp();
@@ -97,8 +95,8 @@
     let lastNode = await response.json();
     console.log("lastNode", lastNode);
     if(lastNode.docs.length > 0) {
-      joinNodeId = lastNode.docs[0].node;
-      execOnArrive = false; // if arrived here after history, don't exec onArrive
+      nodeId = lastNode.docs[0].node;
+      firstTimeOnBoard = false; // there is history, we have been here before
     }
     
     // make sure this has been loaded when we register the handler
@@ -106,9 +104,9 @@
 
     // set up socket events
     registerMessageHandler(async (message)=>{
-      console.log("currentBoard", currentBoard);
-      console.log("currentNode", currentNode);
-      console.log("message received", message);
+      //console.log("currentBoard", currentBoard);
+      //console.log("currentNode", currentNode);
+      console.log("chat message received", message);
 
       let item = {...message};
       if(!item.attachment) item.attachment = {};
@@ -124,11 +122,11 @@
       // todo: make sure to process interface commands from other boards here correctly
 
 
-      //if this comes from a different node on the same board, switch back to that node without execOnArrive
+      //if this comes from a different node on the same board, switch back to that node
       if(currentBoard._id == message.board && currentNode._id != message.node) {
           console.log("warning, message is from a different node")
           if(message.recipients.includes(playerId)) {
-            await setCurrentNode(message.node, false);
+            await setCurrentNode(message.node);
             setEditNodeId(message.node);    
           } else {
             console.log("message wasn't for me, ignoring");
@@ -137,8 +135,8 @@
           
       }
 
-      if(!item.seen || item.seen.indexOf(getPlayerId()) == -1)
-          await fetch("/api/message/"+item._id+"/markAsSeen/" + getPlayerId(), {
+      if(!item.seen || item.seen.indexOf(playerId) == -1)
+          await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
             method: "PUT",
             headers: {
               'Content-Type': 'application/json'
@@ -198,17 +196,16 @@
     })
 
     // loads node we want to be in and saves it
-    await setCurrentNode(joinNodeId, execOnArrive)
-        
+    await setCurrentNode(nodeId)
+    
+    if(firstTimeOnBoard)
+      joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
   }
 
-  const setCurrentNode = async (nodeId, execOnArrive=true)=>{
-  
+  // simply loads and sets the curret node
+  const setCurrentNode = async (nodeId)=>{
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentNode = await response.json();
-    
-    joinRoom(nodeId, execOnArrive);
-    
     if(updatePlayerNodeId) updatePlayerNodeId(nodeId);
   }
 
@@ -229,7 +226,7 @@
       let historyItems = await response.json();
       console.log("history loaded", historyItems.docs);
       if(historyItems.docs.length) {
-        console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
+        //console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
         showItemsSince = historyItems.docs[historyItems.docs.length - 1].timestamp;
         console.log("showItemsSince", showItemsSince);  
       }
@@ -291,7 +288,7 @@
         
     return {
       ...rawItem,
-      side: rawItem.sender == getPlayerId() ? "right" : (isSystemMessage ? "system" : "left"),
+      side: rawItem.sender == playerId ? "right" : (isSystemMessage ? "system" : "left"),
     }
   }
 
@@ -314,7 +311,13 @@
     chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
     scrollUp();
 
-    emitMessage({message: inputValue, node: currentNode._id, board: currentBoard._id, project: projectId});
+    emitMessage({
+      sender: playerId, 
+      message: inputValue, 
+      node: currentNode._id, 
+      board: currentBoard._id, 
+      project: projectId
+    });
     inputValue = "";
   }
 
