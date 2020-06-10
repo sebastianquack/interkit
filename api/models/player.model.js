@@ -34,6 +34,11 @@ module.exports = function (mongoose) {
     }, Log);
     await RestHapi.deleteMany(RestHapi.models.nodeLog, nodeLogs.docs, Log);
 
+    let projectLogs = await RestHapi.list(RestHapi.models.projectLog, {
+          player: playerId,
+    }, Log);
+    await RestHapi.deleteMany(RestHapi.models.projectLog, projectLogs.docs, Log);
+
     let variables = await RestHapi.list(RestHapi.models.variable, {
           player: playerId,
     }, Log);

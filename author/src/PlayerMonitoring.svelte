@@ -13,7 +13,7 @@ let projectLogs = [];
 const loadPlayers = async ()=>{
     console.log("loading players for project", projectId);
     
-    const res = await fetch("/api/projectLog?player=" + playerId + "&project=" + projectId);
+    const res = await fetch("/api/projectLog?project=" + projectId);
     const json = await res.json();
     if(json.docs) projectLogs = json.docs;
 

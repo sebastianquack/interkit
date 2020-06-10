@@ -40,7 +40,10 @@ export const registerPlayer = (playerId) => {
   socket.emit('registerPlayer', {playerId});
 }
 
-// ask server to put us in a room
+// ask server to log us into a node. called in rare circumstances:
+// - when board is opened for the first time by a player
+// - when manually moving to a node from authoring
+
 export const joinNode = (playerId, nodeId, execOnArrive=true, allowRejoin=false, arriveFrom=null) => {
   console.log("joinNode", nodeId);
   console.log("socket.connected? ", socket.connected);
