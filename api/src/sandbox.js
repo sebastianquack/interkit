@@ -159,7 +159,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       moveTo: (nodeId, options={}) => { result.moveTo = true; result.moveToOptions = {
         destination: nodeId, 
         delay: options.delay ? options.delay : undefined, 
-        all: options.for == "all"
+        all: options.for == "all",
+        execOnArrive: !options.hasOwnProperty('execOnArrive') ? true : options.execOnArrive
       }},
 
       // this is mainly for forwarding the input object to others in the node

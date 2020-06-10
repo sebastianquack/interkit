@@ -37,10 +37,10 @@ send.text("hello", {to: "others"}) // specify that only the other players should
 echo(input, {to: "others"}) // forward a received input to the other players in this node (useful for multiplayer)
 echo(input) // short form, {to: "others"} is default 
 
-moveTo("node") // moves this player to another node on the same board
-moveTo("node", {delay: 100}) // move player to another node afer 100ms delay
-moveTo("node", {for: "all"}) // moves all players in this node to another node
-
+moveTo("nodeName") // moves this player to another node on the same board
+moveTo("nodeName", {delay: 100}) // move player to another node afer 100ms delay
+moveTo("nodeName", {for: "all"}) // moves all players in this node to another node
+moveTo("nodeName", {execOnArrive: false}) // moves to a node but skips onArrive
 
 // variables
 player.set("health", 10) // set via setter

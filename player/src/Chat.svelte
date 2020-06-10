@@ -112,7 +112,7 @@
 
       if(messageQueue.length == 1) {
         console.log("start processing queue");
-        handleMessage(messageQueue[0]);  
+        processQueue();
       } else {
         console.log("message handler busy, waiting...");
       }
@@ -123,6 +123,19 @@
     
     if(firstTimeOnBoard)
       joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
+  }
+
+  const processQueue = async () => {
+    await handleMessage(messageQueue[0])
+
+    console.log("messageHandler done, shifting...")
+    messageQueue.shift() // remove the message at position 0
+    console.log("messageQueue.length", messageQueue.length)
+    if(messageQueue.length >= 1) {
+      processQueue();
+    } else {
+      console.log("reached end of message queue");
+    }
   }
 
   const handleMessage = async (message) => {
@@ -219,14 +232,8 @@
       }
     }
 
-    console.log("messageHandler done, shifting...")
-    messageQueue.shift() // remove the message at position 0
-    console.log("messageQueue.length", messageQueue.length)
-    if(messageQueue.length >= 1) {
-      handleMessage(messageQueue[0]);
-    } else {
-      console.log("reached end of message queue");
-    }
+    return;
+
   }
 
   // simply loads and sets the curret node

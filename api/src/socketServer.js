@@ -54,6 +54,9 @@ async function joinNode(data) {
 
     if(data.execOnArrive)
       handleScript(newNode, data.playerId, "onArrive", data.arriveFrom);
+    else 
+      // empty message to set player to node
+      sendMessage({recipients: [data.playerId], node: newNode._id, board: newNode.board}) 
   
   } else {
     console.log("node " + data.nodeId + " not found!");
@@ -83,6 +86,9 @@ async function joinNodeMulti(data) {
     for(let playerId of playerIds) {    
       handleScript(data.toNode, playerId, "onArrive", data.arriveFrom);
     }
+  } else {
+    // empty message to set player to node
+    sendMessage({recipients: playerIds, node: data.toNode._id, board: data.toNode.board}) 
   }
 }
 
@@ -271,11 +277,11 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
                 if(!result.moveToOptions.all) {
                   // move single player to different node
-                  await joinNode({playerId, nodeId: destination._id, execOnArrive: true});
+                  await joinNode({playerId, nodeId: destination._id, execOnArrive: result.moveToOptions.execOnArrive});
                   
                 } else {
                   // move multiple players at once
-                  await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: true});
+                  await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: result.moveToOptions.execOnArrive});
                 }
 
               }, result.moveToOptions.delay ? result.moveToOptions.delay : 0);              
