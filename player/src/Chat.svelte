@@ -253,7 +253,7 @@
 
       let query = {
         board: board._id,
-        $or: [{recipients: playerId}, {sender: playerId}],
+        recipients: playerId,
         timestamp: {$lt: showItemsSince},
         scheduled: {$ne: true}
       }
