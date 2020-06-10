@@ -41,13 +41,16 @@ const sendMessage = async (data) => {
 
 // log a player to a node and run onArrive script if requested
 async function joinNode(data) {
+  if(!data) data = {};
+  if(!data.arriveFrom) data.arriveFrom = {};
+  
   let id = mongoose.Types.ObjectId(data.nodeId);
   let newNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
-
+    
   if(newNode) {
     console.log("joining " + newNode.name);    
     
-    await db.logPlayerToNode(data.playerId, newNode);
+    data.arriveFrom.prevNode = await db.logPlayerToNode(data.playerId, newNode);
 
     if(data.execOnArrive)
       handleScript(newNode, data.playerId, "onArrive", data.arriveFrom);
@@ -62,6 +65,9 @@ async function joinNode(data) {
 // step 2: run onArrive scripts for all players
 
 async function joinNodeMulti(data) {
+  if(!data) data = {};
+  if(!data.arriveFrom) data.arriveFrom = {};
+
   console.log("multi joining ", data);
 
   let playerIds = await db.getPlayersForNode(data.fromNode._id);
@@ -69,13 +75,13 @@ async function joinNodeMulti(data) {
   // move nodelogs
   for(let playerId of playerIds) {
     console.log(playerId);
-    await db.logPlayerToNode(playerId, data.toNode);
+    data.arriveFrom.prevNode = await db.logPlayerToNode(playerId, data.toNode);
   }
 
   // run onArrive script for all players
   if(data.execOnArrive) {
     for(let playerId of playerIds) {    
-      handleScript(data.toNode, playerId, "onArrive");
+      handleScript(data.toNode, playerId, "onArrive", data.arriveFrom);
     }
   }
 }

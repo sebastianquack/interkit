@@ -33,7 +33,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     board: await db.getVars("board", {board: node.board, project: project._id}),
     project: await db.getVars("project", {project: project._id}),
   }
-  
+
   // default values
   if(!varCache.board.narrator) varCache.board.narrator = "narrator";
 

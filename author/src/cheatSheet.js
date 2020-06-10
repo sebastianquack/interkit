@@ -80,11 +80,12 @@ async function onArrive() { // async function needed for loading items form data
 distance(input.coords, item.value) // calculate distance between user's posiiton and item or other position
 
 
-// player arrived from pressing a button on an item, we have a special from object in onArrive
+// we have a special from object in onArrive that can be useful with buttons
 
 function onArrive(from) {  
-  from.item // the item that had the button
-  from.button // the label of the button that was pressed
+  from.prevNode // the name of the previous node on this board
+  from.item // the item that had the button if one was pressed
+  from.button // the label of the button that if one was pressed
 }
 
 

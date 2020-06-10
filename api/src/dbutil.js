@@ -151,10 +151,17 @@ exports.logPlayerToNode = async (playerId, node) => {
   let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
 
   if(nodeLogItem.docs.length == 0) {
-    await RestHapi.create(RestHapi.models.nodeLog, {...query, node: mongoose.Types.ObjectId(node._id)}, Log);   
+    await RestHapi.create(RestHapi.models.nodeLog, {...query, node: mongoose.Types.ObjectId(node._id)}, Log);       
   } else {
     await RestHapi.update(RestHapi.models.nodeLog, nodeLogItem.docs[0]._id, {node: mongoose.Types.ObjectId(node._id)}, Log);   
+    
+    let prevNode = await RestHapi.find(RestHapi.models.scriptNode, nodeLogItem.docs[0].node, null, Log);
+    
+    // return previous node name to expose to script
+    return prevNode.name;
   }  
+
+
 }
 
 exports.setPlayerAttribute = async (playerId, attribute, value) => {
