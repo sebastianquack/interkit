@@ -9,6 +9,7 @@
   import Modal from './Modal.svelte';
   import LockScreen from './LockScreen.svelte';
   import Menu from './Menu.svelte';
+  import Alert from './Alert.svelte';
   
   // the two main props that this comonent reacts on
   export let projectId;
@@ -40,6 +41,13 @@
   let menuOpen = false;
   
   const setLockScreen = ()=>showLockScreen=true;
+
+  let showAlert = false;
+  let alertOptions = null;
+  const displayAlert = (options) => {
+    alertOptions = options;
+    showAlert = true;
+  }
   
   const setNotificationItem = (item)=>{
     //console.log("setNotificationItem", item);
@@ -254,6 +262,7 @@
           {togglePlayerInfo}
           {updatePlayerNodeId}
           {registerMessageHandler}
+          {displayAlert}
         />
       {/if}
   </div>
@@ -280,6 +289,13 @@
     {fileServerURL}
     onClose={() => itemModal = null}
   />
+
+  {#if showAlert}
+  <Alert
+    close={() => showAlert = null}
+    {alertOptions}
+  />
+  {/if}
 
   <LockScreen
     {notificationItem}

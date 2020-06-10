@@ -228,7 +228,8 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
       if(result.interfaceCommand) {
         sendMessage({params: {
-              interfaceCommand: result.interfaceCommand
+              interfaceCommand: result.interfaceCommand,
+              interfaceOptions: result.interfaceOptions
             }, 
             recipients: [playerId], node, board});  
       }

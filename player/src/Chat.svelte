@@ -19,7 +19,7 @@
   export let setNotificationItem = ()=>{}; 
   export let showLockScreen; 
   export let setLockScreen = ()=>{};
-
+  export let displayAlert;
 
   // optional props from authoring system
   export let authoring;
@@ -114,15 +114,18 @@
 
       // if this comes from a different board, show notification, don't add message to this board
       if(currentBoard._id != message.board) {
-          console.log("warning, message is from a different board")
-          setNotificationItem(message);
-          setLockScreen();
-          return;
+          console.log("warning, message is from a different board", item)
+          if(!item.params.interfaceCommand) {
+            console.log("displaying as notification")
+            setNotificationItem(message);
+            setLockScreen();
+            return;
+          }
       }
       // todo: make sure to process interface commands from other boards here correctly
 
 
-      //if this comes from a different node on the same board, switch back to that node
+      //if this comes from a different node on the same board, quietly switch to that node
       if(currentBoard._id == message.board && currentNode._id != message.node) {
           console.log("warning, message is from a different node")
           if(message.recipients.includes(playerId)) {
@@ -144,6 +147,10 @@
           });
       
       if(item.params.interfaceCommand) {
+        if(item.params.interfaceCommand == "alert") {
+          displayAlert(item.params.interfaceOptions);
+        }
+
         if(item.params.interfaceCommand == "lock") {
           setLockScreen();
         }
@@ -189,8 +196,10 @@
       }
     
       if(mainView=="map" || mainView == "archive" || showLockScreen) {
-        setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
-        setLockScreen();
+        if(!item.params.interfaceCommand == "alert") {
+          setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
+          setLockScreen();  
+        }
       }
 
     })

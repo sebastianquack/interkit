@@ -171,6 +171,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         })
       },
 
+      alert: (alertMessage) => {
+        result.interfaceCommand = "alert";
+        result.interfaceOptions = {alertMessage};
+      },
+
       createOrUpdateItem: (payload) => { db.createOrUpdateItem(payload, project._id) },
       awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
       removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },
