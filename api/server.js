@@ -88,6 +88,7 @@ async function api() {
     let config = {
       appTitle: "testresthapi",
       version: "1.0.0",
+      enableWhereQueries: true, // TODO remove for production!
       apiPath: 'custom_endpoints',
       authStrategy: Auth.strategy,
       loglevel: 'WARN',
