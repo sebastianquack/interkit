@@ -135,10 +135,11 @@
     let newNode = {
       name: name,
       board: boardId,
-      script: `function onArrive() {
+      script: `function onArrive(from) {
+
 }
 
-function onMessage() {
+function onReceive(input) {
   
 }`,
       multiPlayer: false,

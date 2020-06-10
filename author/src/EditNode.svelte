@@ -183,7 +183,7 @@
 
 <CodeEditor bind:code={scriptNodeEdit.script}></CodeEditor>
 
-<label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/>
+<!--label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/-->
 <label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br>
 
 {#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}

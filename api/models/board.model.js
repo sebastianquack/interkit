@@ -9,7 +9,6 @@ module.exports = function (mongoose) {
     name: {
       type: Types.String,
       required: true,
-      unique: true
     },
     description: {
       type: Types.String,

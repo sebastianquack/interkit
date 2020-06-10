@@ -299,7 +299,7 @@
     }, 400);
   }
 
-  const submitInput = ()=>{
+  const submitInput = (item = null)=>{
     if (!inputValue) return;
 
     chatItems = chatItems.concat({
@@ -316,7 +316,8 @@
       message: inputValue, 
       node: currentNode._id, 
       board: currentBoard._id, 
-      project: projectId
+      project: projectId,
+      params: item ? item.params : undefined,
     });
     inputValue = "";
   }
@@ -340,7 +341,7 @@
     type(item.message, delay);
 
     setTimeout(()=>{
-      submitInput();
+      submitInput(item);
       autoTyping = false;
     }, delay * (item.message.length+5));
   }

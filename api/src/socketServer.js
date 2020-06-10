@@ -158,7 +158,7 @@ exports.init = (listener) => {
           timestamp: Date.now()
         });
       }
-      handleScript(currentNode, data.sender, "onMessage", data);
+      handleScript(currentNode, data.sender, "onReceive", data);
 
     });
   
@@ -207,15 +207,20 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     if(result.outputs) {
 
       let recipients = await db.getPlayersForNode(node);
-      
+
       // send off regular messages
 
       for(let i = 0; i < result.outputs.length; i++) {
-        if(currentNode.multiPlayer) {
+        
+        if(result.outputs[i].to == "all")
           await sendMessage({...result.outputs[i], recipients, node, board, outputOrder: i})
-        } else {
+
+        if(result.outputs[i].to == "sender")
           await sendMessage({...result.outputs[i], recipients: [playerId], node, board, outputOrder: i}); 
-        }
+
+        if(result.outputs[i].to == "others")
+          await sendMessage({...result.outputs[i], recipients: recipients.filter(r=>r!=playerId), node, board, outputOrder: i}); 
+      
       }
       // TODO: move scheduled output events to here 
 

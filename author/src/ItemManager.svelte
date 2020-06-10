@@ -87,6 +87,10 @@
   }
 
   const saveItem = async () => {
+    if(!editItem.type) {
+      alert("no type selected");
+      return;
+    }
     console.log(editItem);
     let saveItem = {...editItem, 
       type: editItem.type == "custom" ? customType : editItem.type, 
@@ -140,7 +144,7 @@
   const award = async (itemId) => {
     const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
         method: "PUT",
-        headers: {'authorization': $token},
+        headers: {'authorization': $token, 'Content-Type': 'application/json'},
         body: JSON.stringify({_id: itemId})
     });
     if(res.ok) {
@@ -151,7 +155,7 @@
   const revoke = async (itemId) => {
     const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
         method: "DELETE",
-        headers: {'authorization': $token},
+        headers: {'authorization': $token, 'Content-Type': 'application/json'},
         body: JSON.stringify({_id: itemId})
     });
     if(res.ok) {

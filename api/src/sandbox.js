@@ -39,16 +39,38 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
   let input = {};
   if(msgData) {
-    input = msgData;
-    input.raw = input.message;
-    if(input.message)
-      input.message = msgData.message ? msgData.message.trim().toLowerCase() : "";
-    if(!input.attachment) input.attachment = {mediatype: null}
+      
+    //format input to be somewhat consistent with send api
+    let type = "text";
+    if(msgData.params && msgData.params.option) type = "option";
+    if(msgData.attachment) type = msgData.attachment.mediatype; // image or audio
+
+    input = {
+      // deprecated
+      ...msgData, 
+      message: msgData.message ? msgData.message.trim().toLowerCase() : "",
+      attachment: msgData.attachment ? msgData.attachment : {mediatype: null},
+
+      // current formatting
+      type,
+      text: msgData.message ? msgData.message.trim().toLowerCase() : null,
+      raw: msgData.message,
+      key: msgData.params ? msgData.params.key : undefined,
+      filename: msgData.attachment ? msgData.attachment.filename : null,
+      coords: type == "GPS" ? {lat: msgData.attachment.lat, lng: msgData.attachment.lng} : null,
+      QRcode: type == "QRcode" ? msgData.attachment.QRCode : null, 
+
+      msgData: msgData // pass original msgData in for debugging
+    }
+    
   }
   
   const vm = new VM({
     timeout: 1000, // timeout for script exeuction
     sandbox: {
+      input: input,
+      from: msgData,
+
       player: {
         ...varCache.player,
         set: function (key, value) { 
@@ -88,24 +110,83 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         list: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, true),
         unlist: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, false)
       },
-      output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
-      scheduleOutput: (timeFromNowObj, message, label=varCache.board.narrator) => { 
-        db.scheduleMessage(timeFromNowObj, {recipients: [playerId], message, label, node: node._id, board: node.board}) },
-      option: (message) => { result.outputs.push({message, params: {option: true}}); },       
-      image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
-      audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},
-      //item: async (key, label=varCache.board.narrator) => { result.outputs.push({attachment: await itemToAttachment(playerId, key), label})},
-      moveTo: (room, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: room, delay, all} },
+      
+      send: {
+        text: (message, options={}) => { result.outputs.push({
+          message, 
+          label: options.label ? options.label : varCache.board.narrator, 
+          system: options.system ? true : false,
+          to: options.to ? options.to : "sender",
+          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+        })}, 
+
+        system: (message, options={}) => { result.outputs.push({
+          message, 
+          system: true,
+          to: options.to ? options.to : "sender",
+          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+        })}, 
+
+        option: (message, options={}) => { result.outputs.push({
+          message, 
+          params: {
+            option: true,
+            key: options.key ? options.key : undefined
+          },
+          to: options.to ? options.to : "sender",
+        })},       
+        
+        image: (filename, options={}) => { result.outputs.push({
+            attachment: {
+              mediatype: "image", 
+              filename, 
+              alt: options.alt ? options.alt : undefined,
+            }, 
+            label: options.label ? options.label : varCache.board.narrator,
+            to: options.to ? options.to : "sender"
+        })},
+
+        audio: (filename, options={}) => { result.outputs.push({
+          attachment: {mediatype: "audio", filename: options.filename}, 
+          label: options.label ? options.label : varCache.board.narrator,
+          to: options.to ? options.to : "sender"
+        })},  
+      },
+
+      moveTo: (nodeId, options={}) => { result.moveTo = true; result.moveToOptions = {
+        destination: nodeId, 
+        delay: options.delay ? options.delay : undefined, 
+        all: options.for == "all"
+      }},
+
+      // this is mainly for forwarding the input object to others in the node
+      echo: (input, options={}) => {
+        result.outputs.push({
+          ...input,
+          label: options.label ? options.label : varCache.player.name,
+          to: options.to ? options.to : "others",
+        })
+      },
+
       createOrUpdateItem: (payload) => { db.createOrUpdateItem(payload, project._id) },
       awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
       removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
-      interface: (key) => { result.interfaceCommand = key },
+      
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      input: input,
-      from: msgData
+      // todo: rework
+      interface: (key) => { result.interfaceCommand = key },
+
+      // deprecated / broken - take out soon
+      // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
+      scheduleOutput: (timeFromNowObj, message, label=varCache.board.narrator) => { 
+        db.scheduleMessage(timeFromNowObj, {recipients: [playerId], message, label, node: node._id, board: node.board}) },
+      output: (message, label=varCache.board.narrator) => { result.outputs.push({message, label}); },
+      option: (message) => { result.outputs.push({message, params: {option: true}}); },       
+      image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
+      audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},
     }  
   });
 
@@ -115,8 +196,9 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
   
   // expand script to execute appropriate hook
   switch(hook) {
-    case "onMessage":
-      runScript += `; if(typeof onMessage === "function") onMessage(input);`; 
+    case "onReceive":
+      runScript += `; if(typeof onMessage === "function") onMessage(input);`;  // deprecated
+      runScript += `; if(typeof onReceive === "function") onReceive(input);`; 
       break;
     case "onArrive":
       runScript += `; if(typeof onArrive === "function") onArrive(from);`; 

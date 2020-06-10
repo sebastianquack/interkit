@@ -11,6 +11,8 @@
 
   const handleButton = async (button) => {
 
+    console.log("handleButton", button);
+
     let parts = button.node.split("/"); // button.node is in format "boardName/nodeName"
     if(!parts.length == 2) {
       console.log("handleButton called with bad format", boardAndNode);
@@ -20,7 +22,10 @@
     let boardRes = await fetch("/api/board?name=" + parts[0] + "&project=" + projectId);
     let boardJSON = await boardRes.json();
 
-    if(boardJSON.docs.length != 1) return;
+    if(boardJSON.docs.length != 1) {
+      console.log("board not found", parts[0])
+      return;
+    }
 
     let nodeRes = await fetch("/api/scriptNode?name=" + parts[1] + "&board=" + boardJSON.docs[0]._id)
     let nodeJSON = await nodeRes.json();
