@@ -8,8 +8,10 @@
   let dragging = false;
   let startDragY;
   let startHeight;
-  
+  let areaStyle = {};
+
   const startDrag = (e)=>{
+    console.log("startDrag");
     dragging = true;
     startDragY = e.clientY; // mouse pos in pixels at start of drag
     startHeight = height; // 
@@ -19,12 +21,38 @@
     if(dragging) {
       let diffY = e.clientY - startDragY; // the amount dragged so far in pixels
       height = startHeight + ((diffY / h) * 100);
+      console.log(height);
+      updateAreaStyle();
     }
   }
 
   const endDrag = ()=>{
     dragging = false;
   }
+
+  let orientation = "right";
+  const toggleOrientation = () => {
+    dragging = false;
+    height = 50;
+    orientation = orientation == "right" ? "left" : "right";
+    updateAreaStyle();
+  }
+
+  const updateAreaStyle = () => {
+    let userSelect = dragging ? "user-select: none" : "";
+    areaStyle["left-top"] = 
+      orientation == "left" ? ("height: " + height + "%;" + userSelect) : "height: 100%"; 
+    areaStyle["left-bottom"] = 
+      orientation == "left" ? ("height: " + (100-height) + "%;" + userSelect) : "height: 0"; 
+    areaStyle["top-right"] = 
+      orientation == "right" ? ("height: " + (height)+ "%;" + userSelect) : "height: 100%"; 
+    areaStyle["bottom-right"] = 
+      orientation == "right" ? ("height: " + (100-height)+ "%;" + userSelect) : "height: 0";
+    areaStyle = areaStyle;
+  }
+
+  updateAreaStyle();
+  
 
 </script>
 
@@ -45,27 +73,45 @@
 
   <div class="left-work-area area">
 
-    <slot name="left-work-area"></slot>
+
+    <div class="left-top" style={areaStyle["left-top"]}>
+      <slot name="left-work-area"></slot>
+    </div>
+
+    <div class="left-bottom" style={areaStyle["left-bottom"]}>
+
+      {#if orientation == "left"}
+      <div class="horizontal-divider" on:mousedown={startDrag}>
+        <span class="orientation-toggle" on:click={toggleOrientation}>{orientation == "right" ? "<" : ">"}</span>
+        <slot name="horizontal-divider"></slot>
+      </div>
+
+      <slot name="playtest-area"></slot>
+      {/if}
+
+    </div>
+
 
   </div>
 
 </div>
 
-<div id="top-right" class="area" style="height: {height}vh; {dragging ? 'user-select: none' : ''}">
-
+<div id="top-right" class="area" style={areaStyle["top-right"]}>
+      
   <slot name="top-right-work-area"></slot>
 
-  <div class="horizontal-divider" 
-    on:mousedown={startDrag}
-  >
-    <slot name="horizontal-divider"></slot>
-  </div>
-
 </div>
 
-<div id="bottom-right" style="height: {100 - height}vh; {dragging ? 'user-select: none' : ''}">
+<div id="bottom-right" style={areaStyle["bottom-right"]}>
+      
+      {#if orientation == "right"}
+      <div class="horizontal-divider" on:mousedown={startDrag}>
+        <span class="orientation-toggle" on:click={toggleOrientation}>{orientation == "right" ? "<" : ">"}</span>
+        <slot name="horizontal-divider"></slot>
+      </div>
 
-  <slot name="bottom-right-work-area"></slot>
+      <slot name="playtest-area"></slot>
+      {/if}
 
 </div>
 
@@ -75,7 +121,8 @@
 <style>
 
   .container {
-    height: 100%;
+    height: 100vh;
+    overflow: hidden;
     width: 100%;
     top: 0;
     left: 0;
@@ -85,16 +132,16 @@
 
   .area {
     position: absolute;
-    padding: 10px;
     box-sizing: border-box;
   }
 
   #left {
     top: 0;
     left: 0;
-    height: 100vh;
+    height: 100%;
     width: 50%; 
     z-index: 0;
+    border-right: 4px solid gray;
   }
 
   .left-top-menu {
@@ -115,19 +162,33 @@
     width: 100%;
   }
 
+  .left-top, .left-bottom {
+    height: 50%;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .left-top {
+    padding: 10px;
+  }
+
+  .left-bottom {
+    padding-top: 30px;
+  }
+
+
+
   #top-right {
     width: 50%;
     overflow-y: auto;    
     top: 0;
     right: 0;
-    border-left: 4px solid gray;
-    padding-bottom: 2em;
+    /*border-left: 4px solid gray;*/
+    padding: 10px;
   }
 
   .horizontal-divider {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+    height: 30px;
     width: 100%;
     background-color: #fff; 
     border-top: 2px solid gray;
@@ -137,10 +198,22 @@
     font-size: 80%;
     text-align: right;
     box-sizing: border-box;
+    position: absolute;
+    top: 0;
   }
 
   .horizontal-divider:hover {
     cursor: ns-resize;
+  }
+
+  .orientation-toggle {
+    position: absolute;
+    left: 5px;
+    color: gray;
+  }
+
+  .orientation-toggle:hover {
+    cursor: pointer;
   }
 
   #bottom-right {
@@ -148,9 +221,12 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    border-left: 4px solid gray;
+    /*border-left: 4px solid gray;*/
     box-sizing: border-box;
+    padding-top: 30px;
   }
+
+
 
 </style>
 

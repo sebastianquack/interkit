@@ -263,7 +263,7 @@ function onReceive(input) {
     <a target="_blank" href="{playerURL}?project={project._id}">external player</a>
   </div>
 
-  <div slot="bottom-right-work-area" class="h100">
+  <div slot="playtest-area" class="h100">
     <PlaytestArea
       projectId={project._id}
       {playerId}
