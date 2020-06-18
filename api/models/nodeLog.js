@@ -2,6 +2,73 @@ let Joi = require('@hapi/joi')
 let RestHapi = require('rest-hapi')
 let Auth = require("../plugins/auth.plugin.js");
 
+const gameServer = require("../src/gameServer.js");
+
+// endpoint to register a player to a node
+// - called from client when opening a board for the first time
+// - called from authoring when manually moving a player
+// - informs socket server to update player if needed
+function logPlayerToNode(server, model, options, logger) {
+  const Log = logger.bind("logPlayerToNode")
+  let Boom = require('@hapi/boom')
+
+  let handler = async function (request, h) {
+    try {
+      let playerId = request.params._playerId;      
+      let nodeId = request.params._nodeId;      
+
+      let arriveFrom = JSON.parse(request.payload);
+      console.log("logPlayerToNode payload: ", arriveFrom);
+      
+      let result = await gameServer.joinNode({
+        nodeId, playerId, execOnArrive: true, arriveFrom
+      })
+      
+      if (result) {
+        return h.response({status: "ok"}).code(200)
+      }
+      else {
+        throw Boom.notFound("There was a")
+      }
+    } catch(err) {
+      if (!err.isBoom) {
+        Log.error(err)
+        throw Boom.badImplementation(err)
+      } else {
+        throw err
+      }
+    }
+  }
+
+  server.route({
+    method: 'POST',
+    path: '/nodeLog/logPlayerToNode/{_playerId}/{_nodeId}',
+    config: {
+      handler: handler,
+      auth: false,
+      description: 'log a player to a node',
+      tags: ['api'],
+      validate: {
+        params: {
+          _playerId: Joi.string().required(),
+          _nodeId: Joi.string().required()
+        },
+      },
+      plugins: {
+        'hapi-swagger': {
+          responseMessages: [
+            {code: 200, message: 'Success'},
+            {code: 400, message: 'Bad Request'},
+            {code: 404, message: 'Not Found'},
+            {code: 500, message: 'Internal Server Error'}
+          ]
+        }
+      }
+    }
+  })
+} 
+
+
 // not yet really needed - currently only one nodelog entry per board is kept - can be expanded to history in future
 function getHistory(server, model, options, logger) {
   const Log = logger.bind("getHistory")
@@ -109,7 +176,8 @@ module.exports = function (mongoose) {
         }
       },
       extraEndpoints: [
-        getHistory
+        getHistory,
+        logPlayerToNode
       ]    
     }
   };

@@ -1,5 +1,60 @@
 const RestHapi = require('rest-hapi')
 const Log = RestHapi.getLogger('players');
+const Auth = require("../plugins/auth.plugin.js");
+
+const gameServer = require("../src/gameServer.js");
+
+// endpoint to for player to input a message
+// - called from client when user sends somthing
+function message(server, model, options, logger) {
+  const Log = logger.bind("logPlayerToNode")
+  let Boom = require('@hapi/boom')
+
+  let handler = async function (request, h) {
+    try {
+      let msgData = JSON.parse(request.payload);
+      
+      let result = await gameServer.handlePlayerMessage(msgData);
+      
+      if (result) {
+        return h.response({status: "ok"}).code(200)
+      }
+      else {
+        throw Boom.notFound("error handling message")
+      }
+    } catch(err) {
+      if (!err.isBoom) {
+        Log.error(err)
+        throw Boom.badImplementation(err)
+      } else {
+        throw err
+      }
+    }
+  }
+
+  server.route({
+    method: 'POST',
+    path: '/player/message',
+    config: {
+      handler: handler,
+      auth: false,
+      description: 'send a message',
+      tags: ['api'],
+      validate: {
+      },
+      plugins: {
+        'hapi-swagger': {
+          responseMessages: [
+            {code: 200, message: 'Success'},
+            {code: 400, message: 'Bad Request'},
+            {code: 404, message: 'Not Found'},
+            {code: 500, message: 'Internal Server Error'}
+          ]
+        }
+      }
+    }
+  })
+} 
 
 module.exports = function (mongoose) {
   let modelName = "player";
@@ -74,7 +129,10 @@ module.exports = function (mongoose) {
           await removeAssociatedData(_id);
           return null;
         }
-      }
+      },
+      extraEndpoints: [
+        message
+      ]
     },
   };
   

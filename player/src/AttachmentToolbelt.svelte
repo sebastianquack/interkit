@@ -1,7 +1,6 @@
 <script>
 
-  import { emitMessage } from '../../shared/socketClient.js';
-  import { getConfig } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage } from '../../shared/util.js';
 
   import QRScanner from './QRScanner.svelte';
   import Camera from './Camera.svelte';
@@ -34,7 +33,7 @@
     }
 
     addItem({...item, side: "right"});
-    emitMessage(item);
+    postPlayerMessage(item);
     clearInput();
     scrollUp();
   }
@@ -66,7 +65,7 @@
         }
 
         addItem({...item, side: "right"});
-        emitMessage(item);
+        postPlayerMessage(item);
         clearInput();
       });
     } else {
@@ -91,7 +90,7 @@
     }
     
     addItem({...item, side: "right"});
-    emitMessage(item);
+    postPlayerMessage(item);
     clearInput();
     scrollUp();
   }

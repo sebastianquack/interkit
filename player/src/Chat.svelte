@@ -1,7 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { joinNode, leaveNode, emitMessage } from '../../shared/socketClient.js';
-  import { getConfig } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -76,8 +75,10 @@
     if(updatePlayerNodeId)
       updatePlayerNodeId(null);
     
-    if(currentNode)
+    // not implemented yet
+    /*if(currentNode)
       leaveNode(playerId, currentNode._id);
+    */
   })
 
   const init = async ()=> {
@@ -121,8 +122,17 @@
     // loads node we want to be in and saves it
     await setCurrentNode(nodeId)
     
-    if(firstTimeOnBoard)
-      joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
+    if(firstTimeOnBoard) {
+      //joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
+      // new: use rest api here for better error handling
+      let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, {method: "POST"});
+      let resJSON = await res.json();
+      console.log("logPlayerToNode", resJSON);
+      if(!resJSON.status == "ok") {
+        alert("error logging player to node - please check your internet connection");
+        // todo - give option to retry
+      }
+    }
   }
 
   const processQueue = async () => {
@@ -346,8 +356,8 @@
     });
     chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
     scrollUp();
-
-    emitMessage({
+    
+    let res = postPlayerMessage({
       sender: playerId, 
       message: inputValue, 
       node: currentNode._id, 
@@ -356,6 +366,8 @@
       params: item ? item.params : undefined,
     });
     inputValue = "";
+
+    // todo handle errors
   }
 
   const handleKeydown = (event)=>{

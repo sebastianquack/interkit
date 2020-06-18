@@ -34,7 +34,17 @@
 
     console.log("node found", nodeJSON);
     
-    joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
+    //joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
+    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
+      method: "POST", 
+      body: JSON.stringify({item, button})
+    });
+    let resJSON = await res.json();
+    console.log(resJSON);
+    if(!resJSON.status == "ok") {
+      alert("error moving player");
+    }
+  
   }
 
 </script>

@@ -5,7 +5,7 @@ let Auth = require("./plugins/auth.plugin.js");
 const Path = require('path');
 const Inert = require('@hapi/inert');
 
-const SocketServer = require('./src/socketServer.js');
+const gameServer = require('./src/gameServer.js');
 const db = require('./src/dbutil.js');
 
 console.log("  NODE_ENV: " + process.env.NODE_ENV)
@@ -112,7 +112,7 @@ async function api() {
     })
 
 
-    SocketServer.init(server.listener);
+    gameServer.init(server.listener);
 
     await server.start()
     

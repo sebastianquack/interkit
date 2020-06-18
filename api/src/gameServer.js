@@ -67,11 +67,16 @@ async function joinNode(data) {
         board: newNode.board, 
         params: {interfaceCommand: "nodeInfo"}
       }) 
+
+    return true;
   
   } else {
     console.log("node " + data.nodeId + " not found!");
+    return null;
   }
 }
+
+exports.joinNode = joinNode;
 
 // move a set of players to a new room
 // step 1: move all players
@@ -102,6 +107,38 @@ async function joinNodeMulti(data) {
   }
 }
 
+// player input something (called via rest api)
+    
+async function handlePlayerMessage(data) {
+  console.log("message received", data);
+
+  //let id = mongoose.Types.ObjectId(data.node);
+
+  // new & safer: determine node based on server logs and ignore where client thinks it is
+  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, {player: data.sender, board: data.board}, Log);
+
+  if(nodeLogItem.docs.length == 0) {
+    console.log("cannot find player nodelog");
+    return null;
+  }
+  
+  let currentNode = await RestHapi.find(RestHapi.models.scriptNode, nodeLogItem.docs[0].node, {}, Log)
+  
+  // save incoming message
+  await db.logMessage({...data, 
+    recipients: [data.sender], 
+    node: currentNode._id, 
+    board: currentNode.board,
+    timestamp: Date.now()
+  });
+  await handleScript(currentNode, data.sender, "onReceive", data);  
+  
+  return true;
+}
+
+
+exports.handlePlayerMessage = handlePlayerMessage;
+
 // set up socket event handling on server (called once on start)
 
 exports.init = (listener) => {
@@ -121,7 +158,7 @@ exports.init = (listener) => {
       }*/
     });
 
-    // new: this is called once when PlayerContainer mounts on client 
+    // this is called once when PlayerContainer mounts on client 
     // - limitation for now, player can only have one socket (cannot play with multiple tabs open)
     
     socket.on('registerPlayer', async (data) => {
@@ -130,70 +167,8 @@ exports.init = (listener) => {
       console.log(Object.keys(playerSockets))
     })
 
-    // player requests to join a node
-
-    socket.on('joinNode', async function(data) {
-      console.log("socket.on 'joinNode'");
-      joinNode(data);
-    });
-
-    // player leaves a node
-
-    socket.on('leaveNode', async function(data) {
-      console.log("removing player from node " + data.nodeId + " - not implemented");
-
-      let id = mongoose.Types.ObjectId(data.nodeId);
-      let node = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
-      
-      // TODO: run onLeave script - not implemented yet
-    });
-
-    // player input something
-    
-    socket.on("message", async (data)=>{
-      console.log("socket message received", data);
-
-      //let id = mongoose.Types.ObjectId(data.node);
-
-      // new & safer: determine node based on server logs and ignore where client thinks it is
-      let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, {player: data.sender, board: data.board}, Log);
-
-      if(nodeLogItem.docs.length == 0) {
-        console.log("cannot find player nodelog");
-        return;
-      }
-      
-      let currentNode = await RestHapi.find(RestHapi.models.scriptNode, nodeLogItem.docs[0].node, {}, Log)
-      
-      // echo input to other players in multiplayer mode 
-      if(currentNode.multiPlayer && (data.message || data.attachment)) {
-        let name = await db.getVar("player", {player: data.sender, project: data.project}, "name");
-        
-        let recipients = await db.getPlayersForNode(currentNode._id)
-        recipients = recipients.filter((id)=>id != data.sender);
-
-        //emitMessage(socket.broadcast.in(socket.room), 
-        sendMessage(
-          {...data, 
-            label: name ? name : "unknown player", 
-            recipients,
-            node: currentNode._id, 
-            board: currentNode.board
-          });
-      } else {
-        // save incoming message
-        db.logMessage({...data, 
-          recipients: [data.sender], 
-          node: currentNode._id, 
-          board: currentNode.board,
-          timestamp: Date.now()
-        });
-      }
-      handleScript(currentNode, data.sender, "onReceive", data);
-
-    });
-  
   });
+    
 
   // check for scheduled messages, deliver and inform connected players via socket
   

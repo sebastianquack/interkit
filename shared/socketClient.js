@@ -35,11 +35,21 @@ export const initSocket = async (playerId) => {
   });
 }
 
+// registers a player to a socket connection
 export const registerPlayer = (playerId) => {
   console.log("registerPlayer", playerId);
   socket.emit('registerPlayer', {playerId});
 }
 
+// sets up handler for incoming socket messages
+export const listenForMessages = (callback) => {
+  socket.off('message');
+  socket.on('message', callback);
+}
+
+
+
+/* deprecated
 // ask server to log us into a node. called in rare circumstances:
 // - when board is opened for the first time by a player
 // - when player clicks a button on an item
@@ -60,14 +70,12 @@ export const joinNode = (playerId, nodeId, execOnArrive=true, allowRejoin=false,
 export const leaveNode = (playerId, nodeId) => {
   socket.emit('leaveNode', {playerId, nodeId}); // ask server to remove us from a room
 }
+*/
 
-export const listenForMessages = (callback) => {
-  socket.off('message');
-  socket.on('message', callback);
-}
-
+/* deprecated
 export const emitMessage = (msgData) => {
   console.log("emitting", msgData);
   socket.emit('message', msgData);
 }
+*/
 

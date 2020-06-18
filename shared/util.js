@@ -146,6 +146,15 @@ export const deleteFile = async (file, token) => {
   console.log(response);
 }
 
-
+export const postPlayerMessage = async (msgData) => {
+  console.log("postPlayerMessage", msgData);
+  let response = await fetch("/api/player/message", {
+    method: "POST",
+    body: JSON.stringify(msgData)
+  })
+  let responseJSON = await response.json();
+  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
+  return responseJSON.status == "ok";
+}
 
 

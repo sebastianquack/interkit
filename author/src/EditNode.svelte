@@ -157,8 +157,10 @@
 
   let showHelp = false;
 
-  const doMoveTo = (nodeId) => {
-    joinNode(playerId, nodeId, true, true);      
+  const doMoveTo = async (nodeId) => {
+    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
+    let resJSON = await res.json();
+    console.log(resJSON);
   }
   
 
