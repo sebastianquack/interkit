@@ -152,7 +152,9 @@ export const postPlayerMessage = async (msgData) => {
     method: "POST",
     body: JSON.stringify(msgData)
   })
-  let responseJSON = await response.json();
+  let responseJSON = {};
+  if(response.ok)
+    responseJSON = await response.json();
   if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
   return responseJSON.status == "ok";
 }
