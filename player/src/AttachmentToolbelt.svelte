@@ -135,7 +135,7 @@
 {/if}
 
 {#if toolOpen == "audio"}
-  <div class="tool-container">
+  <div class="input-container">
     <AudioRecorder
       {projectId}
       onUpload={async (audioURL)=>{
