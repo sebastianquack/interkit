@@ -19,15 +19,27 @@
   }
 
   onMount(async () => {    
+    
+    // try to get project id form url param
     let searchParams = new URLSearchParams(window.location.search);
     projectId = searchParams.get("project");
 
+    // try to get project id from local storage
+    if(!projectId) {
+      projectId = localStorage.getItem("projectId");
+    }
+
+    // try to get default project
     if(!projectId) {
       let defaultProjectId = await getConfig("defaultProject");
       if(defaultProjectId) {
         projectId = defaultProjectId;
       }
     }
+
+    // save projectId for later
+    if(projectId)
+      localStorage.setItem("projectId", projectId);
 
     playerId = await findOrCreatePlayer();
     await initSocket(playerId);
