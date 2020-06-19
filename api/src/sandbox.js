@@ -117,14 +117,14 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           label: options.label ? options.label : varCache.board.narrator, 
           system: options.system ? true : false,
           to: options.to ? options.to : "sender",
-          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+          delay: options.delay ? options.delay : null,
         })}, 
 
         system: (message, options={}) => { result.outputs.push({
           message, 
           system: true,
           to: options.to ? options.to : "sender",
-          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+          delay: options.delay ? options.delay : null,
         })}, 
 
         option: (message, options={}) => { result.outputs.push({
@@ -134,7 +134,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             key: options.key ? options.key : undefined
           },
           to: options.to ? options.to : "sender",
-          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+          delay: options.delay ? options.delay : null,
         })},       
         
         image: (filename, options={}) => { result.outputs.push({
@@ -145,14 +145,14 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             }, 
             label: options.label ? options.label : varCache.board.narrator,
             to: options.to ? options.to : "sender",
-            scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+            delay: options.delay ? options.delay : null,
         })},
 
         audio: (filename, options={}) => { result.outputs.push({
           attachment: {mediatype: "audio", filename}, 
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
-          scheduleFor: options.scheduleFor ? options.scheduleFor : null,
+          delay: options.delay ? options.delay : null,
         })},  
       },
 

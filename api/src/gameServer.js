@@ -223,10 +223,10 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
         console.log(msgObj);
 
-        if(!output.scheduleFor) {
+        if(!output.delay) {
           await sendMessage(msgObj); // send now
         } else {
-          await db.scheduleMessage(output.scheduleFor, msgObj); // send later
+          await db.scheduleMessage(output.delay, msgObj); // send later
         }
       
       }
