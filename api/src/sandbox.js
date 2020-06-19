@@ -149,7 +149,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         })},
 
         audio: (filename, options={}) => { result.outputs.push({
-          attachment: {mediatype: "audio", filename: options.filename}, 
+          attachment: {mediatype: "audio", filename}, 
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
           scheduleFor: options.scheduleFor ? options.scheduleFor : null,
