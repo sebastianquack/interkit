@@ -66,8 +66,8 @@
     const res = await fetch("/api/boardLog?player=" + playerId + "&project=" + projectId + "&listed=true&$embed=board");
     const json = await res.json();
     console.log("loadListedBoards", json);
-    boards = json.docs.map(log=>log.board);
-    
+    boards = json.docs.map(log=>log.board).filter(b=>b); 
+  
     if(boards.length == 1) {
       console.log("project has only 1 listed board, using that", boards[0]);
       currentBoard = boards[0];
@@ -240,10 +240,12 @@
     {#if !currentBoard}
         <ul class="board-select">
           {#each boards as board}
+            {#if board}
             <li on:click={()=>{launch(board)}}>
               {board.name} {#if board.description} - {board.description} {/if}
               {#if board.unSeenMessages } <small>(unread messages: {board.unSeenMessages})</small> {/if} 
             </li>
+            {/if}
           {/each}
         </ul>
     {:else}

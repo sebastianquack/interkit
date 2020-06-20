@@ -166,6 +166,7 @@
     height: 50%;
     position: relative;
     box-sizing: border-box;
+    overflow-y: scroll;
   }
 
   .left-top {

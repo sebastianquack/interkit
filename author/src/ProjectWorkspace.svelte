@@ -101,7 +101,8 @@
       name: "",
       scriptNodes: [],
       library: "",
-      project: project._id
+      project: project._id,
+      listed: true
     }
     setCurrentBoardData(newBoard);
     editMode = true;

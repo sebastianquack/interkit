@@ -1,6 +1,7 @@
 let RestHapi = require('rest-hapi')
 let Joi = require('@hapi/joi')
 let Auth = require("../plugins/auth.plugin.js");
+const Log = RestHapi.getLogger('board');
 
 module.exports = function (mongoose) {
   let modelName = "board";
@@ -42,6 +43,47 @@ module.exports = function (mongoose) {
     }
 
   });
+
+  // sets up board logs for all players when board is created
+  const configureBoardLogs = async (board) => {
+
+    console.log("updating boardLogs for all players for board ", board);
+    
+    let players;
+    try {
+      players = await RestHapi.list(RestHapi.models.player, null, Log);
+    } catch(e) {
+      console.log(e)
+    }
+
+    for(let player of players.docs) {
+
+      let query = {
+        player: player._id,  
+        board: board._id,
+        project: board.project
+      }
+      let boardLogItems = await RestHapi.list(RestHapi.models.boardLog, query, Log);
+
+      if(boardLogItems.docs.length == 0) {
+        await RestHapi.create(RestHapi.models.boardLog, {
+          ...query,
+          listed: board.listed
+        })  
+      } else {
+        await RestHapi.update(RestHapi.models.boardLog, boardLogItems.docs[0]._id, {
+          ...query,
+          listed: board.listed
+        })
+      }
+    }
+  }
+
+  const removeAssociatedData = async (boardId) => {
+    let boardLogs = await RestHapi.list(RestHapi.models.boardLog, {board: boardId}, Log);
+    if(boardLogs.docs.length)
+      await RestHapi.deleteMany(RestHapi.models.boardLog, boardLogs.docs, Log);
+  }
   
   Schema.statics = {
     collectionName: modelName,
@@ -66,6 +108,31 @@ module.exports = function (mongoose) {
           model: "item"
         }
       },
+
+      create: {
+        post: async (document, request, result, Log)  => {
+          await configureBoardLogs(document);
+          return document;
+        }
+      },
+
+      update: {
+        pre: async (_id, payload, request, Log) => {
+          let board = await RestHapi.find(RestHapi.models.board, _id, {}, Log);
+          if(board.listed != payload.listed) {
+            await configureBoardLogs(payload); // todo: make this step optional in authoring  
+          }
+          return payload;
+        }
+      },
+
+      delete: {
+        pre: async (_id, hardDelete, request, Log) => {
+          await removeAssociatedData(_id);
+          return null;
+        }
+      },
+      
 
       extraEndpoints: [
         // remove startingNode endpoint
