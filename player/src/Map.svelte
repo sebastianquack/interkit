@@ -80,7 +80,7 @@ const initMarkers = ()=>{
 
     });
     
-    if(!fitBoundsDone) {
+    if(!fitBoundsDone && markers.length > 1) {
       map.fitBounds(latlngbounds);
       fitBoundsDone = true;
     }
