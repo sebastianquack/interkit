@@ -28,6 +28,6 @@
     },
     "scripts": {
         "dev": "nodemon ./server.js localhost 9000",
-        "start": "node ./server.js"
+        "start": "nodemon ./server.js"
     }
 }
