@@ -94,7 +94,7 @@ async function api() {
       loglevel: 'WARN',
       mongo: {
         URI: process.env.MONGODB_URI
-      }
+      } 
     };
 
     console.log("  Mongo URI: " + config.mongo.URI)
