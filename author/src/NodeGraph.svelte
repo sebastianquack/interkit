@@ -82,7 +82,7 @@
         let fromY = nodes[j].posY + rectHeight / 2;
         nodes[j].connectionIds.forEach((id)=>{
           let i = getNodeIndexById(id);
-          if(i > -1) {
+          if(i > -1 && i != j) {
             let to = nodes[i];
             let toX = to.posX + rectWidth / 2;
             let toY = to.posY + rectHeight / 2;
