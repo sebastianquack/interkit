@@ -4,8 +4,8 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { initSocket } from '../../shared/socketClient.js';
-  import { getConfig, findOrCreatePlayer } from '../../shared/util.js';
+  import { initSocket, registerPlayer } from '../../shared/socketClient.js';
+  import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
   let projectId;
@@ -16,6 +16,12 @@
   window.googleReady = ()=>{
     console.log("googleReady");
     googleReady = true;
+  }
+
+  const resetPlayer = async ()=> {
+    playerId = null; // set to null first so attached player resets
+    playerId = await refreshPlayerId();
+    registerPlayer(playerId);
   }
 
   onMount(async () => {    
@@ -53,7 +59,7 @@
 
 {#if projectId && playerId}   
 
-    <PlayerContainer {projectId} {playerId} {googleReady}/>
+    <PlayerContainer {projectId} {playerId} {googleReady} {resetPlayer}/>
     
 {:else}
 

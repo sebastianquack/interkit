@@ -91,8 +91,9 @@ span img {
 
 .option span {
   background-color: yellow;
-  border-radius: 1em 1em 0 1em;
+  border-radius: 1em 1em 1em 1em;
   word-break: break-all;
+  box-shadow: 1px 3px lightgray;
 }
 
 .option:hover {

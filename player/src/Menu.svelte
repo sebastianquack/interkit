@@ -6,6 +6,7 @@
   export let onClose;
   export let projectId;
   export let playerId;
+  export let resetPlayerContainer;
 
   let pages = [];
   let currentPage = null;
@@ -29,6 +30,7 @@
         <h3 on:click|stopPropagation={()=>currentPage=page}>{page.menuEntry}</h3>
       {/each}
       </div>
+      <button on:click={()=>{if(confirm("really?")) resetPlayerContainer()}}>reset player</button>
     </div>
 
   {:else}

@@ -1,6 +1,7 @@
 <script>
 
 import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
+import { getConfig } from '../../shared/util.js';
 
 const mapStyles = require('../../shared/GoogleMapStyles.json')
 
@@ -15,11 +16,15 @@ let markers = [];
 let userMarker;
 let fitBoundsDone = false;
 
-const initGoogleMap = ()=>{
+const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
+
+    let defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
+    let defaultZoom = await getConfig("defaultZoom");
+
     map = new google.maps.Map(mapContainer, {
-      zoom: 1,
-      center: {lat: 0, lng: 0},
+      zoom: defaultZoom,
+      center: defaultPos,
       streetViewControl: false, 
       fullscreenControl: false, 
       mapTypeControl: false,

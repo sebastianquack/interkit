@@ -3,7 +3,7 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket } from '../../shared/socketClient.js';
+  import { initSocket, registerPlayer } from '../../shared/socketClient.js';
   import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
 
   import Board from './Board.svelte';
@@ -59,7 +59,12 @@
       playerNodeId = null;
       playerId = null; // set to null first so attached player resets
       playerId = await refreshPlayerId();
+      registerPlayer(playerId);
     }
+  }
+
+  const resetPlayer = async ()=> {
+    clearPlayerId(playerId);
   }
 
   let boards = [];
@@ -272,6 +277,7 @@ function onReceive(input) {
       {updatePlayerNodeId}
       {setEditNodeId}
       {googleReady}
+      {resetPlayer}
     />
   </div>
 

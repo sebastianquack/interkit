@@ -14,6 +14,7 @@
   // the two main props that this comonent reacts on
   export let projectId;
   export let playerId;
+  export let resetPlayer; 
 
   // special props for using in authoring app
   export let authoring;
@@ -156,6 +157,13 @@
 
   const toggleMenu = () => {
     menuOpen = true;
+  }
+
+  const resetPlayerContainer = () => {
+    resetPlayer();
+    menuOpen = false;
+    currentBoard = null;
+    mainView = "chat";
   }
 
 
@@ -313,6 +321,7 @@
   <Menu
     {projectId}
     {playerId}
+    {resetPlayerContainer}
     onClose={()=>menuOpen=false}
   />
   {/if}
