@@ -239,7 +239,7 @@
     console.log("mainView", mainView)
     console.log("item", item)
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
-      if(!item.params.interfaceCommand) {
+      if(!item.params.interfaceCommand && !item.params.option) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         setLockScreen();  
       }
@@ -302,7 +302,7 @@
               },              
               });
         }
-        if(!item.params.option) activeOptions = false;
+        if(!item.params.option && !item.params.interfaceCommand) activeOptions = false;
       }
       chatItems = chatItems;
       updateUnseenMessages();
@@ -315,7 +315,7 @@
     });
     //items.sort((a,b)=>a.timestamp-b.timestamp);
     chatItems = chatItems;
-    //console.log("sorted items", chatItems);
+    console.log("sorted items", chatItems);
   }
 
   const parseItem = (rawItem) => {
@@ -349,11 +349,12 @@
   }
 
   const submitInput = (item = null)=>{
-    if (!inputValue) return;
+    console.log("submitInput", item)
+    if (!inputValue && !item) return;
 
     chatItems = chatItems.concat({
       side: 'right',
-      message: inputValue,
+      message: item ? item.message : inputValue,
       attachment: {},
       params: {}
     });
@@ -362,7 +363,7 @@
     
     let res = postPlayerMessage({
       sender: playerId, 
-      message: inputValue, 
+      message: item ? item.message : inputValue, 
       node: currentNode._id, 
       board: currentBoard._id, 
       project: projectId,
@@ -408,7 +409,13 @@
         <ChatItemBubble 
           {item}
           onClick={()=>{
-            if(item.params.option) autoType(item)
+            if(item.params.option) {
+              if(!item.params.key) {
+                autoType(item)
+              } else {
+                submitInput(item);
+              }
+            }
             if(item.attachment.mediatype == "GPS") mapClick(item)
           }}
         />
