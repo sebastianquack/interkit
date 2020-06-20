@@ -200,22 +200,44 @@ exports.createOrUpdateItem = async (payload, projectId) => {
 }
 
 // award item to a player
-exports.awardItemToPlayer = async (playerId, projectId, key) => {
+exports.awardItemToPlayer = async (playerId, projectId, key, to = "one") => {
   let items = await RestHapi.list(RestHapi.models.item, {key: key, project: projectId}, Log)
+  let item = items.docs[0];
+  
   if(items.docs.length == 1) {
-    let item = items.docs[0];
-    await RestHapi.addOne(
-      RestHapi.models.player,
-      playerId,
-      RestHapi.models.item,
-      item._id,
-      "items",
-      {},
-      Log
-    )
-    console.log("awardItemToPlayer - success")
+    
+    if(to == "one") {
+  
+      await RestHapi.addOne(
+        RestHapi.models.player,
+        playerId,
+        RestHapi.models.item,
+        item._id,
+        "items",
+        {},
+        Log
+      )
+      console.log("awardItemToPlayer - success")
+    
+    }
+
+    if(to == "all") {
+      console.log("awarding item to all players in project...")
+      let projectLogs = await RestHapi.list(RestHapi.models.projectLog, {project: projectId}, Log); 
+      let playerIds = projectLogs.docs.map(d=>d.player);
+      console.log("found players", playerIds);
+      await RestHapi.addMany(
+        RestHapi.models.item,
+        item._id,
+        RestHapi.models.player,
+        "players",
+        playerIds,
+        Log
+      )
+    }
+
   } else {
-    console.log("awardItemToPlayer - item not found")
+      console.log("awardItemToPlayer - item not found")
   }
 }
 

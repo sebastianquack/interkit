@@ -71,6 +71,7 @@ createOrUpdateItem({
       }
     });
 awardItem("Zielgebiet"); // award item to player
+awardItem("Zielgebiet", {to: "all"}); // award item to all players in project
 removeItem("Zielgebiet"); // revoke item from player
 
 async function onArrive() { // async function needed for loading items form database

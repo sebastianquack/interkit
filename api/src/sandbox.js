@@ -178,8 +178,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
 
       createOrUpdateItem: async (payload) => { await db.createOrUpdateItem(payload, project._id) },
-      awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
-      removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },
+      awardItem: (key, options = {}) => { db.awardItemToPlayer(playerId, project._id, key, options.to) },
+      removeItem: (key, options = {}) => { db.removeItemFromPlayer(playerId, project._id, key, options.from) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
       
