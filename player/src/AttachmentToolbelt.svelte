@@ -22,6 +22,7 @@
   }
   const closeTool = () => {
     toolOpen = null;
+    closeAttachmentMenu();
   }
 
   const sendQRCode = (code) => {

@@ -67,10 +67,18 @@ onDestroy(()=>{
   if(counterInterval) clearInterval(counterInterval)
 });
 
+const cancel = ()=>{
+  audioRecorder.cancelRecording(); 
+  status = "idle";
+  onClose();
+}
+
 
 </script>
 
 <div id="container">
+    <button on:click={onClose}>cancel</button>
+    
     {#if audioRecorder}
       {#if status == "idle" && !audioRecorder.isRecording()}
         <button on:click={()=>{
@@ -81,7 +89,6 @@ onDestroy(()=>{
       {/if}
 
       {#if status == "recording" && audioRecorder.isRecording()}
-        <button on:click={()=>{audioRecorder.cancelRecording(); status = "idle";}}>cancel recording</button>
         <button on:click={()=>{audioRecorder.finishRecording()}}>finish recording</button>
         {timeDisplay}
       {/if}
@@ -89,7 +96,7 @@ onDestroy(()=>{
       {#if status == "uploading"}<span>uploading... {uploadProgress}%</span>{/if}
     {/if}  
 
-    <button on:click={onClose}>close</button>
+    
 </div>
 
 
