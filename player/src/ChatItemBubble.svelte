@@ -16,7 +16,7 @@
         <img alt={item.attachment.alt} src={item.attachment.imgSrc}/>
       {/if}
       {#if item.attachment.audioSrc} 
-         <audio controls autoplay>
+         <audio controls autoplay={item.attachment.autoplay ? true : false}>
           <source src={item.attachment.audioSrc} type="audio/mpeg">
         </audio> 
       {/if}

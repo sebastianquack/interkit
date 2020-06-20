@@ -203,6 +203,7 @@
       }
       if(item.attachment.mediatype == "audio") {
         item.attachment.audioSrc = fileServerURL + item.attachment.filename;
+        item.attachment.autoplay = true;
       }
       chatItems.push(item);
       sortItems();
