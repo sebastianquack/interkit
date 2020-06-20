@@ -177,7 +177,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         result.interfaceOptions = {alertMessage};
       },
 
-      createOrUpdateItem: (payload) => { db.createOrUpdateItem(payload, project._id) },
+      createOrUpdateItem: async (payload) => { await db.createOrUpdateItem(payload, project._id) },
       awardItem: (key) => { db.awardItemToPlayer(playerId, project._id, key) },
       removeItem: (key) => { db.removeItemFromPlayer(playerId, project._id, key) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
