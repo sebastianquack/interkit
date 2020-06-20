@@ -21,6 +21,7 @@ const initGoogleMap = async ()=>{
 
     let defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     let defaultZoom = await getConfig("defaultZoom");
+    console.log("defaultZoom", defaultZoom, typeof defaultZoom);
 
     map = new google.maps.Map(mapContainer, {
       zoom: defaultZoom,
