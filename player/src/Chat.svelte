@@ -236,8 +236,10 @@
         }, 500);
     }
 
+    console.log("mainView", mainView)
+    console.log("item", item)
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
-      if(!item.params.interfaceCommand == "alert") {
+      if(!item.params.interfaceCommand) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         setLockScreen();  
       }
