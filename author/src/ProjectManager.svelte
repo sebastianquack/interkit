@@ -129,8 +129,8 @@
       // add user to project
       let res2 = await fetch("/api/project/" + editProject._id + "/user/" + newUserId, {
             method: "PUT",
-            headers: {'authorization': $token},
-            body: JSON.stringify({})
+            headers: {'authorization': $token, 'Content-Type': 'application/json'},
+            body: JSON.stringify({}),
           });
       editProject.users.push({
         user: json.docs[0]
