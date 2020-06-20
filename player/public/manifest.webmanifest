@@ -1,6 +1,6 @@
 {
   "background_color": "white",
-  "description": "client for testing the dreamship chat system",
+  "description": "client for testing the interkit system",
   "display": "standalone",
   "icons": [
     {
@@ -9,7 +9,7 @@
       "type": "image/png"
     }
   ],
-  "name": "Traumschiff",
-  "short_name": "Traumschiff",
+  "name": "Interkit",
+  "short_name": "Interkit",
   "start_url": "/index.html"
 }
