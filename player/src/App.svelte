@@ -8,6 +8,8 @@
   import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
+  require('./WebAudioRecorder/WebAudioRecorder.min.js');
+
   let projectId;
   let playerId;
 
