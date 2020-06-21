@@ -179,7 +179,6 @@
         setNotificationItem({...message, side: "left"});
         setLockScreen();
         await checkForUnseenMessages();
-        // todo here: make sure we process or display moveTo messages somehow
       }
     });
   }

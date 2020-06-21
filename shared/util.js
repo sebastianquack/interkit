@@ -2,6 +2,10 @@ import axios from 'axios';
 
 export const getConfig = async (key) => {
   const res = await fetch("/api/config?key=" + key);
+  if(!res.ok) {
+    console.log("error fetching config ", key);
+    return null;
+  }
   const json = await res.json();
   //console.log(json);
 
@@ -41,14 +45,18 @@ export const findOrCreatePlayer = async () => {
     player = await createPlayer();
   } else {
     const res = await fetch("/api/player/" + playerId);
-    player = await res.json();  
-    console.log("player loaded", player);
-    if(!player._id) {
-      player = await createPlayer();
+    if(res.ok) {
+      player = await res.json();  
+      console.log("player loaded", player);
+      if(!player._id) {
+        player = await createPlayer();
+      }
+    } else {
+      console.log("error fetching player")
     }
   }
 
-  if(player._id) {
+  if(player && player._id) {
     localStorage.setItem('playerId', player._id);
     return player._id;
   }
@@ -71,6 +79,7 @@ export const logPlayerToProject = async (player, project) => {
         'Content-Type': 'application/json'
       },      
       body: JSON.stringify({player, project})});    
+    // todo error handling
   }
 }
 

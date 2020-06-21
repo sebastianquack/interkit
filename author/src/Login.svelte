@@ -14,6 +14,10 @@
     },
       body: JSON.stringify({username, password})
     });
+    if(!response.ok) {
+      alert("could not reach server")
+      return;
+    }
     const json = await response.json();
     if(json.token && json.user) {
       token.set(json.token);  

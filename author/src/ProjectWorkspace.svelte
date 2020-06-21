@@ -95,6 +95,9 @@
       const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
       const json = await res.json();
       setCurrentBoardData(json);
+      if(!json.startingNode) {
+        alert("warning: no starting node set");
+      }
     } else {
       setCurrentBoardData(null);
     }

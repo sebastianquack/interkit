@@ -17,6 +17,10 @@ export const doWhenConnected = (callback) => {
 export const initSocket = async (playerId) => {
 
   let socketURL = await getConfig("socketURL");
+  if(!socketURL) {
+    alert("coult not connect to server, try again later")
+    return;
+  }
 
   socket = io(socketURL);
 

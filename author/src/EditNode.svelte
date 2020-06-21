@@ -32,21 +32,31 @@
     scriptNode = json;
     scriptNodeEdit = {...json};
 
-    if(currentBoardData)
-      startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
-
+    setStartingNodeEdit();
+    
     if(typeof scriptNodeEdit.multiPlayer == "undefined") {
       scriptNodeEdit.multiPlayer = false;
     }   
   }
 
+  const setStartingNodeEdit = ()=>{
+    console.log("setStartingNodeEdit");
+    if(currentBoardData)
+      startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
+    else 
+      console.log("warning: loading node without currentBoardData")
+  }
+
+
   const saveAndLoad = async (nodeId)=>{
     if(changed) {
-      if(confirm("save " + scriptNodeEdit.name + "?")) {
-        await save();
-        loadNoad(nodeId);
-      } else {
-        loadNoad(nodeId);
+      if(scriptNodeEdit._id) {
+        if(confirm("save " + scriptNodeEdit.name + "?")) {
+          await save();
+          loadNoad(nodeId);
+        } else {
+          loadNoad(nodeId);
+        }
       }
     } else {
       loadNoad(nodeId);
@@ -59,14 +69,22 @@
      saveAndLoad(editNodeId);
   }
 
+  // update starting node whenever currentBoardData changes
+  $: {
+    if(currentBoardData) {
+      setStartingNodeEdit();
+    }  
+  }
+
+  // track changes in node object
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
   
+  // track changes in starting node checkbox
   let startingNodeChanged = false;
-  $: {
-    if(currentBoardData)
-      startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id);
+  const updateStartingNodeChanged = () => {
+    startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id)
   }
-  
+
   async function save() {
 
     if(startingNodeChanged) {
@@ -192,7 +210,7 @@
 <CodeEditor bind:code={scriptNodeEdit.script}></CodeEditor>
 
 <!--label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/-->
-<label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit}/><br>
+<label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit} on:change={updateStartingNodeChanged}/><br>
 
 {#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
 

@@ -87,6 +87,11 @@
     console.log("currentBoard", currentBoard);
   
     let nodeId = currentBoard.startingNode;       
+
+    if(!nodeId) {
+      alert("startingNode not defined")
+    }
+
     let firstTimeOnBoard = true // flag to see if we are on the board for the very first time
 
     // load history 
@@ -122,16 +127,23 @@
     // loads node we want to be in and saves it
     await setCurrentNode(nodeId)
     
-    if(firstTimeOnBoard) {
-      //joinNode(playerId, nodeId, true); // asks server via socket to log us on to the node
+    // todo: move this logic to server!
+    if(firstTimeOnBoard && nodeId) {
       // new: use rest api here for better error handling
       let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, {method: "POST"});
+      if(!res.ok) {
+        console.log("could not reach server");
+      }
       let resJSON = await res.json();
       console.log("logPlayerToNode", resJSON);
       if(!resJSON.status == "ok") {
         alert("error logging player to node - please check your internet connection");
         // todo - give option to retry
       }
+      if(resJSON.statusCode == 500) {
+        alert(resJSON.error)
+      }
+
     }
   }
 
@@ -254,7 +266,10 @@
     console.log("loading currentNode");
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentNode = await response.json();
-    console.log("currentNode set to", currentNode.name);
+    console.log("currentNode set to", currentNode);
+    if(!currentNode) {
+      alert("currentNode " + currentNode)
+    }
     if(updatePlayerNodeId) updatePlayerNodeId(nodeId); // this is just to keep authoring interface up to date with player
   }
 
