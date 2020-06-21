@@ -21,6 +21,7 @@ export const initSocket = async (playerId) => {
   socket = io(socketURL);
 
   socket.on('disconnect', function(){
+    alert("socket disconnect");
     console.log("socket disconnect");
   });
   
