@@ -412,6 +412,12 @@
     }, delay * (item.message.length+5));
   }
 
+  const collapseMessages = () => {
+    showItemsSince = Date.now();
+    showMoreItems = true;
+    chatItems = [];
+  }
+
 </script>
 
 <div class="chat">
@@ -461,6 +467,7 @@
         <div class="author-buttons">
           <!--button on:click={reEnter}>clear & re-enter</button-->
           <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
+          <button on:click={collapseMessages}>hide msgs</button>
         </div>
       </div>
     {/if}
@@ -534,6 +541,7 @@
     border: 1px dotted gray;
     padding: 5px;
     font-size: 75%;
+    background-color: rgba(0,0,0,0.25);
   }
 
   .authoring-tools button {
