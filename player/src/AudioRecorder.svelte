@@ -5,6 +5,7 @@ import {onMount, onDestroy } from 'svelte';
 import { getConfig, upload } from '../../shared/util.js';
 
 import EncoderMp3 from './encoder-mp3-worker.js'
+import EncoderWav from './encoder-wav-worker.js'
 
 export let onClose;
 export let projectId;
@@ -15,12 +16,12 @@ let uploadProgress = 0;
 let counterInterval;
 let timeDisplay = "";
 let audioType = "mp3"; // file ending for upload
-let blobUrl = null;
+let recording = null;
 let recordingStartTime;
 
 // adapted from https://github.com/kaliatech/web-audio-recording-tests/blob/master/src/shared/RecorderService.js
 
-let baseUrl;
+let BASE_URL;
 let audioCtx;
 let encoderWorker;
 let encoderMimeType;
@@ -35,13 +36,15 @@ let dynamicsCompressorNode;
 let mediaRecorder;
 let chunks = [];
 let chunkType = '';
+let slicing;
+let em;
 
 let config = {
       broadcastAudioProcessEvents: false,
       createAnalyserNode: false,
       createDynamicsCompressorNode: false,
       forceScriptProcessor: false,
-      manualEncoderId: 'wav',
+      manualEncoderId: 'mp3',
       micGain: 0.75,
       processorBufferSize: 2048,
       stopTracksAndCloseCtxWhenFinished: true,
@@ -52,8 +55,18 @@ let config = {
 const init = async ()=> {
   console.log("init audio recorder")
   window.AudioContext = window.AudioContext || window.webkitAudioContext
-  baseUrl = await getConfig("socketURL");
+  BASE_URL = await getConfig("socketURL");
+  em = document.createDocumentFragment()
 }
+
+const createWorker = (fn) => {
+    var js = fn
+      .toString()
+      .replace(/^function\s*\(\)\s*{/, '')
+      .replace(/}$/, '')
+    var blob = new Blob([js])
+    return new Worker(URL.createObjectURL(blob))
+  }
 
 const startRecording = (timeslice) => {
   if (status !== 'inactive') {
@@ -203,16 +216,78 @@ const _startRecordingWithStream = (stream, timeslice) => {
 
     // Todo: Note that time slicing with manual wav encoderWav won't work. To allow it would require rewriting the encoderWav
     // to assemble all chunks at end instead of adding header to each chunk.
-    if (timeslice) {
+    /*if (timeslice) {
       console.log('Time slicing without MediaRecorder is not yet supported. The resulting recording will not be playable.')
       slicing = setInterval(function () {
         if (status === 'recording') {
-          encoderWorker.postMessage(['dump', context.sampleRate])
+          encoderWorker.postMessage(['dump', audioCtx.sampleRate])
         }
       }, timeslice)
-    }
+    }*/
   }
 }
+
+const _onAudioProcess = (e) => {
+    // console.log('onaudioprocess', e)
+    // let inputBuffer = e.inputBuffer
+    // let outputBuffer = e.outputBuffer
+    // console.log(this.micAudioStream)
+    // console.log(this.audioCtx)
+    // console.log(this.micAudioStream.getTracks().forEach((track) => console.log(track)))
+
+    // this.onAudioEm.dispatch(new Event('onaudioprocess', {inputBuffer:inputBuffer,outputBuffer:outputBuffer}))
+
+    if (config.broadcastAudioProcessEvents) {
+      em.dispatchEvent(new CustomEvent('onaudioprocess', {
+        detail: {
+          inputBuffer: e.inputBuffer,
+          outputBuffer: e.outputBuffer
+        }
+      }))
+    }
+
+    // // Example handling:
+    // let inputBuffer = e.inputBuffer
+    // let outputBuffer = e.outputBuffer
+    // // Each channel (usually only one)
+    // for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+    //   let inputData = inputBuffer.getChannelData(channel)
+    //   let outputData = outputBuffer.getChannelData(channel)
+    //
+    //   // Each sample
+    //   for (let sample = 0; sample < inputBuffer.length; sample++) {
+    //     // Make output equal to the same as the input (thus processor is doing nothing at this time)
+    //     outputData[sample] = inputData[sample]
+    //   }
+    // }
+
+    // When manually encoding (safari/edge), there's no reason to copy data to output buffer.  We set the output
+    // gain to 0 anyways (which is required on Edge if we did copy data to output). However, if using a MediaRecorder
+    // and a processor (all other browsers), then it would be required to copy the data otherwise the graph would
+    // generate no data for the MediaRecorder to consume.
+    // if (this.forceScriptProcessor) {
+
+    // // Copy input to output
+    // let inputBuffer = e.inputBuffer
+    // let outputBuffer = e.outputBuffer
+    // // This doesn't work on iOS/Safari. Guessing it doesn't have copyToChannel support, but haven't verified.
+    // for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+    //   outputBuffer.copyToChannel(inputBuffer.getChannelData(channel), channel)
+    // }
+
+    // Safari and Edge require manual encoding via web worker. Single channel only for now.
+    // Example stereo encoderWav: https://github.com/MicrosoftEdge/Demos/blob/master/microphone/scripts/recorderworker.js
+    if (!config.usingMediaRecorder) {
+      if (status === 'recording') {
+        if (config.broadcastAudioProcessEvents) {
+          encoderWorker.postMessage(['encode', e.outputBuffer.getChannelData(0)])
+        }
+        else {
+          encoderWorker.postMessage(['encode', e.inputBuffer.getChannelData(0)])
+        }
+      }
+    }
+  }
 
 const stopRecording = () => {
   if (status === 'inactive') {
@@ -248,10 +323,8 @@ const _onDataAvailable = (evt) => {
   }
 
   let blob = new Blob(chunks, { 'type': chunkType })
-  
-  blobUrl = URL.createObjectURL(blob)
-  
-  const recording = {
+  let blobUrl = URL.createObjectURL(blob)
+  recording = {
     ts: new Date().getTime(),
     blobUrl: blobUrl,
     mimeType: blob.type,
@@ -360,9 +433,9 @@ const cancel = ()=>{
     {#if status == "uploading"}<span>uploading... {uploadProgress}%</span>{/if}
 
     <!--
-    {#if blobUrl}
+    {#if recording}
       <audio controls="controls">
-        <source src={blobUrl} type="audio/mp3">
+        <source src={recording.blobUrl} type={recording.mimeType}>
       </audio>
     {/if}
     -->
