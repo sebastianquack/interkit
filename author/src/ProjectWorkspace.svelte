@@ -3,8 +3,8 @@
   import { onMount, onDestroy } from 'svelte';
 
   import {token} from './stores.js';
-  import { initSocket, registerPlayer } from '../../shared/socketClient.js';
-  import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
+  //import { initSocket, registerPlayer } from '../../shared/socketClient.js';
+  import { getConfig, /*findOrCreatePlayer, refreshPlayerId*/ } from '../../shared/util.js';
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';
@@ -54,7 +54,7 @@
 
   let playerId;
   
-  const clearPlayerId = async (id)=> {
+  /*const clearPlayerId = async (id)=> {
     if(id == playerId) {
       playerNodeId = null;
       playerId = null; // set to null first so attached player resets
@@ -65,7 +65,7 @@
 
   const resetPlayer = async ()=> {
     clearPlayerId(playerId);
-  }
+  }*/
 
   let boards = [];
   let playerURL;
@@ -275,7 +275,7 @@ function onReceive(input) {
   <div slot="playtest-area" class="h100">
     <PlaytestArea
       projectId={project._id}
-      {playerId}
+      bind:value={playerId}
       {clearPlayerId}
       {updatePlayerNodeId}
       {setEditNodeId}

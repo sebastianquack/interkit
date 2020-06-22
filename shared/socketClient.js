@@ -14,7 +14,7 @@ export const doWhenConnected = (callback) => {
   }
 }
 
-export const initSocket = async (playerId) => {
+export const initSocket = async (playerId, updateConnectionStatus) => {
 
   let socketURL = await getConfig("socketURL");
   if(!socketURL) {
@@ -27,12 +27,14 @@ export const initSocket = async (playerId) => {
   socket.on('disconnect', function(){
     alert("socket disconnect");
     console.log("socket disconnect");
+    if(updateConnectionStatus) updateConnectionStatus(socket.connected);
   });
   
   socket.on('connect', async function(){
     console.log("socket connect");
     registerPlayer(playerId);
     if(connectedCallback) connectedCallback();
+    if(updateConnectionStatus) updateConnectionStatus(socket.connected);
   });
     
   socket.on('reconnect_attempt', () => {

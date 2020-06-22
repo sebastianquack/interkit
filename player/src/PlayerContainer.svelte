@@ -14,7 +14,6 @@
   // the two main props that this comonent reacts on
   export let projectId;
   export let playerId;
-  export let resetPlayer; 
 
   // special props for using in authoring app
   export let authoring;
@@ -22,7 +21,7 @@
   export let setEditNodeId;
   export let updatePlayerNodeId; // for tellig the authoring system when player has moved to new node
   export let googleReady;
-
+  
   let boards = [];
   let currentBoard = null; // if this is set, the chat is open
   
@@ -166,6 +165,12 @@
     mainView = "chat";
   }
 
+  const resetPlayer = async ()=> {
+    playerId = null; // set to null first so attached player resets
+    playerId = await refreshPlayerId();
+    //setPlayerId(playerId);
+    registerPlayer(playerId);
+  }
 
   const initPlayerContainerSocket = ()=>{
     console.log("re-initialising socket message listener on player container");
@@ -197,6 +202,10 @@
     fileServerURL = await getConfig("fileServerURL");
     loading = false;
 
+    playerId = await findOrCreatePlayer();
+    await initSocket(playerId);
+    //setPlayerId(playerId);
+    
     doWhenConnected(()=>{
       initPlayerContainerSocket();  
     })

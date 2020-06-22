@@ -4,26 +4,19 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { initSocket, registerPlayer } from '../../shared/socketClient.js';
-  import { getConfig, findOrCreatePlayer, refreshPlayerId } from '../../shared/util.js';
+  import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
 
   require('./WebAudioRecorder/WebAudioRecorder.min.js');
 
   let projectId;
-  let playerId;
 
   let googleReady = false;
+  let loading = true;
 
   window.googleReady = ()=>{
     console.log("googleReady");
     googleReady = true;
-  }
-
-  const resetPlayer = async ()=> {
-    playerId = null; // set to null first so attached player resets
-    playerId = await refreshPlayerId();
-    registerPlayer(playerId);
   }
 
   onMount(async () => {    
@@ -49,9 +42,7 @@
     if(projectId)
       localStorage.setItem("projectId", projectId);
 
-    playerId = await findOrCreatePlayer();
-    await initSocket(playerId);
-    
+    loading = false;
   });
 
 </script>
@@ -59,13 +50,17 @@
 
 <div class="app-container">
 
-{#if projectId && playerId}   
+{#if projectId}   
 
-    <PlayerContainer {projectId} {playerId} {googleReady} {resetPlayer}/>
+    <PlayerContainer {projectId} {googleReady}/>
     
 {:else}
 
-  <p style="margin: 16px">nothing to see here...</p>
+  {#if loading}
+    <p style="margin: 16px">loading...</p>
+  {:else}
+    <p style="margin: 16px">no project specified</p>v
+  {/if}
 
 {/if}
 

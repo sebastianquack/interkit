@@ -4,7 +4,6 @@
   import PlayerContainer from '../../player/src/PlayerContainer.svelte';
   
   export let projectId;
-  export let playerId;
   export let clearPlayerId;
   export let setEditNodeId;
   export let updatePlayerNodeId;
@@ -20,13 +19,12 @@
   
   <PlayerContainer
     {projectId}
+    bind:value={playerId}
     {setEditNodeId}
     authoring={true}
     {togglePlayerInfo}
     {updatePlayerNodeId}
-    {playerId}
     {googleReady}
-    {resetPlayer}
   />
 
   {#if playerInfoOpen && playerId}
