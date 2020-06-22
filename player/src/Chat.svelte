@@ -422,7 +422,7 @@
 
 <div class="chat">
 
-    <div class="scrollable" bind:this={div}>
+    <div class="scrollable {authoring? 'narrow' : ''}" bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each chatItems as item}
@@ -487,6 +487,7 @@
     bottom: 0;
   }
 
+
   .scrollable {
     margin: 0 0 10px 0;
     overflow-y: auto;
@@ -499,6 +500,11 @@
     padding-top: 10px;
     padding-bottom: 10px;
   }
+
+  .narrow {
+    right: 65px;
+  }
+
 
   .input-container {
     background-color: white;
@@ -536,16 +542,16 @@
 
   .authoring-tools {
     position: absolute;
+    width: 50px;
     right: 5px;
     bottom: 60px;
-    border: 1px dotted gray;
     padding: 5px;
     font-size: 75%;
-    background-color: rgba(0,0,0,0.25);
   }
 
   .authoring-tools button {
     margin-bottom: 0px;
+    margin-top: 5px;
   }
 
 </style>
