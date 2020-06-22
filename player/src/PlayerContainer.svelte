@@ -299,20 +299,24 @@
     {setItemModal}
   />
 
+  {#if mainView == "archive"}
   <Archive
-    visible={mainView=="archive"}
+    visible={true}
     items={documentItems}
     {setItemModal}
   />
+  {/if}
 
-  <Modal
-    {projectId}
-    {playerId}
-    visible={itemModal}
-    item={itemModal}
-    {fileServerURL}
-    onClose={() => itemModal = null}
-  />
+  {#if itemModal}
+    <Modal
+      {projectId}
+      {playerId}
+      visible={true}
+      item={itemModal}
+      {fileServerURL}
+      onClose={() => itemModal = null}
+    />
+  {/if}
 
   {#if showAlert}
   <Alert
@@ -321,15 +325,17 @@
   />
   {/if}
 
+  {#if showLockScreen}
   <LockScreen
     {notificationItem}
-    visible={showLockScreen}
+    visible={true}
     onClose={()=>{
       showLockScreen = false;
       notificationItem = null;
     }}
     {openBoardForMessage}
   />
+  {/if}
 
   {#if menuOpen}
   <Menu
