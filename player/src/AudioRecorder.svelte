@@ -13,17 +13,23 @@ export let onUpload;
 let audioRecorder = null;
 let status = "idle"; 
 let uploadProgress = 0;
-const audioType = "ogg"; // wav or mp3 also possible
+const audioType = "mp3"; // wav or mp3 also possible
 let counterInterval;
 let timeDisplay = "";
 
 const init = ()=> {
 
-    navigator.mediaDevices.getUserMedia ({audio: true}).then((stream) => {
-        
-      let audioCtx = new AudioContext();
+    console.log("init audio recorder")
+
+    console.log("creating audio context")
+    let audioCtx = new AudioContext();
+
+    navigator.mediaDevices.getUserMedia({audio: true}).then((stream) => {
+                    
+      console.log("creatig source")
       let source = audioCtx.createMediaStreamSource(stream);
 
+      console.log("creatig WebAudioRecorder")
       audioRecorder = new WebAudioRecorder(source, {
         workerDir: "/",     // must end with slash
         encoding: audioType
@@ -35,6 +41,11 @@ const init = ()=> {
         await send(blob);
       }
 
+    })
+    .catch(function(err) {
+      console.log(err)
+      alert("microphone access not supported on your device")
+      navigator.mediaDevices.enumerateDevices().then(devices=>{console.log(devices)});
     });
 }
 
@@ -77,8 +88,9 @@ const cancel = ()=>{
 </script>
 
 <div id="container">
+
     <button on:click={onClose}>cancel</button>
-    
+
     {#if audioRecorder}
       {#if status == "idle" && !audioRecorder.isRecording()}
         <button on:click={()=>{
