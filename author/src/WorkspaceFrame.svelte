@@ -11,7 +11,7 @@
   let areaStyle = {};
 
   const startDrag = (e)=>{
-    console.log("startDrag");
+    //console.log("startDrag");
     dragging = true;
     startDragY = e.clientY; // mouse pos in pixels at start of drag
     startHeight = height; // 
@@ -21,7 +21,7 @@
     if(dragging) {
       let diffY = e.clientY - startDragY; // the amount dragged so far in pixels
       height = startHeight + ((diffY / h) * 100);
-      console.log(height);
+      //console.log(height);
       updateAreaStyle();
     }
   }

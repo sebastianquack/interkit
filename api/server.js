@@ -45,6 +45,20 @@ async function api() {
 
     server.route({
         method: 'GET',
+        path: '/shared_static/{param*}',
+        handler: {
+            directory: {
+                path: './shared_static',
+                redirectToSlash: true
+            }
+        },
+        options: {
+          auth: false
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/admin/{param*}',
         handler: {
             directory: {
