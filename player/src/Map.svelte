@@ -144,7 +144,7 @@ const getUserPosition = ()=> {
 
 </script>
 
-<div id="map-container" style="visibility: {visible ? 'visible' : 'hidden'}">     
+<div id="map-container" style="display: {visible ? 'block' : 'none'}">     
   <div id="map" bind:this={mapContainer}></div>
   <img id="locate-button" alt="locat button" src="locate.png" on:click={getUserPosition} />
 </div>
