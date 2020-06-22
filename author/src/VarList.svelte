@@ -4,6 +4,7 @@ import { token } from './stores.js';
 
 export let scope;
 export let ids;
+export let authoring = true;
 
 let vars = [];
 
@@ -70,7 +71,11 @@ const removeVar = async (v)=> {
 <h4>{scope} variables <button on:click={loadVars}>reload</button></h4> 
 <ul>
   {#each vars as v}
-  <li>{v.node ? v.node.name ? v.node.name + "/" : "" : ""}{v.key}: {v.value} <button on:click={()=>updateVar(v)}>edit</button> <button on:click={()=>removeVar(v)}>delete</button></li>
+  <li>{v.node ? v.node.name ? v.node.name + "/" : "" : ""}{v.key}: {v.value} 
+    {#if authoring}
+      <button on:click={()=>updateVar(v)}>edit</button> <button on:click={()=>removeVar(v)}>delete</button>
+    {/if}
+  </li>
   {/each}
 </ul>
 

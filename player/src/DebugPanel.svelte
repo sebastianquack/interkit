@@ -1,13 +1,14 @@
 <script>
 
-import { token } from './stores.js';  
+//import { token } from './stores.js';  
 
-import VarList from './VarList.svelte';
+import VarList from '../../author/src/VarList.svelte';
 
 export let playerId;
-export let clearPlayerId;
-
+export let socketConnectionStatus;
 export let close;
+export let authoring;
+export let projectId;
 
 let nodeLogs = {};
 
@@ -20,16 +21,37 @@ const loadInfo = async ()=>{
 }  
 
 $: {
-  if(playerId) loadInfo();
+  if(playerId) 
+    loadInfo();
+  else 
+    nodeLogs = {}
 }
 
-const deletePlayer = async()=>{
+let project = {};
+
+const loadProject = async ()=>{ 
+    console.log("loading project info for", projectId);
+    const res = await fetch("/api/project/" + projectId);
+    const json = await res.json();
+    console.log(json);
+    project = json; 
+}
+
+$: {
+  if(projectId) 
+    loadProject();
+  else
+    project = {}
+}
+
+
+/*const deletePlayer = async()=>{
   if(confirm("permanently delete player?")) {
     const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
     clearPlayerId(playerId);
     close();
   }
-}
+}*/
 
 </script>
 
@@ -37,7 +59,11 @@ const deletePlayer = async()=>{
 
   <button class="close" on:click={close}>close</button>
 
-  <h3>player {playerId}</h3>
+  <p>project: {project.name}</p>
+
+  <p>socket connected: {socketConnectionStatus}</p>
+
+  <h4>player {playerId}</h4>
 
   <ul> 
   {#each Object.keys(nodeLogs) as key}
@@ -55,14 +81,16 @@ const deletePlayer = async()=>{
   <VarList
     scope="player"
     ids={{player: playerId}}
+    {authoring}
   />
 
   <VarList
     scope="playerNode"
     ids={{player: playerId}}
+    {authoring}
   />
 
-  <button on:click={deletePlayer}>delete player</button>
+  <!--button on:click={deletePlayer}>delete player</button-->
 
 </div>
 

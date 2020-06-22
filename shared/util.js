@@ -52,7 +52,9 @@ export const findOrCreatePlayer = async () => {
         player = await createPlayer();
       }
     } else {
-      console.log("error fetching player")
+      console.log("error fetching player", res)
+      alert("cannot find player on server, trying to create a new one...")
+      player = await createPlayer();
     }
   }
 

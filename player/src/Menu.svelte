@@ -7,6 +7,7 @@
   export let projectId;
   export let playerId;
   export let resetPlayerContainer;
+  export let toggelDebugPanel;
 
   let pages = [];
   let currentPage = null;
@@ -31,6 +32,7 @@
       {/each}
       </div>
       <button on:click={()=>{if(confirm("really?")) resetPlayerContainer()}}>reset player</button>
+      <button on:click={toggelDebugPanel}>debug panel</button>
     </div>
 
   {:else}

@@ -4,8 +4,8 @@ import { token } from './stores.js';
 
 export let projectId;
 export let close;
-export let clearPlayerId;
 export let playerId;
+export let dropConnectedPlayerId;
 
 let nodeLogs = [];
 let projectLogs = [];
@@ -27,10 +27,10 @@ $: {
   if(projectId && playerId) loadPlayers();
 }
 
-const deletePlayer = async(playerId)=>{
+const deletePlayer = async(id)=>{
   if(confirm("permanently delete player?")) {
-    const res = await fetch("/api/player/" + playerId, {method: "DELETE", headers: {'authorization': $token}});
-    await clearPlayerId(playerId);
+    const res = await fetch("/api/player/" + id, {method: "DELETE", headers: {'authorization': $token}});
+    if(id == playerId) dropConnectedPlayerId();
     loadPlayers();
   }
 }

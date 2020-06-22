@@ -25,7 +25,7 @@ export const initSocket = async (playerId, updateConnectionStatus) => {
   socket = io(socketURL);
 
   socket.on('disconnect', function(){
-    alert("socket disconnect");
+    //alert("socket disconnect");
     console.log("socket disconnect");
     if(updateConnectionStatus) updateConnectionStatus(socket.connected);
   });

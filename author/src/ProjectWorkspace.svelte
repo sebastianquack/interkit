@@ -12,7 +12,7 @@
   import AttachmentManager from './AttachmentManager.svelte'; 
   import ItemManager from './ItemManager.svelte';
   import PageManager from './PageManager.svelte';
-  import PlaytestArea from './PlaytestArea.svelte';
+  import PlayerContainer from '../../player/src/PlayerContainer.svelte';
 
   import WorkspaceFrame from './WorkspaceFrame.svelte';
   
@@ -53,20 +53,6 @@
   }
 
   let playerId;
-  
-  /*const clearPlayerId = async (id)=> {
-    if(id == playerId) {
-      playerNodeId = null;
-      playerId = null; // set to null first so attached player resets
-      playerId = await refreshPlayerId();
-      registerPlayer(playerId);
-    }
-  }
-
-  const resetPlayer = async ()=> {
-    clearPlayerId(playerId);
-  }*/
-
   let boards = [];
   let playerURL;
   let editMode = false;
@@ -165,9 +151,9 @@ function onReceive(input) {
   }
 
   onMount(async () => {
-    playerId = await findOrCreatePlayer();
-    await initSocket(playerId);
-    console.log("playerId set for project workspace", playerId);
+    //playerId = await findOrCreatePlayer();
+    //await initSocket(playerId);
+    //console.log("playerId set for project workspace", playerId);
     loadBoardList();
   });
 
@@ -240,7 +226,7 @@ function onReceive(input) {
     {#if tabNavigation == "players"}
       <PlayerMonitoring
         projectId={project._id}
-        {clearPlayerId}
+        dropConnectedPlayerId={()=>playerId = null}
         {playerId}
         close={closeTab}
       />
@@ -273,14 +259,13 @@ function onReceive(input) {
   </div>
 
   <div slot="playtest-area" class="h100">
-    <PlaytestArea
+    <PlayerContainer
       projectId={project._id}
-      bind:value={playerId}
-      {clearPlayerId}
-      {updatePlayerNodeId}
+      bind:playerId={playerId}
       {setEditNodeId}
+      authoring={true}
+      {updatePlayerNodeId}
       {googleReady}
-      {resetPlayer}
     />
   </div>
 

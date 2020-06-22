@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, logPlayerToProject } from '../../shared/util.js';
-  import { initSocket, getPlayerId, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId } from '../../shared/util.js';
+  import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
   import Map from './Map.svelte';
@@ -10,14 +10,16 @@
   import LockScreen from './LockScreen.svelte';
   import Menu from './Menu.svelte';
   import Alert from './Alert.svelte';
+  import DebugPanel from './DebugPanel.svelte';
   
   // the two main props that this comonent reacts on
-  export let projectId;
-  export let playerId;
+  export let projectId; 
+  // project is always set from outside
+  export let playerId = null; 
+  // playerId is normally managed here by playerContainer, but can optionally be set in authoring to attach different players
 
   // special props for using in authoring app
-  export let authoring;
-  export let togglePlayerInfo;
+  export let authoring = false;
   export let setEditNodeId;
   export let updatePlayerNodeId; // for tellig the authoring system when player has moved to new node
   export let googleReady;
@@ -39,6 +41,9 @@
   let loading = true;
   let fileServerURL = "";
   let menuOpen = false;
+  let debugPanelOpen = false;
+  let socketConnectionStatus = null;
+  const updateConnectionStatus = (s)=>socketConnectionStatus=s;
   
   const setLockScreen = ()=>showLockScreen=true;
 
@@ -159,6 +164,7 @@
   }
 
   const resetPlayerContainer = () => {
+    if(loading) return;
     resetPlayer();
     menuOpen = false;
     currentBoard = null;
@@ -166,9 +172,7 @@
   }
 
   const resetPlayer = async ()=> {
-    playerId = null; // set to null first so attached player resets
     playerId = await refreshPlayerId();
-    //setPlayerId(playerId);
     registerPlayer(playerId);
   }
 
@@ -200,20 +204,21 @@
   onMount(async () => {
     
     fileServerURL = await getConfig("fileServerURL");
-    loading = false;
-
+    
     playerId = await findOrCreatePlayer();
-    await initSocket(playerId);
+    await initSocket(playerId, updateConnectionStatus);
     //setPlayerId(playerId);
     
     doWhenConnected(()=>{
       initPlayerContainerSocket();  
     })
+
+    loading = false;
   });
 
   // this happens when player is switched or deleted in authoring
   $: {
-    console.log("playerContainer: playerId changed", playerId);
+    console.log("playerContainer: playerId or projectId changed", playerId, projectId);
     if(playerId) {
       loadMarkers();
 
@@ -221,6 +226,8 @@
         loadListedBoards();        
         checkForUnseenMessages();    
       } 
+    } else {
+      resetPlayerContainer();
     }
   }
 
@@ -277,7 +284,6 @@
           {mainView}
           {setEditNodeId}
           {authoring}
-          {togglePlayerInfo}
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
@@ -331,7 +337,18 @@
     {playerId}
     {resetPlayerContainer}
     onClose={()=>menuOpen=false}
+    toggelDebugPanel={()=>debugPanelOpen = true}
   />
+  {/if}
+
+  {#if debugPanelOpen && playerId}
+    <DebugPanel
+      {playerId}
+      {projectId}
+      {authoring}
+      {socketConnectionStatus}
+      close={()=>{menuOpen = false; debugPanelOpen = false}}
+    />
   {/if}
 
 {/if}

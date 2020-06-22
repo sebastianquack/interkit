@@ -23,7 +23,6 @@
   // optional props from authoring system
   export let authoring;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
-  export let togglePlayerInfo = (playerId)=>{};
   export let updatePlayerNodeId;  
 
   let currentNode = null; // this is the full object of the current node stored in playerodeId
@@ -415,7 +414,7 @@
 
 </script>
 
-<div class="chat {authoring ? 'chat-authoring' : 'chat-player'}">
+<div class="chat">
 
     <div class="scrollable" bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
@@ -455,18 +454,18 @@
       addItem={(i)=>chatItems = chatItems.concat({...i})}
       clearInput={()=>inputValue = ""}
     />
+
+    {#if authoring}
+      <div class="authoring-tools">
+        <div class="chat-debug">{currentNode ? currentNode.name : ""}</div>
+        <div class="author-buttons">
+          <!--button on:click={reEnter}>clear & re-enter</button-->
+          <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
+        </div>
+      </div>
+    {/if}
   
 </div>
-
-{#if authoring}
-  <div class="chat-debug">{currentNode ? currentNode.name : ""}</div>
-  <div class="author-buttons">
-    <!--button on:click={reEnter}>clear & re-enter</button-->
-    <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
-    <button on:click={()=>togglePlayerInfo(playerId)}>player info</button>
-  </div>
-{/if}
-
 
 <style>
   button:hover {
@@ -478,13 +477,6 @@
     top: 0;
     left: 0;
     right: 0;
-  }
-
-  .chat-authoring {
-    bottom: 50px;
-  }
-
-  .chat-player {
     bottom: 0;
   }
 
@@ -535,18 +527,17 @@
     position: relative;
   }
 
-  .chat-debug {
+  .authoring-tools {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    font-size: 10px;
+    right: 5px;
+    bottom: 60px;
+    border: 1px dotted gray;
+    padding: 5px;
+    font-size: 75%;
   }
 
-  .author-buttons {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: auto;
+  .authoring-tools button {
     margin-bottom: 0px;
   }
+
 </style>
