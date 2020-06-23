@@ -197,7 +197,7 @@
         {#each projects as project}
           <li>
             {project.name}
-            <button on:click={()=>{editProject = project;}}>✎</button>
+            <button on:click={()=>{editProject = project;}}>⚙</button>
             <button on:click={()=>{push('/'+project._id)}}>open project</button>
             <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
         {/each}
