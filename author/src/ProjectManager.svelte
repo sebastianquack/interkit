@@ -6,6 +6,8 @@
 
   import { onMount } from 'svelte';
   import { push, replace } from 'svelte-spa-router';
+  import dateFormat from 'dateformat';
+  import slugify from 'slugify';
 
   import ProjectWorkspace from './ProjectWorkspace.svelte';
   import { getConfig } from '../../shared/util.js';
@@ -112,6 +114,31 @@
     }
     loadProjectList();
     editProject = null;
+  }
+
+  const makeFilename = (prefix="export", hostname="unknownorigin", extension = ".json") => {
+    const date = dateFormat(new Date(), "yyyy-mm-dd-HH-MM")
+    const filename = [prefix, hostname, date].join("_") + extension
+    return filename
+  }
+
+  const exportProject = async event => {
+    // get download token
+    const res = await fetch("/api/downloadToken", {
+      headers: {'authorization': $token},
+    });
+    let json = await res.json();
+    const downloadToken = json.downloadToken;
+    // generate download url
+    var url = "/api/export?downloadToken=" + downloadToken + "&projectId=" + editProject._id
+    // create dummy <a> to trigger download
+    const elem = event.target
+    const child = document.createElement('a')
+    child.style.display = 'none'
+    elem.parentNode.appendChild(child)
+    child.setAttribute('href', url);
+    child.setAttribute('download', makeFilename(`interkit-project-${slugify(editProject.name)}`, slugify(json.hostname)));
+    child.click()
   }
 
   const addEditor = async ()=> {
@@ -225,6 +252,11 @@
         <button on:click={addEditor}>add editor</button>
       {/if}
       
+      <h3>Import/Export</h3>
+      <button on:click={exportProject}>
+        export "{editProject.name}"
+        
+      </button>
 
     {/if}
 

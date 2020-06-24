@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "codemirror": "^5.49.2",
+    "dateformat": "^3.0.3",
+    "slugify": "^1.4.2",
     "socket.io-client": "^2.3.0",
     "svelte-spa-router": "^2.2.0"
   }
