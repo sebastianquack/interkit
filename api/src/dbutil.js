@@ -1,6 +1,7 @@
 let mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
 const Moment = require('moment')
+const dateFormat = require('dateformat');
 
 const Log = RestHapi.getLogger('socket');
 Log.logLevel = 'WARNING';
@@ -363,6 +364,136 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
   return deliveredMesssages;
 }
 
+// get project and all it's associated documents
+exports.getAllOfProject = async function (projectId) {
+  const Project = mongoose.model("project");
+  const Board = mongoose.model("board");
+  const ScriptNode = mongoose.model("scriptNode");
+  const Item = mongoose.model("item");
+  const Page = mongoose.model("page");
 
+  const project = await Project.findOne({_id: projectId})
+  const boards = await Board.find({project: projectId});
+  const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } });
+  const items = await Item.find({project: projectId});
+  const pages = await Page.find({project: projectId});
 
+  return {
+    project,
+    boards,
+    scriptNodes,
+    items,
+    pages,
+    // TODO attachments
+  }  
+}
 
+// rewrite all _ids, also in (internal) references. this methods relies on the uniqueness of mongoose objectIds
+const duplicateProjectData = async function (projectData, newProjectName) {
+  let {
+    project,
+    boards,
+    scriptNodes,
+    items,
+    pages,
+    // TODO attachments
+  } = projectData
+
+  // helper function [ { _id: 1 }, { _id: 2 } ] => { '1': 3, '2': 4 }
+  const generateIdMappings = obj => obj
+    .map(i => ({[i._id]: mongoose.Types.ObjectId() }))
+    .reduce(((r, c) => Object.assign(r, c)), {})
+
+  // create a pool of objectIds mappings old -> new
+  const _idMappings = {
+    ...generateIdMappings([project]),
+    ...generateIdMappings(boards),
+    ...generateIdMappings(scriptNodes),
+    ...generateIdMappings(items),
+    ...generateIdMappings(pages),
+  }
+  
+  // function to translate a key according to mappings
+  const translateKeys = (objects, key) =>
+    objects.map(obj => ({...obj, [key]: _idMappings[obj[key]] }))
+
+  // BEGIN DO translations -> mutate data
+
+  // translate project
+  project = translateKeys([project], "_id")[0]
+  project.name = newProjectName || `${project.name} (duplicated ${dateFormat(new Date(), "yyyy-mm-dd-HH-MM-ss")})`
+
+  // translate boards
+  boards = translateKeys(boards, "_id")
+  boards = translateKeys(boards, "project")
+  boards = translateKeys(boards, "startingNode")
+  //boards = boards.map(b => ({...b, name: parseInt(1000*Math.random())}))
+
+  // translate scriptNodes
+  scriptNodes = translateKeys(scriptNodes, "_id")
+  scriptNodes = translateKeys(scriptNodes, "board")
+  scriptNodes = scriptNodes.map(s => ({
+    ...s,
+    connectionIds: s.connectionIds.map(_id => _idMappings[_id])
+  }))  
+
+  // translate items
+  items = translateKeys(items, "_id")
+  items = translateKeys(items, "project")
+
+  // translate pages
+  pages = translateKeys(pages, "_id")
+  pages = translateKeys(pages, "project")
+
+  // END translations -> mutation complete
+
+  const result = {
+    project,
+    boards,
+    scriptNodes,
+    items,
+    pages,
+  }
+
+  //console.log("result", result)
+
+  return result
+
+}
+
+exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
+
+  //console.log("original", projectData)
+  //console.log("duplicate", await duplicateProjectData(projectData, newProjectName))
+
+  const {
+    project,
+    boards,
+    scriptNodes,
+    items,
+    pages,
+    // TODO attachments
+  } = await duplicateProjectData(projectData, newProjectName)
+
+  const Project = mongoose.model("project");
+  const Board = mongoose.model("board");
+  const ScriptNode = mongoose.model("scriptNode");
+  const Item = mongoose.model("item");
+  const Page = mongoose.model("page");
+
+  const errorReport = function(error, docs) { console.log(error, docs)}
+
+  //console.log(project)
+
+  await Project.insertMany([project], errorReport);
+  await Board.insertMany(boards, errorReport, {ordered: false});
+  await ScriptNode.insertMany(scriptNodes, errorReport);
+  await Item.insertMany(items, errorReport);
+  await Page.insertMany(pages, errorReport);
+
+}
+
+exports.duplicateProject = async function (projectId) {
+  const projectData = await getAllOfProject(projectId)
+  insertProjectAsDuplicate(projectData)
+}

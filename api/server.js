@@ -86,6 +86,20 @@ async function api() {
     });
 
     server.route({
+      method: 'GET',
+      path: '/tmp/{param*}',
+      handler: {
+          directory: {
+              path: './tmp',
+              redirectToSlash: true
+          }
+      },
+      options: {
+        auth: false
+      }
+  });
+
+    server.route({
         method: 'GET',
         path: '/{param*}',
         handler: {
@@ -139,6 +153,12 @@ async function api() {
       Log.log('seeding admin user')
       RestHapi.create(userModel, {username: "admin", password: process.env.ADMIN_PASSWORD}, Log)  
     }
+
+    // remove leftover "name" index on boards, because it throws when inserting duplicated boards with different _id but same name
+    const boardCollection = mongoose.model("board").collection
+    try {
+      await boardCollection.dropIndex( "name_1" );
+    } catch(e) {}
 
     // seed config entries
     db.seedConfig("fileServerURL", process.env.AWSEndpoint + "/" + process.env.Bucket + "/");

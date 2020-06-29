@@ -6,8 +6,6 @@
 
   import { onMount } from 'svelte';
   import { push, replace } from 'svelte-spa-router';
-  import dateFormat from 'dateformat';
-  import slugify from 'slugify';
 
   import ProjectWorkspace from './ProjectWorkspace.svelte';
   import { getConfig } from '../../shared/util.js';
@@ -23,6 +21,7 @@
 
   let playerURL;
   let newEditor = "";
+  let uploadProgress = null;
 
   let googleReady = false;
 
@@ -116,29 +115,52 @@
     editProject = null;
   }
 
-  const makeFilename = (prefix="export", hostname="unknownorigin", extension = ".json") => {
-    const date = dateFormat(new Date(), "yyyy-mm-dd-HH-MM")
-    const filename = [prefix, hostname, date].join("_") + extension
-    return filename
-  }
-
   const exportProject = async event => {
-    // get download token
-    const res = await fetch("/api/downloadToken", {
+    // trigger export and get download url and filename
+    const res = await fetch("/api/export?projectId=" + editProject._id, {
       headers: {'authorization': $token},
     });
-    let json = await res.json();
-    const downloadToken = json.downloadToken;
-    // generate download url
-    var url = "/api/export?downloadToken=" + downloadToken + "&projectId=" + editProject._id
+    const {downloadUrl, filename} =  await res.json();
     // create dummy <a> to trigger download
     const elem = event.target
     const child = document.createElement('a')
+    child.textContent = "download"
     child.style.display = 'none'
     elem.parentNode.appendChild(child)
-    child.setAttribute('href', url);
-    child.setAttribute('download', makeFilename(`interkit-project-${slugify(editProject.name)}`, slugify(json.hostname)));
+    child.setAttribute('href', downloadUrl);
+    child.setAttribute('download', filename);
     child.click()
+  }
+    
+  const handleFilesSubmit = async event => {
+    event.preventDefault();
+    const file = event.target.files[0]
+    console.log(file)
+
+    var xhr = new XMLHttpRequest(); 
+    xhr.onload = (evt) => {
+      event.target.value = null;
+      uploadProgress = null
+      loadProjectList(); 
+    }
+    xhr.onprogress = (evt) => {
+      uploadProgress = 100 * evt.loaded / evt.total
+    }
+    xhr.onerror = function () {
+      alert("import error. sorry.")
+    }
+
+    const res = await fetch("/api/uploadToken", {
+      headers: {'authorization': $token},
+    });
+    let json = await res.json();
+    const uploadToken = json.uploadToken;
+    // generate download url
+    var url = "/api/export?uploadToken=" + uploadToken
+
+    xhr.open('PUT', url, true);
+    uploadProgress = 0
+    xhr.send(file); 
   }
 
   const addEditor = async ()=> {
@@ -233,6 +255,11 @@
         
       <button on:click={addProject}>new</button>
 
+      <br />
+      Import Project:
+      <input type="file" on:change={handleFilesSubmit}/>
+      <span>{uploadProgress}%</span>
+
     {:else}
 
       <button on:click={()=>{editProject = null}}>back</button>
@@ -252,10 +279,9 @@
         <button on:click={addEditor}>add editor</button>
       {/if}
       
-      <h3>Import/Export</h3>
+      <h3>Export</h3>
       <button on:click={exportProject}>
         export "{editProject.name}"
-        
       </button>
 
     {/if}
