@@ -28,7 +28,7 @@ cd -
 
 3. run api (and keep running)
 ```sh
-cd api && npm start
+cd api && npm run dev
 ```
 
 4. run author

@@ -21,6 +21,7 @@
 
   let playerURL;
   let newEditor = "";
+  let uploadProgress = null;
 
   let googleReady = false;
 
@@ -114,6 +115,54 @@
     editProject = null;
   }
 
+  const exportProject = async event => {
+    // trigger export and get download url and filename
+    const res = await fetch("/api/export?projectId=" + editProject._id, {
+      headers: {'authorization': $token},
+    });
+    const {downloadUrl, filename} =  await res.json();
+    // create dummy <a> to trigger download
+    const elem = event.target
+    const child = document.createElement('a')
+    child.textContent = "download"
+    child.style.display = 'none'
+    elem.parentNode.appendChild(child)
+    child.setAttribute('href', downloadUrl);
+    child.setAttribute('download', filename);
+    child.click()
+  }
+    
+  const handleFilesSubmit = async event => {
+    event.preventDefault();
+    const file = event.target.files[0]
+    console.log(file)
+
+    var xhr = new XMLHttpRequest(); 
+    xhr.onload = (evt) => {
+      event.target.value = null;
+      uploadProgress = null
+      loadProjectList(); 
+    }
+    xhr.onprogress = (evt) => {
+      uploadProgress = 100 * evt.loaded / evt.total
+    }
+    xhr.onerror = function () {
+      alert("import error. sorry.")
+    }
+
+    const res = await fetch("/api/uploadToken", {
+      headers: {'authorization': $token},
+    });
+    let json = await res.json();
+    const uploadToken = json.uploadToken;
+    // generate download url
+    var url = "/api/export?uploadToken=" + uploadToken
+
+    xhr.open('PUT', url, true);
+    uploadProgress = 0
+    xhr.send(file); 
+  }
+
   const addEditor = async ()=> {
     console.log(newEditor);
 
@@ -197,7 +246,7 @@
         {#each projects as project}
           <li>
             {project.name}
-            <button on:click={()=>{editProject = project;}}>✎</button>
+            <button on:click={()=>{editProject = project;}}>⚙</button>
             <button on:click={()=>{push('/'+project._id)}}>open project</button>
             <!--a target="_blank" href="{playerURL}?project={project._id}">project link</a-->
         {/each}
@@ -205,6 +254,11 @@
       {/if}
         
       <button on:click={addProject}>new</button>
+
+      <br />
+      Import Project:
+      <input type="file" on:change={handleFilesSubmit}/>
+      <span>{uploadProgress}%</span>
 
     {:else}
 
@@ -225,6 +279,10 @@
         <button on:click={addEditor}>add editor</button>
       {/if}
       
+      <h3>Export</h3>
+      <button on:click={exportProject}>
+        export "{editProject.name}"
+      </button>
 
     {/if}
 

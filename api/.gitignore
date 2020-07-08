@@ -10,3 +10,9 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# temporary directories
+public/tmp
+public/author
+public/player
+public/admin
