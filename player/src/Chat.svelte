@@ -19,6 +19,8 @@
   export let showLockScreen; 
   export let setLockScreen = ()=>{};
   export let displayAlert;
+  export let openChatView; // opens chat view (if in map or archive)
+  export let openBoardFromNodeId; // changes currentBoard
 
   // optional props from authoring system
   export let authoring;
@@ -162,19 +164,31 @@
   const handleMessage = async (message) => {
     console.log("handling message", message);
 
+    // sanitise message to become a chat item
     let item = {...message};
     if(!item.attachment) item.attachment = {};
     if(!item.params) item.params = {};
 
-    // if this comes from a different board, show notification, don't add message to this board
-    if(currentBoard._id != message.board) {
-        console.log("warning, message is from a different board", item)
-        if(!item.params.interfaceCommand) {
+    // message comes from a different board
+    if(currentBoard._id != item.board) {
+        console.log("warning, message is from a different board")
+
+        if(item.forceOpen) {
+          openBoardFromNodeId(item.node)
+        }
+
+        // notification
+        if(!item.params.interfaceCommand && !item.forceOpen) {
           console.log("displaying as notification")
-          setNotificationItem(message);
+          setNotificationItem(item);
           setLockScreen();
           return;
         }
+    }
+
+    // switch player to chat view of foreOpen is set
+    if(item.forceOpen && mainView != "chat") {
+      openChatView();
     }
 
     //if this comes from a different node on the same board, quietly switch to that node

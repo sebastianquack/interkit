@@ -115,9 +115,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         text: (message, options={}) => { result.outputs.push({
           message, 
           label: options.label ? options.label : varCache.board.narrator, 
-          system: options.system ? true : false,
           to: options.to ? options.to : "sender",
+          system: options.system ? true : false,
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })}, 
 
         system: (message, options={}) => { result.outputs.push({
@@ -125,6 +126,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: true,
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })}, 
 
         option: (message, options={}) => { result.outputs.push({
@@ -135,6 +137,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           },
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })},       
         
         image: (filename, options={}) => { result.outputs.push({
@@ -146,6 +149,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             label: options.label ? options.label : varCache.board.narrator,
             to: options.to ? options.to : "sender",
             delay: options.delay ? options.delay : null,
+            forceOpen: options.forceOpen
         })},
 
         audio: (filename, options={}) => { result.outputs.push({
@@ -153,6 +157,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })},  
       },
 

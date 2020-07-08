@@ -276,6 +276,7 @@
           {playerId}
           {projectId}
           {currentBoard}
+          {openBoardFromNodeId}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
           {setNotificationItem}
@@ -287,6 +288,7 @@
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
+          openChatView={()=>{openChat(); itemModal = null}}
         />
       {/if}
   </div>
