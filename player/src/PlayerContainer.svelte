@@ -209,6 +209,55 @@
     initPlayerContainerSocket();
   }
 
+  // respond to button presse in menu, modals and archive 
+  const handleButton = async (button, item) => {
+
+    console.log("handleButton", button);
+
+    let parts = button.node.split("/"); // button.node is in format "boardName/nodeName"
+    if(!parts.length == 2) {
+      console.log("handleButton called with bad format", boardAndNode);
+      return;
+    }
+
+    let boardRes = await fetch("/api/board?key=" + parts[0] + "&project=" + projectId);
+    let boardJSON = await boardRes.json();
+
+    if(boardJSON.docs.length != 1) {
+      console.log("board not found", parts[0])
+      return;
+    }
+
+    let nodeRes = await fetch("/api/scriptNode?name=" + parts[1] + "&board=" + boardJSON.docs[0]._id)
+    let nodeJSON = await nodeRes.json();
+
+    if(nodeJSON.docs.length != 1) return;
+
+    console.log("node found", nodeJSON);
+    
+    //joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
+    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
+      method: "POST", 
+      body: JSON.stringify({item, button})
+    });
+    let resJSON = await res.json();
+    console.log(resJSON);
+    if(!resJSON.status == "ok") {
+      alert("error moving player");
+    }
+  
+  }
+
+  // proces clicks from menu pages and archive
+  const handleHtmlClicks = (event, from) => {
+    console.log(event.target);
+    let node = event.target.getAttribute('data-node');
+    if(node) {
+      console.log("handling button press at node " + node)
+      handleButton({node}, from)
+    }
+  }
+
   // reactive & lifecycle calls
 
 
@@ -317,6 +366,9 @@
     visible={true}
     items={documentItems}
     {setItemModal}
+    {projectId}
+    {playerId}
+    {handleHtmlClicks}
   />
   {/if}
 
@@ -328,6 +380,7 @@
       item={itemModal}
       {fileServerURL}
       onClose={() => itemModal = null}
+      {handleButton}
     />
   {/if}
 
@@ -357,6 +410,7 @@
     {resetPlayerContainer}
     onClose={()=>menuOpen=false}
     toggelDebugPanel={()=>debugPanelOpen = true}
+    {handleHtmlClicks}
   />
   {/if}
 
