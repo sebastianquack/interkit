@@ -5,8 +5,7 @@
   import { token } from './stores.js';
 
   export let projectId;
-  export let close;
-
+  
   let attachments = [];
   let fileServerURL;
   let loading = true;
@@ -57,7 +56,7 @@
 
 <div class="container">
 
-<h3>attachments<button on:click={close}>close</button></h3>
+<h3>attachments</h3>
 
 {#if !uploadProgress}
   <input type="file" bind:this={fileInput}>
@@ -94,11 +93,6 @@
 
 
 <style>
-
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   .container {
     position: absolute;

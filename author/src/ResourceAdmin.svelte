@@ -3,7 +3,6 @@
   import { token } from './stores.js';
 
   export let projectId;
-  export let close;
   export let resourceName;
   export let defaultValue;
   
@@ -87,8 +86,6 @@
 
 </script>
 
-<h3>{resourceName}<button on:click={close}>close</button></h3>
-
 {#if loading }
   <p> Loading ... </p>
 {:else}
@@ -120,10 +117,6 @@
 
 <style>
 
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   span.link {
     color: rgb(0,100,200);

@@ -8,7 +8,6 @@
   import ItemMap from './ItemMap.svelte';
 
   export let projectId;
-  export let close;
   export let playerId;
   export let googleReady;
 
@@ -173,7 +172,7 @@
 
 <div class="container">
 
-<h3>items<button on:click={close}>close</button></h3>
+<h3>items</h3>
 
 {#if editItem}
   
@@ -236,10 +235,6 @@
     margin-right: 5px;
   }
 
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   .container {
     position: absolute;
