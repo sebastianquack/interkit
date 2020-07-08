@@ -13,6 +13,3 @@ node_modules/
 
 # temporary directories
 public/tmp
-public/author
-public/player
-public/admin
