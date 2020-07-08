@@ -130,10 +130,13 @@
   }
 
   const openBoardFromNodeId = async (nodeId)=>{
+    showLockScreen = false; // hide lock screen when openening new board
+    itemModal = null;
+    mainView = "chat";
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
     currentBoard = nodeJson.board;
-    showLockScreen = false; // hide lock screen when openening new board
+    status = "board open"
   }
 
   const openBoardForMessage = async (boardId, nodeId)=>{
@@ -186,9 +189,16 @@
         chatMessageHandler(message);
       } else {
         console.log("player container: msg received but no chat message handler registered")
-        setNotificationItem({...message, side: "left"});
-        setLockScreen();
-        await checkForUnseenMessages();
+        if(!message.forceOpen) {
+          if(status != "opening board") {
+            setNotificationItem({...message, side: "left"});
+            setLockScreen();
+            await checkForUnseenMessages();
+          }
+        } else {
+          status = "opening board"
+          openBoardFromNodeId(message.node);
+        }
       }
     });
   }

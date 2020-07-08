@@ -43,7 +43,7 @@
   let fileServerURL;
 
   let messageQueue = []; // queue messages for sequencial processing if many come in fast via socket
-  
+  let status = "idle";
   
   // reactive & lifecycle methods
 
@@ -146,6 +146,9 @@
       }
 
     }
+
+    // we are ready receive messages
+    status = "ready"
   }
 
   const processQueue = async () => {
@@ -164,6 +167,11 @@
   const handleMessage = async (message) => {
     console.log("handling message", message);
 
+    if(status != "ready") {
+      console.log("we are not ready, cancelling")
+      return;
+    }
+
     // sanitise message to become a chat item
     let item = {...message};
     if(!item.attachment) item.attachment = {};
@@ -174,7 +182,11 @@
         console.log("warning, message is from a different board")
 
         if(item.forceOpen) {
+          console.log("openening different board, cancelling queue here")
           openBoardFromNodeId(item.node)
+          messageQueue = []; // remove items from queue, board reloads them anyway
+          status = "resetting"
+          return;
         }
 
         // notification

@@ -89,7 +89,8 @@ function onArrive(from) {
   from.button // the label of the button that if one was pressed
 }
 
-
+boards.list("boardName") // reveal unlisted board to player
+boards.unlist("boardName") // hide listed board
 
 // deprecated
 

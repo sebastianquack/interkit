@@ -73,6 +73,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
       player: {
         ...varCache.player,
+        id: playerId,
         set: function (key, value) { 
           this[key] = value;
           db.setVar("player", {player: playerId, project: project._id}, key, value); 
@@ -107,8 +108,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         },
       },
       boards: {
-        list: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, true),
-        unlist: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, false)
+        list: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, true),
+        unlist: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, false)
       },
       
       send: {

@@ -90,6 +90,8 @@
   <p> Loading ... </p>
 {:else}
 
+  <h3>{resourceName}s</h3>
+
   {#if editEntry}
     <slot name="editForm" editEntry={editEntry} {update}></slot>
 

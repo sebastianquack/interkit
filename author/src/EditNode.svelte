@@ -198,7 +198,7 @@
 
 {#if !editTitle}
   <div class="edit-headline">
-    <h2>{scriptNodeEdit.name}</h2>
+    <h2>{currentBoardData ? currentBoardData.key : ""}/{scriptNodeEdit.name}</h2>
     <button on:click="{()=>{editTitle=true}}">✎</button>
     <button on:click={()=>{doMoveTo(scriptNodeEdit._id)}}>move player here</button>
   </div>

@@ -15,8 +15,12 @@
   onMount(async ()=>{
     let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId)
     let json = await res.json();
-    if(json.docs) pages = json.docs;
+    if(json.docs) pages = json.docs;  
   })
+
+  const handleHtmlClicks = (event) => {
+    console.log(event.target.id)
+  }
   
 </script>
 
@@ -39,7 +43,9 @@
 
     <div class="page-container">
       <button class="close-button" on:click={()=>{currentPage=null; onClose()}}>{"close"}</button>    
-      {@html marked(currentPage.contentWithVars)}
+      <div on:click|stopPropagation={handleHtmlClicks}>
+        {@html currentPage.contentWithVars} <!-- {@ marked(currentPage.contentWithVars)} -->
+      </div>
     </div>
 
   {/if}

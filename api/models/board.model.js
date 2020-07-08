@@ -7,6 +7,10 @@ module.exports = function (mongoose) {
   let modelName = "board";
   let Types = mongoose.Schema.Types;
   let Schema = new mongoose.Schema({
+    key: {
+      type: Types.String,
+      required: true,
+    },
     name: {
       type: Types.String,
       required: true,

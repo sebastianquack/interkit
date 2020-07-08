@@ -66,7 +66,7 @@ const initMarkers = ()=>{
           color: "#000",
           fontFamily: "sans-serif",
           fontSize: "16px",
-          text: p.key,
+          text: p.value.name ? p.value.name : p.key,
         },
         map
       })

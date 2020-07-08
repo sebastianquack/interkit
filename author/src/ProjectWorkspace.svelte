@@ -69,6 +69,8 @@
   }
 
   const loadBoardData = async ()=>{
+    //editNodeId = null; todo: close board editor when board changes but ask first if unsaved changes!
+
     if(currentBoardId == "new") {
       createBoard();
       return;
@@ -92,6 +94,7 @@
   const createBoard = ()=>{
     let newBoard = {
       new: true,
+      key: "",
       name: "",
       scriptNodes: [],
       library: "",

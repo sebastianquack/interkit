@@ -19,7 +19,7 @@
       return;
     }
 
-    let boardRes = await fetch("/api/board?name=" + parts[0] + "&project=" + projectId);
+    let boardRes = await fetch("/api/board?key=" + parts[0] + "&project=" + projectId);
     let boardJSON = await boardRes.json();
 
     if(boardJSON.docs.length != 1) {

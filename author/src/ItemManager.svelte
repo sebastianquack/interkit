@@ -36,6 +36,7 @@
     defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     console.log(defaultPos);
     defaultValue = {
+      name: "name",
       description: "",
       image: null,
       sound: null,
@@ -201,7 +202,7 @@
       zoom={defaultZoom}
       {updateCoords}
       {googleReady} 
-      label={editItem.key}
+      label={parseItem().name}
     />
   {/if}
 

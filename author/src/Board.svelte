@@ -49,6 +49,7 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify([{
+          key: currentBoardData.key,
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
@@ -71,6 +72,7 @@
         },
         body: JSON.stringify({
           _id: currentBoardData._id,
+          key: currentBoardData.key,
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
@@ -106,6 +108,7 @@
     <div class="scroll">
 
     <h2>edit board <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button></h2>
+    <input bind:value={currentBoardData.key} type="text"/><br>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
@@ -130,7 +133,7 @@
     
       <div class="edit-headline">
         <h2>{currentBoardData.name} 
-          <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
+          <small>key: {currentBoardData.key}, default: {currentBoardData.listed ? "listed" : "unlisted"}</small>
         </h2>
         
         <p>{currentBoardData.description ? currentBoardData.description : ""}</p>

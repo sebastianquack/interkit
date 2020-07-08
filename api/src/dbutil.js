@@ -291,10 +291,10 @@ exports.getItemForPlayerByKey = asnyc (playerId, key) => {
 */
 
 
-exports.listBoardForPlayer = async (playerId, boardName, projectId, listed=true) => {
+exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) => {
 
   let boards = await RestHapi.list(RestHapi.models.board, {
-    name: boardName,
+    key: boardKey,
     project: projectId
   }, Log)
 
