@@ -133,6 +133,7 @@
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
     currentBoard = nodeJson.board;
+    showLockScreen = false; // hide lock screen when openening new board
   }
 
   const openBoardForMessage = async (boardId, nodeId)=>{
