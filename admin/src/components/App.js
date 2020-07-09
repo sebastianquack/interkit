@@ -51,6 +51,9 @@ const ConfigCreate = props => <Create {...props}>{ConfigForm}</Create>;
 const NodeForm = 
     <SimpleForm>
         <TextInput source="name" />
+        <ReferenceInput label="board" source="board" reference="board" perPage={200}>
+          <SelectInput optionText="name"/>
+        </ReferenceInput>
         <TextInput multiline source="script" />
     </SimpleForm>
 const NodeEdit = props => <Edit {...props}>{NodeForm}</Edit>;

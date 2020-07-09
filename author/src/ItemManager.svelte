@@ -145,7 +145,7 @@
     const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
         method: "PUT",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: itemId})
+        body: JSON.stringify({_id: playerId})
     });
     if(res.ok) {
       loadItems();
@@ -156,7 +156,7 @@
     const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
         method: "DELETE",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: itemId})
+        body: JSON.stringify({_id: playerId})
     });
     if(res.ok) {
       loadItems();
