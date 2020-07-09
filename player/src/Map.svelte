@@ -3,6 +3,8 @@
 import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
 import { getConfig } from '../../shared/util.js';
 
+import MarkerClusterer from '@google/markerclustererplus';
+
 const mapStyles = require('../../shared/GoogleMapStyles.json')
 
 export let visible;
@@ -15,6 +17,8 @@ let mapContainer;
 let markers = [];
 let userMarker;
 let fitBoundsDone = false;
+let latlngbounds;
+let markerCluster;
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
@@ -24,7 +28,7 @@ const initGoogleMap = async ()=>{
     console.log("defaultZoom", defaultZoom, typeof defaultZoom);
 
     map = new google.maps.Map(mapContainer, {
-      zoom: defaultZoom,
+      zoom: 5, //defaultZoom,
       center: defaultPos,
       streetViewControl: false, 
       fullscreenControl: false, 
@@ -35,7 +39,9 @@ const initGoogleMap = async ()=>{
 }
 
 const initMarkers = ()=>{
-    var latlngbounds = new google.maps.LatLngBounds();
+    console.log("initMarkers")
+    latlngbounds = new google.maps.LatLngBounds();
+    fitBoundsDone = false;
 
     markers.forEach((m)=>{
       m.setMap(null);
@@ -66,9 +72,9 @@ const initMarkers = ()=>{
           color: "#000",
           fontFamily: "sans-serif",
           fontSize: "16px",
-          text: p.key,
+          text: p.value.name ? p.value.name : p.key,
         },
-        map
+        //map
       })
         
       marker.addListener('click', ()=> {
@@ -76,28 +82,37 @@ const initMarkers = ()=>{
       });
 
       markers.push(marker)
-      latlngbounds.extend(placePosition);
+      latlngbounds.extend(placePosition);    
+    })
 
-    });
-    
-    if(!fitBoundsDone && markers.length > 1) {
-      map.fitBounds(latlngbounds);
-      fitBoundsDone = true;
-    }
+    console.log(markerItems);
 }
 
 afterUpdate(()=>{
-  //console.log("googleReady", googleReady);
+  console.log("afterUpdate", visible)
+
   if(!map && googleReady) {
     initGoogleMap();
   }
 
   if(map) {
-    //console.log("todo: compare marker items");
-    initMarkers();
+    if(markers.length != markerItems.length) {
+      initMarkers();
+    }
+  }
+
+  if(map && visible && !fitBoundsDone && markers.length > 1) {
+      console.log("doing fitbounds and clustering")
+      map.fitBounds(latlngbounds); // this doesn't work while map is still in display none
+      
+      markerCluster = new MarkerClusterer(map, markers, {
+        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+        minimumClusterSize: 2,  
+      });
+
+      fitBoundsDone = true;
   }
 })
-
 
 const getUserPosition = ()=> {
 
@@ -144,7 +159,7 @@ const getUserPosition = ()=> {
 
 </script>
 
-<div id="map-container" style="visibility: {visible ? 'visible' : 'hidden'}">     
+<div id="map-container" style="display: {visible ? 'block' : 'none'}">     
   <div id="map" bind:this={mapContainer}></div>
   <img id="locate-button" alt="locat button" src="locate.png" on:click={getUserPosition} />
 </div>

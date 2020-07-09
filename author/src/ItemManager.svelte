@@ -8,7 +8,6 @@
   import ItemMap from './ItemMap.svelte';
 
   export let projectId;
-  export let close;
   export let playerId;
   export let googleReady;
 
@@ -37,6 +36,7 @@
     defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     console.log(defaultPos);
     defaultValue = {
+      name: "name",
       description: "",
       image: null,
       sound: null,
@@ -142,10 +142,11 @@
   }
 
   const award = async (itemId) => {
-    const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
+    
+    const res = await fetch("/api/item/"+itemId+"/player/" + playerId, {
         method: "PUT",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: itemId})
+        body: JSON.stringify({})
     });
     if(res.ok) {
       loadItems();
@@ -153,10 +154,10 @@
   }
 
   const revoke = async (itemId) => {
-    const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
+    const res = await fetch("/api/item/"+itemId+"/player/" + playerId, {
         method: "DELETE",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: itemId})
+        body: JSON.stringify({})
     });
     if(res.ok) {
       loadItems();
@@ -164,7 +165,7 @@
   }
 
   const awarded = (item) => {
-    console.log(item.players);
+    //console.log(item.players);
     return item.players.filter((p)=>p.player && p.player._id == playerId).length >= 1; 
   }
 
@@ -173,7 +174,7 @@
 
 <div class="container">
 
-<h3>items<button on:click={close}>close</button></h3>
+<h3>items</h3>
 
 {#if editItem}
   
@@ -202,7 +203,7 @@
       zoom={defaultZoom}
       {updateCoords}
       {googleReady} 
-      label={editItem.key}
+      label={parseItem().name}
     />
   {/if}
 
@@ -236,10 +237,6 @@
     margin-right: 5px;
   }
 
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   .container {
     position: absolute;

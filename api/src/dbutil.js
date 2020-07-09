@@ -20,7 +20,7 @@ exports.seedConfig = async (key, value, type="text") => {
 const makeQuery = (scope, refs, key) => {
   let where = {
       key: key,
-      scope: scope,
+      varScope: scope,
       project: mongoose.Types.ObjectId(refs.project)
   };
   if(refs.player) where.player = mongoose.Types.ObjectId(refs.player);
@@ -43,9 +43,14 @@ exports.setVar = async (scope, refs, key, value) => {
   if(checkRefs(scope, refs)) {
 
     let where = makeQuery(scope, refs, key);
-    
+
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
+
+    if(typeof value == "string") where.varType = "string"
+    if(typeof value == "number") where.varType = "number"
+    if(typeof value == "object") where.varType = "object"
+    where.stringValue = null // overwrite pretty string presentation from manual editing in authoring
 
     // create
     if(variable.docs.length == 0) {
@@ -278,6 +283,17 @@ exports.getItemsForPlayer = async (playerId) => {
   return items.docs;
 }
 
+exports.getItemsQuery = async (project, query) => {
+
+  // mongo query to search inside nested document
+  //{ 'value.latIndex': 1000 } 
+
+  let items = await RestHapi.list(RestHapi.models.item, {...query, project}, Log);
+  console.log("retrieved items for player", playerId, items.docs);
+  return items.docs;
+
+}
+
 /*
 exports.getItemForPlayerByKey = asnyc (playerId, key) => {
   let item = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {key}, Log);
@@ -291,10 +307,10 @@ exports.getItemForPlayerByKey = asnyc (playerId, key) => {
 */
 
 
-exports.listBoardForPlayer = async (playerId, boardName, projectId, listed=true) => {
+exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) => {
 
   let boards = await RestHapi.list(RestHapi.models.board, {
-    name: boardName,
+    key: boardKey,
     project: projectId
   }, Log)
 
@@ -371,12 +387,14 @@ exports.getAllOfProject = async function (projectId) {
   const ScriptNode = mongoose.model("scriptNode");
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
+  const Variable = mongoose.model("variable");
 
   const project = await Project.findOne({_id: projectId})
   const boards = await Board.find({project: projectId});
   const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } });
   const items = await Item.find({project: projectId});
   const pages = await Page.find({project: projectId});
+  const variables = await Variable.find({project: projectId, varScope: "project"}); // for now get only project variables
 
   return {
     project,
@@ -384,6 +402,7 @@ exports.getAllOfProject = async function (projectId) {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   }  
 }
@@ -396,6 +415,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   } = projectData
 
@@ -411,6 +431,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     ...generateIdMappings(scriptNodes),
     ...generateIdMappings(items),
     ...generateIdMappings(pages),
+    ...generateIdMappings(variables),
   }
   
   // function to translate a key according to mappings
@@ -445,6 +466,9 @@ const duplicateProjectData = async function (projectData, newProjectName) {
   pages = translateKeys(pages, "_id")
   pages = translateKeys(pages, "project")
 
+  variables = translateKeys(variables, "_id")
+  variables = translateKeys(variables, "project")
+
   // END translations -> mutation complete
 
   const result = {
@@ -453,6 +477,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     scriptNodes,
     items,
     pages,
+    variables,
   }
 
   //console.log("result", result)
@@ -472,6 +497,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   } = await duplicateProjectData(projectData, newProjectName)
 
@@ -480,6 +506,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   const ScriptNode = mongoose.model("scriptNode");
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
+  const Variable = mongoose.model("variable");
 
   const errorReport = function(error, docs) { console.log(error, docs)}
 
@@ -490,6 +517,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   await ScriptNode.insertMany(scriptNodes, errorReport);
   await Item.insertMany(items, errorReport);
   await Page.insertMany(pages, errorReport);
+  await Variable.insertMany(variables, errorReport);
 
 }
 

@@ -19,6 +19,8 @@
   export let showLockScreen; 
   export let setLockScreen = ()=>{};
   export let displayAlert;
+  export let openChatView; // opens chat view (if in map or archive)
+  export let openBoardFromNodeId; // changes currentBoard
 
   // optional props from authoring system
   export let authoring;
@@ -41,7 +43,7 @@
   let fileServerURL;
 
   let messageQueue = []; // queue messages for sequencial processing if many come in fast via socket
-  
+  let status = "idle";
   
   // reactive & lifecycle methods
 
@@ -82,8 +84,8 @@
 
   const init = async ()=> {
     console.log("chat init method");
-    console.log("playerId", playerId);
-    console.log("currentBoard", currentBoard);
+    //console.log("playerId", playerId);
+    //console.log("currentBoard", currentBoard);
   
     let nodeId = currentBoard.startingNode;       
 
@@ -144,6 +146,9 @@
       }
 
     }
+
+    // we are ready receive messages
+    status = "ready"
   }
 
   const processQueue = async () => {
@@ -162,19 +167,40 @@
   const handleMessage = async (message) => {
     console.log("handling message", message);
 
+    if(status != "ready") {
+      console.log("we are not ready, cancelling")
+      return;
+    }
+
+    // sanitise message to become a chat item
     let item = {...message};
     if(!item.attachment) item.attachment = {};
     if(!item.params) item.params = {};
 
-    // if this comes from a different board, show notification, don't add message to this board
-    if(currentBoard._id != message.board) {
-        console.log("warning, message is from a different board", item)
-        if(!item.params.interfaceCommand) {
+    // message comes from a different board
+    if(currentBoard._id != item.board) {
+        console.log("warning, message is from a different board")
+
+        if(item.forceOpen) {
+          console.log("openening different board, cancelling queue here")
+          openBoardFromNodeId(item.node)
+          messageQueue = []; // remove items from queue, board reloads them anyway
+          status = "resetting"
+          return;
+        }
+
+        // notification
+        if(!item.params.interfaceCommand && !item.forceOpen) {
           console.log("displaying as notification")
-          setNotificationItem(message);
+          setNotificationItem(item);
           setLockScreen();
           return;
         }
+    }
+
+    // switch player to chat view of foreOpen is set
+    if(item.forceOpen && mainView != "chat") {
+      openChatView();
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
@@ -265,7 +291,7 @@
     console.log("loading currentNode");
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentNode = await response.json();
-    console.log("currentNode set to", currentNode);
+    //console.log("currentNode set to", currentNode);
     if(!currentNode) {
       alert("currentNode " + currentNode)
     }

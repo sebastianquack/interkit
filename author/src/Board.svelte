@@ -27,6 +27,9 @@
 
   let editMode;
 
+
+  let changed = false;
+
   $: {
     if(currentBoardId && currentBoardData && currentBoardData.expired)
      loadBoardData();
@@ -49,6 +52,7 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify([{
+          key: currentBoardData.key,
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
@@ -71,6 +75,7 @@
         },
         body: JSON.stringify({
           _id: currentBoardData._id,
+          key: currentBoardData.key,
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
@@ -83,7 +88,8 @@
         console.log(json);
         json.scriptNodes = currentBoardData.scriptNodes;
         setCurrentBoardData(json);
-        editMode = false;
+        //editMode = false;
+        changed = false;
       }
     }
 
@@ -106,12 +112,16 @@
     <div class="scroll">
 
     <h2>edit board <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button></h2>
+    <input bind:value={currentBoardData.key} type="text"/><br>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
-    <CodeEditor bind:code={currentBoardData.library}></CodeEditor><br>
-    <button on:click={saveBoard}>save</button>
+    <CodeEditor bind:code={currentBoardData.library} on:change={()=>changed=true}></CodeEditor><br>
+    {#if changed}
+      <button on:click={saveBoard}>save</button>
+    {/if}
+    <button on:click={()=>editMode=false}>close</button>
     <br>
 
     {#if !currentBoardData.new}
@@ -130,7 +140,7 @@
     
       <div class="edit-headline">
         <h2>{currentBoardData.name} 
-          <small>{currentBoardData.listed ? "listed" : "unlisted"}</small>
+          <small>key: {currentBoardData.key}, default: {currentBoardData.listed ? "listed" : "unlisted"}</small>
         </h2>
         
         <p>{currentBoardData.description ? currentBoardData.description : ""}</p>

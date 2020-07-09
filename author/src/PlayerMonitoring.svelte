@@ -3,7 +3,6 @@
 import { token } from './stores.js';  
 
 export let projectId;
-export let close;
 export let playerId;
 export let dropConnectedPlayerId;
 
@@ -39,7 +38,7 @@ const deletePlayer = async(id)=>{
 
 <div class="scroll-container">
 
-<h3>active players <button on:click={loadPlayers}>reload</button> <button on:click={close}>close</button></h3> 
+<h3>active players <button on:click={loadPlayers}>reload</button></h3> 
 
 <!--ul>
   {#each nodeLogs as nl}
@@ -57,11 +56,6 @@ const deletePlayer = async(id)=>{
 
 
 <style>
-
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   .scroll-container {
     position: absolute;

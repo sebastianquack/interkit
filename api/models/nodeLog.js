@@ -80,10 +80,12 @@ function getHistory(server, model, options, logger) {
       let groupedNodeLogs = {};
       let result = await model.find({ player: playerId }).sort('-timestamp').populate('node', 'name').populate('board', 'name');
       result.forEach((entry)=>{
-        if(!groupedNodeLogs[entry.board._id]) {
-          groupedNodeLogs[entry.board._id] = [entry]
-        } else {
-          groupedNodeLogs[entry.board._id].push([entry]);
+        if(entry.board) {
+          if(!groupedNodeLogs[entry.board._id]) {
+            groupedNodeLogs[entry.board._id] = [entry]
+          } else {
+            groupedNodeLogs[entry.board._id].push([entry]);
+          }
         }
       });
       console.log(groupedNodeLogs);

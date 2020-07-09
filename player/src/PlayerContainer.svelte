@@ -38,6 +38,7 @@
   let showLockScreen = false;
   let notificationItem = null;
   
+  let archiveButtonLabel = null;
   let loading = true;
   let fileServerURL = "";
   let menuOpen = false;
@@ -74,7 +75,7 @@
     boards = json.docs.map(log=>log.board).filter(b=>b); 
   
     if(boards.length == 1) {
-      console.log("project has only 1 listed board, using that", boards[0]);
+      console.log("project has only 1 listed board, using that", boards[0].name);
       currentBoard = boards[0];
     } 
   }
@@ -105,6 +106,8 @@
     map.setZoom(17);
   }
 
+  // is called every time whe look at the map
+  // todo: optimize for when we have many markers - only receive updated markers and keep old ones
   const loadMarkers = async () => {
     let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
@@ -130,9 +133,13 @@
   }
 
   const openBoardFromNodeId = async (nodeId)=>{
+    showLockScreen = false; // hide lock screen when openening new board
+    itemModal = null;
+    mainView = "chat";
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
     currentBoard = nodeJson.board;
+    status = "board open"
   }
 
   const openBoardForMessage = async (boardId, nodeId)=>{
@@ -185,9 +192,16 @@
         chatMessageHandler(message);
       } else {
         console.log("player container: msg received but no chat message handler registered")
-        setNotificationItem({...message, side: "left"});
-        setLockScreen();
-        await checkForUnseenMessages();
+        if(!message.forceOpen) {
+          if(status != "opening board") {
+            setNotificationItem({...message, side: "left"});
+            setLockScreen();
+            await checkForUnseenMessages();
+          }
+        } else {
+          status = "opening board"
+          openBoardFromNodeId(message.node);
+        }
       }
     });
   }
@@ -196,6 +210,55 @@
     console.log("registerMessageHandler", handler);
     chatMessageHandler = handler
     initPlayerContainerSocket();
+  }
+
+  // respond to button presse in menu, modals and archive 
+  const handleButton = async (button, item) => {
+
+    console.log("handleButton", button);
+
+    let parts = button.node.split("/"); // button.node is in format "boardName/nodeName"
+    if(!parts.length == 2) {
+      console.log("handleButton called with bad format", boardAndNode);
+      return;
+    }
+
+    let boardRes = await fetch("/api/board?key=" + parts[0] + "&project=" + projectId);
+    let boardJSON = await boardRes.json();
+
+    if(boardJSON.docs.length != 1) {
+      console.log("board not found", parts[0])
+      return;
+    }
+
+    let nodeRes = await fetch("/api/scriptNode?name=" + parts[1] + "&board=" + boardJSON.docs[0]._id)
+    let nodeJSON = await nodeRes.json();
+
+    if(nodeJSON.docs.length != 1) return;
+
+    console.log("node found", nodeJSON);
+    
+    //joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
+    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
+      method: "POST", 
+      body: JSON.stringify({item, button})
+    });
+    let resJSON = await res.json();
+    console.log(resJSON);
+    if(!resJSON.status == "ok") {
+      alert("error moving player");
+    }
+  
+  }
+
+  // proces clicks from menu pages and archive
+  const handleHtmlClicks = (event, from) => {
+    console.log(event.target);
+    let node = event.target.getAttribute('data-node');
+    if(node) {
+      console.log("handling button press at node " + node)
+      handleButton({node}, from)
+    }
   }
 
   // reactive & lifecycle calls
@@ -212,6 +275,13 @@
     doWhenConnected(()=>{
       initPlayerContainerSocket();  
     })
+
+    let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId + "&key=archive")
+    let pages = await res.json();
+    console.log(pages)
+    if(pages)
+      if(pages.docs.length)
+        archiveButtonLabel = pages.docs[0].menuEntry
 
     loading = false;
   });
@@ -254,7 +324,9 @@
     {/if}
     <div class="menu-buttons-right">
       <button disabled={mainView == "chat"} on:click={openChat}>chat</button>
-      <button disabled={mainView == "archive"} on:click={openArchive}>archive</button>
+      {#if archiveButtonLabel}
+        <button disabled={mainView == "archive"} on:click={openArchive}>{archiveButtonLabel}</button>
+      {/if}
       <button disabled={mainView == "map"} on:click={openMap}>map</button>
     </div>
   </div>
@@ -276,6 +348,7 @@
           {playerId}
           {projectId}
           {currentBoard}
+          {openBoardFromNodeId}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
           {setNotificationItem}
@@ -287,6 +360,7 @@
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
+          openChatView={()=>{openChat(); itemModal = null}}
         />
       {/if}
   </div>
@@ -304,17 +378,19 @@
     visible={true}
     items={documentItems}
     {setItemModal}
+    {projectId}
+    {playerId}
+    {handleHtmlClicks}
   />
   {/if}
 
   {#if itemModal}
     <Modal
-      {projectId}
-      {playerId}
       visible={true}
       item={itemModal}
       {fileServerURL}
       onClose={() => itemModal = null}
+      {handleButton}
     />
   {/if}
 
@@ -344,6 +420,7 @@
     {resetPlayerContainer}
     onClose={()=>menuOpen=false}
     toggelDebugPanel={()=>debugPanelOpen = true}
+    {handleHtmlClicks}
   />
   {/if}
 

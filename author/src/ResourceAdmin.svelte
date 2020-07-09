@@ -3,13 +3,14 @@
   import { token } from './stores.js';
 
   export let projectId;
-  export let close;
   export let resourceName;
   export let defaultValue;
   
   let loading = true;
   let entries = [];
   let editEntry = null;
+
+  let changed = false;
   
   const loadEntries = async () => {
     let result = await fetch(`/api/${resourceName}?project=` + projectId);
@@ -62,8 +63,9 @@
       });
     }
     if(response.ok) {
-      editEntry = null;
-      loadEntries();
+      //editEntry = null;
+      changed = false;
+      //loadEntries();
     }
   }
 
@@ -83,21 +85,22 @@
   const update = (item, prop, value) => {
     editEntry[prop] = value;
     editEntry = editEntry; // force an update
+    changed = true;
   }
 
 </script>
-
-<h3>{resourceName}<button on:click={close}>close</button></h3>
 
 {#if loading }
   <p> Loading ... </p>
 {:else}
 
+  <h3>{resourceName}s</h3>
+
   {#if editEntry}
     <slot name="editForm" editEntry={editEntry} {update}></slot>
 
-    <button on:click={saveEntry}>save</button>
-    <button on:click={()=>editEntry = null}>cancel</button>
+    {#if changed}<button on:click={saveEntry}>save</button>{/if}
+    <button on:click={()=>editEntry = null}>close</button>
   {:else}
 
   <ul>
@@ -120,10 +123,6 @@
 
 <style>
 
-  h3 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
 
   span.link {
     color: rgb(0,100,200);

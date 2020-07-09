@@ -1,13 +1,13 @@
 <script>
 
   import { onMount } from 'svelte';
-  import marked from 'marked';
-
+  
   export let onClose;
   export let projectId;
   export let playerId;
   export let resetPlayerContainer;
   export let toggelDebugPanel;
+  export let handleHtmlClicks;
 
   let pages = [];
   let currentPage = null;
@@ -15,9 +15,9 @@
   onMount(async ()=>{
     let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId)
     let json = await res.json();
-    if(json.docs) pages = json.docs;
+    if(json.docs) pages = json.docs;  
   })
-  
+
 </script>
 
 <div class="click-catch" on:click|stopPropagation={onClose}>
@@ -28,7 +28,9 @@
       <button class="close-button" on:click={()=>{onClose()}}>{"close"}</button>    
       <div class="menu-entries">
       {#each pages as page}
-        <h3 on:click|stopPropagation={()=>currentPage=page}>{page.menuEntry}</h3>
+        {#if page.menuOrder >= 0}
+          <h3 on:click|stopPropagation={()=>currentPage=page}>{page.menuEntry}</h3>
+        {/if}
       {/each}
       </div>
       <button on:click={()=>{if(confirm("really?")) resetPlayerContainer()}}>reset player</button>
@@ -39,7 +41,9 @@
 
     <div class="page-container">
       <button class="close-button" on:click={()=>{currentPage=null; onClose()}}>{"close"}</button>    
-      {@html marked(currentPage.contentWithVars)}
+      <div on:click|stopPropagation={e=>handleHtmlClicks(e, "menu")}>
+        {@html currentPage.contentWithVars}
+      </div>
     </div>
 
   {/if}

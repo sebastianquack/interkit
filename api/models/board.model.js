@@ -3,10 +3,16 @@ let Joi = require('@hapi/joi')
 let Auth = require("../plugins/auth.plugin.js");
 const Log = RestHapi.getLogger('board');
 
+const beautify = require('js-beautify');
+
 module.exports = function (mongoose) {
   let modelName = "board";
   let Types = mongoose.Schema.Types;
   let Schema = new mongoose.Schema({
+    key: {
+      type: Types.String,
+      required: true,
+    },
     name: {
       type: Types.String,
       required: true,
@@ -118,6 +124,12 @@ module.exports = function (mongoose) {
 
       update: {
         pre: async (_id, payload, request, Log) => {
+
+          if(typeof payload.library !== "undefined") {
+            // beautify
+            payload.library = beautify(payload.library, { indent_size: 2 });
+          }
+
           let board = await RestHapi.find(RestHapi.models.board, _id, {}, Log);
           if(board.listed != payload.listed) {
             await configureBoardLogs(payload); // todo: make this step optional in authoring  

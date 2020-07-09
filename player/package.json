@@ -20,6 +20,7 @@
     "dev": "webpack-dev-server --content-base public --host 0.0.0.0"
   },
   "dependencies": {
+    "@google/markerclustererplus": "^5.0.4",
     "marked": "^1.1.0"
   }
 }

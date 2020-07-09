@@ -6,46 +6,9 @@
   export let visible;
   export let item;
   export let fileServerURL;
-  export let projectId;
-  export let playerId;
-
-  const handleButton = async (button) => {
-
-    console.log("handleButton", button);
-
-    let parts = button.node.split("/"); // button.node is in format "boardName/nodeName"
-    if(!parts.length == 2) {
-      console.log("handleButton called with bad format", boardAndNode);
-      return;
-    }
-
-    let boardRes = await fetch("/api/board?name=" + parts[0] + "&project=" + projectId);
-    let boardJSON = await boardRes.json();
-
-    if(boardJSON.docs.length != 1) {
-      console.log("board not found", parts[0])
-      return;
-    }
-
-    let nodeRes = await fetch("/api/scriptNode?name=" + parts[1] + "&board=" + boardJSON.docs[0]._id)
-    let nodeJSON = await nodeRes.json();
-
-    if(nodeJSON.docs.length != 1) return;
-
-    console.log("node found", nodeJSON);
-    
-    //joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
-    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
-      method: "POST", 
-      body: JSON.stringify({item, button})
-    });
-    let resJSON = await res.json();
-    console.log(resJSON);
-    if(!resJSON.status == "ok") {
-      alert("error moving player");
-    }
-  
-  }
+  //export let projectId;
+  //export let playerId;
+  export let handleButton;
 
 </script>
 
@@ -53,7 +16,7 @@
   <div id="content" on:click|stopPropagation>
     <button id="close" on:click={onClose}>close</button>
     {#if item}
-      <h2>{item.key}</h2>
+      <h2>{item.value.name}</h2>
       <p>{item.value.description ? item.value.description : ""}</p>
       {#if item.value.image}
         <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>
@@ -65,7 +28,7 @@
       {/if}
       {#if item.value.buttons}
         {#each item.value.buttons as button}
-          <button on:click={()=>{handleButton(button)}}>{button.label}</button>
+          <button on:click={()=>{handleButton(button, item)}}>{button.label}</button>
         {/each}
       {/if} 
     {/if}

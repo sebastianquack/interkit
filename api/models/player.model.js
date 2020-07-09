@@ -102,8 +102,10 @@ module.exports = function (mongoose) {
     // todo: messages?
 
     let itemAssociations = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
-    if(itemAssociations.docs.length)
+    if(itemAssociations.docs.length) {
+      console.log("deleting associations", itemAssociations.docs)
       await RestHapi.removeMany(RestHapi.models.player, playerId, RestHapi.models.item, "items", itemAssociations.docs)
+    }
     
   }
   
@@ -112,10 +114,13 @@ module.exports = function (mongoose) {
     routeOptions: {
       readAuth: false,
       createAuth: false,
+      updateAuth: false,
       associations: {
         items: {
           type: "MANY_MANY",
-          model: "item"
+          model: "item",
+          alias: 'item',
+          linkingModel: "player_item"
         }
       },
       create: {
@@ -126,6 +131,7 @@ module.exports = function (mongoose) {
       },
       delete: {
         pre: async (_id, hardDelete, request, Log) => {
+          console.log("PREDELETE")
           await removeAssociatedData(_id);
           return null;
         }

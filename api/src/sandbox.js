@@ -73,6 +73,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
       player: {
         ...varCache.player,
+        id: playerId,
         set: function (key, value) { 
           this[key] = value;
           db.setVar("player", {player: playerId, project: project._id}, key, value); 
@@ -107,17 +108,18 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         },
       },
       boards: {
-        list: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, true),
-        unlist: (boardName) => db.listBoardForPlayer(playerId, boardName, project._id, false)
+        list: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, true),
+        unlist: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, false)
       },
       
       send: {
         text: (message, options={}) => { result.outputs.push({
           message, 
           label: options.label ? options.label : varCache.board.narrator, 
-          system: options.system ? true : false,
           to: options.to ? options.to : "sender",
+          system: options.system ? true : false,
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })}, 
 
         system: (message, options={}) => { result.outputs.push({
@@ -125,16 +127,19 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: true,
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })}, 
 
         option: (message, options={}) => { result.outputs.push({
           message, 
           params: {
+            ...options, // add possibility to send additional params
             option: true,
             key: options.key ? options.key : undefined
           },
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })},       
         
         image: (filename, options={}) => { result.outputs.push({
@@ -146,6 +151,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             label: options.label ? options.label : varCache.board.narrator,
             to: options.to ? options.to : "sender",
             delay: options.delay ? options.delay : null,
+            forceOpen: options.forceOpen
         })},
 
         audio: (filename, options={}) => { result.outputs.push({
@@ -153,6 +159,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
+          forceOpen: options.forceOpen
         })},  
       },
 
@@ -182,6 +189,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       removeItem: (key, options = {}) => { db.removeItemFromPlayer(playerId, project._id, key, options.from) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
+      getItemsQuery: async (query) => {return await db.getItemsQuery(project._id, query) },
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       

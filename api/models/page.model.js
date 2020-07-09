@@ -4,16 +4,46 @@ let Auth = require("../plugins/auth.plugin.js");
 const db = require('../src/dbutil.js');
 
 
-function listWithVars(server, model, options, logger) {
+const marked = require("marked")
+const Handlebars = require("handlebars");
+
+async function listWithVars(server, model, options, logger) {
     const Log = logger.bind("getHistory")
     let Boom = require('@hapi/boom')
 
    const handler = async function (request, h) {
-        
-    let result = await RestHapi.list(RestHapi.models.page, {project: request.query.project}, Log);
+
+    console.log("key", request.query.key)
+
+    let query = {
+      project: request.query.project
+    }
+    if(request.query.key) query.key = request.query.key
+  
+    let result = await RestHapi.list(RestHapi.models.page, query, Log);
 
     for(let entry of result.docs) {
-      entry.contentWithVars = await db.embedVars(entry.content, entry.project, request.query.player);  
+
+      if(entry.format == "markdown") {
+        let contentWithVars = await db.embedVars(entry.content, entry.project, request.query.player);  
+        entry.contentWithVars = marked(contentWithVars);
+      }
+
+      if(entry.format == "handlebars") {
+        const template = Handlebars.compile(entry.content);
+        let context = {
+          player: await db.getVars("player", {player: request.query.player, project: request.query.project}),
+          project: await db.getVars("project", {project: request.query.project}),
+          items: await db.getItemsForPlayer(request.query.player)
+        }
+        console.log("context for handlebars", context)
+        try {
+          entry.contentWithVars = template(context);
+        } catch(e) {
+          console.log("handlebars error" , e)
+        }
+
+      }
     }
 
     if (result) {
@@ -39,6 +69,7 @@ function listWithVars(server, model, options, logger) {
         query: {
           project: Joi.string().required(),
           player: Joi.string(),
+          key: Joi.string(),
         },
       },
       plugins: {
@@ -66,6 +97,13 @@ module.exports = function (mongoose) {
     },
     menuOrder: {
       type: Types.Number,
+    },
+    key: {
+      type: Types.String,
+    },
+    format: {
+      type: Types.String,
+      default: "markdown"
     },
     content: {
       type: Types.String,

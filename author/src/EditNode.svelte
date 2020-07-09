@@ -85,7 +85,7 @@
     startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id)
   }
 
-  async function save() {
+  async function save(andRun=false) {
 
     if(startingNodeChanged) {
       let response;
@@ -157,6 +157,10 @@
         editTitle = false;
 
         reloadBoardData();
+
+        if(andRun) {
+          doMoveTo(scriptNodeEdit.id)
+        }
       }  
     }
     
@@ -198,7 +202,7 @@
 
 {#if !editTitle}
   <div class="edit-headline">
-    <h2>{scriptNodeEdit.name}</h2>
+    <h2>{currentBoardData ? currentBoardData.key : ""}/{scriptNodeEdit.name}</h2>
     <button on:click="{()=>{editTitle=true}}">✎</button>
     <button on:click={()=>{doMoveTo(scriptNodeEdit._id)}}>move player here</button>
   </div>
@@ -212,13 +216,14 @@
 <!--label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/-->
 <label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit} on:change={updateStartingNodeChanged}/><br>
 
-{#if changed || startingNodeChanged} <button on:click={save}>save</button><br>{/if}
+{#if changed || startingNodeChanged} <button on:click={()=>save(false)}>save</button> <button on:click={()=>save(true)}>save & run</button><br>{/if}
 
 <button on:click={deleteNode}>delete</button><br>
 
 
 {#if editNodeId}
   <VarList scope="node" ids={{node: editNodeId}}/>
+  <VarList scope="playerNode" ids={{node: editNodeId, player: playerId}}/>
 {/if}
 
 </div>

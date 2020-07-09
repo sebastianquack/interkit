@@ -40,7 +40,9 @@ module.exports = function (mongoose) {
       associations: {
         players: {
           type: "MANY_MANY",
-          model: "player"
+          model: "player",
+          alias: 'player',
+          linkingModel: "player_item"
         },
         project: {
           type: "MANY_ONE",

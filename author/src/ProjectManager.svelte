@@ -1,5 +1,6 @@
 <svelte:head>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
+  <script src="/markerclusterer.min.js"></script>
 </svelte:head>
 
 <script>

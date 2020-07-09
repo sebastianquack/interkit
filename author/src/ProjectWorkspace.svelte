@@ -69,6 +69,8 @@
   }
 
   const loadBoardData = async ()=>{
+    //editNodeId = null; todo: close board editor when board changes but ask first if unsaved changes!
+
     if(currentBoardId == "new") {
       createBoard();
       return;
@@ -92,6 +94,7 @@
   const createBoard = ()=>{
     let newBoard = {
       new: true,
+      key: "",
       name: "",
       scriptNodes: [],
       library: "",
@@ -157,6 +160,7 @@ function onReceive(input) {
     loadBoardList();
   });
 
+  
 
 </script>
 
@@ -170,10 +174,11 @@ function onReceive(input) {
     </div>
 
 
-    <button class="project-menu-toggle" on:click={()=>{toggleTab("pages")}}>📄</button>
-    <button id="toggle-player-monitoring" on:click={()=>{toggleTab("players")}}>👥</button>
-    <button id="toggle-item-manager" on:click={()=>{toggleTab("items")}}>🧳</button>
-    <button id="toggle-attachment-manager" on:click={()=>{toggleTab("attachments")}}>📎</button>
+    <button class="project-menu-toggle" class:active={tabNavigation == "pages"} on:click={()=>{toggleTab("pages")}}>📄</button>
+    <button id="toggle-player-monitoring" class:active={tabNavigation == "players"} on:click={()=>{toggleTab("players")}}>👥</button>
+    <button id="toggle-item-manager" class:active={tabNavigation == "items"} on:click={()=>{toggleTab("items")}}>🧳</button>
+    <button id="toggle-attachment-manager" class:active={tabNavigation == "attachments"} on:click={()=>{toggleTab("attachments")}}>📎</button>
+    <button id="open-board" class:active={tabNavigation == "boards"} on:click={()=>{tabNavigation = "boards"}}>🗂</button>
     
     
     <select bind:value={currentBoardId} on:change={loadBoardData}>
@@ -309,6 +314,10 @@ function onReceive(input) {
     position: relative;
     font-size: 10px;
     font-weight: normal;
+  }
+
+  .active {
+    border: 2px solid gray;
   }
 
 </style>
