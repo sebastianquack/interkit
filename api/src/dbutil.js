@@ -20,7 +20,7 @@ exports.seedConfig = async (key, value, type="text") => {
 const makeQuery = (scope, refs, key) => {
   let where = {
       key: key,
-      scope: scope,
+      varScope: scope,
       project: mongoose.Types.ObjectId(refs.project)
   };
   if(refs.player) where.player = mongoose.Types.ObjectId(refs.player);

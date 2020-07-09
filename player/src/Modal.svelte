@@ -16,7 +16,7 @@
   <div id="content" on:click|stopPropagation>
     <button id="close" on:click={onClose}>close</button>
     {#if item}
-      <h2>{item.key}</h2>
+      <h2>{item.value.name}</h2>
       <p>{item.value.description ? item.value.description : ""}</p>
       {#if item.value.image}
         <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>

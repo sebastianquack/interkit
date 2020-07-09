@@ -38,6 +38,7 @@
   let showLockScreen = false;
   let notificationItem = null;
   
+  let archiveButtonLabel = null;
   let loading = true;
   let fileServerURL = "";
   let menuOpen = false;
@@ -273,6 +274,13 @@
       initPlayerContainerSocket();  
     })
 
+    let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId + "&key=archive")
+    let pages = await res.json();
+    console.log(pages)
+    if(pages)
+      if(pages.docs.length)
+        archiveButtonLabel = pages.docs[0].menuEntry
+
     loading = false;
   });
 
@@ -314,7 +322,9 @@
     {/if}
     <div class="menu-buttons-right">
       <button disabled={mainView == "chat"} on:click={openChat}>chat</button>
-      <button disabled={mainView == "archive"} on:click={openArchive}>archive</button>
+      {#if archiveButtonLabel}
+        <button disabled={mainView == "archive"} on:click={openArchive}>{archiveButtonLabel}</button>
+      {/if}
       <button disabled={mainView == "map"} on:click={openMap}>map</button>
     </div>
   </div>
