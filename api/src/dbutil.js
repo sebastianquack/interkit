@@ -44,12 +44,13 @@ exports.setVar = async (scope, refs, key, value) => {
 
     let where = makeQuery(scope, refs, key);
 
+    // try to find variable
+    let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
+
     if(typeof value == "string") where.varType = "string"
     if(typeof value == "number") where.varType = "number"
     if(typeof value == "object") where.varType = "object"
-    
-    // try to find variable
-    let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
+    where.stringValue = null // overwrite pretty string presentation from manual editing in authoring
 
     // create
     if(variable.docs.length == 0) {

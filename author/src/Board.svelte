@@ -27,6 +27,9 @@
 
   let editMode;
 
+
+  let changed = false;
+
   $: {
     if(currentBoardId && currentBoardData && currentBoardData.expired)
      loadBoardData();
@@ -85,7 +88,8 @@
         console.log(json);
         json.scriptNodes = currentBoardData.scriptNodes;
         setCurrentBoardData(json);
-        editMode = false;
+        //editMode = false;
+        changed = false;
       }
     }
 
@@ -113,8 +117,11 @@
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
-    <CodeEditor bind:code={currentBoardData.library}></CodeEditor><br>
-    <button on:click={saveBoard}>save</button>
+    <CodeEditor bind:code={currentBoardData.library} on:change={()=>changed=true}></CodeEditor><br>
+    {#if changed}
+      <button on:click={saveBoard}>save</button>
+    {/if}
+    <button on:click={()=>editMode=false}>close</button>
     <br>
 
     {#if !currentBoardData.new}

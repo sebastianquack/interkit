@@ -133,6 +133,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         option: (message, options={}) => { result.outputs.push({
           message, 
           params: {
+            ...options, // add possibility to send additional params
             option: true,
             key: options.key ? options.key : undefined
           },
