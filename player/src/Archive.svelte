@@ -20,7 +20,7 @@
     let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId + "&key=archive")
     let pages = await res.json();
     page = pages.docs[0]
-    console.log(page)
+    //console.log(page)
   })
     
 </script>

@@ -189,6 +189,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       removeItem: (key, options = {}) => { db.removeItemFromPlayer(playerId, project._id, key, options.from) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
+      getItemsQuery: async (query) => {return await db.getItemsQuery(project._id, query) },
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       

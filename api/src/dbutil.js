@@ -283,6 +283,17 @@ exports.getItemsForPlayer = async (playerId) => {
   return items.docs;
 }
 
+exports.getItemsQuery = async (project, query) => {
+
+  // mongo query to search inside nested document
+  //{ 'value.latIndex': 1000 } 
+
+  let items = await RestHapi.list(RestHapi.models.item, {...query, project}, Log);
+  console.log("retrieved items for player", playerId, items.docs);
+  return items.docs;
+
+}
+
 /*
 exports.getItemForPlayerByKey = asnyc (playerId, key) => {
   let item = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {key}, Log);

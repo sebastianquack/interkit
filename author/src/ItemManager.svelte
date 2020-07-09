@@ -165,7 +165,7 @@
   }
 
   const awarded = (item) => {
-    console.log(item.players);
+    //console.log(item.players);
     return item.players.filter((p)=>p.player && p.player._id == playerId).length >= 1; 
   }
 

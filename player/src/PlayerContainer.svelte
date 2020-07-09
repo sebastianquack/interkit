@@ -75,7 +75,7 @@
     boards = json.docs.map(log=>log.board).filter(b=>b); 
   
     if(boards.length == 1) {
-      console.log("project has only 1 listed board, using that", boards[0]);
+      console.log("project has only 1 listed board, using that", boards[0].name);
       currentBoard = boards[0];
     } 
   }
@@ -106,6 +106,8 @@
     map.setZoom(17);
   }
 
+  // is called every time whe look at the map
+  // todo: optimize for when we have many markers - only receive updated markers and keep old ones
   const loadMarkers = async () => {
     let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
@@ -384,8 +386,6 @@
 
   {#if itemModal}
     <Modal
-      {projectId}
-      {playerId}
       visible={true}
       item={itemModal}
       {fileServerURL}

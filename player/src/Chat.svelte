@@ -84,8 +84,8 @@
 
   const init = async ()=> {
     console.log("chat init method");
-    console.log("playerId", playerId);
-    console.log("currentBoard", currentBoard);
+    //console.log("playerId", playerId);
+    //console.log("currentBoard", currentBoard);
   
     let nodeId = currentBoard.startingNode;       
 
@@ -291,7 +291,7 @@
     console.log("loading currentNode");
     let response = await fetch("/api/scriptNode/" + nodeId);
     currentNode = await response.json();
-    console.log("currentNode set to", currentNode);
+    //console.log("currentNode set to", currentNode);
     if(!currentNode) {
       alert("currentNode " + currentNode)
     }
