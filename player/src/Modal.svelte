@@ -6,8 +6,8 @@
   export let visible;
   export let item;
   export let fileServerURL;
-  export let projectId;
-  export let playerId;
+  //export let projectId;
+  //export let playerId;
   export let handleButton;
 
 </script>

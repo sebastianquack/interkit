@@ -2,9 +2,9 @@
 
   import { onMount } from 'svelte';
 
-  export let visible;
-  export let items = [];
-  export let setItemModal;
+  //export let visible;
+  //export let items = [];
+  //export let setItemModal;
   export let projectId;
   export let playerId;
   export let handleHtmlClicks;

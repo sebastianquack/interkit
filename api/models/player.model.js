@@ -119,6 +119,7 @@ module.exports = function (mongoose) {
         items: {
           type: "MANY_MANY",
           model: "item",
+          alias: 'item',
           linkingModel: "player_item"
         }
       },

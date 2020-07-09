@@ -142,10 +142,11 @@
   }
 
   const award = async (itemId) => {
-    const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
+    
+    const res = await fetch("/api/item/"+itemId+"/player/" + playerId, {
         method: "PUT",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: playerId})
+        body: JSON.stringify({})
     });
     if(res.ok) {
       loadItems();
@@ -153,10 +154,10 @@
   }
 
   const revoke = async (itemId) => {
-    const res = await fetch("/api/player/"+playerId+"/item/" + itemId, {
+    const res = await fetch("/api/item/"+itemId+"/player/" + playerId, {
         method: "DELETE",
         headers: {'authorization': $token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({_id: playerId})
+        body: JSON.stringify({})
     });
     if(res.ok) {
       loadItems();
