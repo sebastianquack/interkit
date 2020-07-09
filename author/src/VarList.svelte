@@ -37,7 +37,9 @@ const createVar = () => {
 }
 
 const setupEditVar = (v) => {
-  editVar = {...v, value: v.varType == "object" || v.varType == "number" ? JSON.stringify(v.value) : v.value }
+  let value = v.varType == "object" || v.varType == "number" ? JSON.stringify(v.value) : v.value;
+  if(v.stringValue) value = v.stringValue 
+  editVar = {...v, value}
 }
 
 const parseValue = () => {
@@ -53,6 +55,8 @@ const parseValue = () => {
 const updateVar = async () => {
 
   let saveItem = {...editVar, ...ids, createdAt: undefined, updatedAt: undefined, new: undefined};
+
+  saveItem.stringValue = editVar.value; // save the string version for formatting
   
   if(saveItem.varType == "number") {
     saveItem.value = parseFloat(editVar.value);

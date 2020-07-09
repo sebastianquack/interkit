@@ -13,6 +13,9 @@ module.exports = function (mongoose) {
     value: {
       type: Types.Mixed,
     },
+    stringValue: { // this is for pretty display in the editor
+      type: Types.String,
+    },
     varType: {
       type: Types.String,
     },

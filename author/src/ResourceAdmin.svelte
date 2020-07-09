@@ -9,6 +9,8 @@
   let loading = true;
   let entries = [];
   let editEntry = null;
+
+  let changed = false;
   
   const loadEntries = async () => {
     let result = await fetch(`/api/${resourceName}?project=` + projectId);
@@ -61,8 +63,9 @@
       });
     }
     if(response.ok) {
-      editEntry = null;
-      loadEntries();
+      //editEntry = null;
+      changed = false;
+      //loadEntries();
     }
   }
 
@@ -82,6 +85,7 @@
   const update = (item, prop, value) => {
     editEntry[prop] = value;
     editEntry = editEntry; // force an update
+    changed = true;
   }
 
 </script>
@@ -95,8 +99,8 @@
   {#if editEntry}
     <slot name="editForm" editEntry={editEntry} {update}></slot>
 
-    <button on:click={saveEntry}>save</button>
-    <button on:click={()=>editEntry = null}>cancel</button>
+    {#if changed}<button on:click={saveEntry}>save</button>{/if}
+    <button on:click={()=>editEntry = null}>close</button>
   {:else}
 
   <ul>
