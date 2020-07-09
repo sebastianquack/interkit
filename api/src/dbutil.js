@@ -376,12 +376,14 @@ exports.getAllOfProject = async function (projectId) {
   const ScriptNode = mongoose.model("scriptNode");
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
+  const Variable = mongoose.model("variable");
 
   const project = await Project.findOne({_id: projectId})
   const boards = await Board.find({project: projectId});
   const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } });
   const items = await Item.find({project: projectId});
   const pages = await Page.find({project: projectId});
+  const variables = await Variable.find({project: projectId, varScope: "project"}); // for now get only project variables
 
   return {
     project,
@@ -389,6 +391,7 @@ exports.getAllOfProject = async function (projectId) {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   }  
 }
@@ -401,6 +404,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   } = projectData
 
@@ -416,6 +420,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     ...generateIdMappings(scriptNodes),
     ...generateIdMappings(items),
     ...generateIdMappings(pages),
+    ...generateIdMappings(variables),
   }
   
   // function to translate a key according to mappings
@@ -450,6 +455,9 @@ const duplicateProjectData = async function (projectData, newProjectName) {
   pages = translateKeys(pages, "_id")
   pages = translateKeys(pages, "project")
 
+  variables = translateKeys(variables, "_id")
+  variables = translateKeys(variables, "project")
+
   // END translations -> mutation complete
 
   const result = {
@@ -458,6 +466,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
     scriptNodes,
     items,
     pages,
+    variables,
   }
 
   //console.log("result", result)
@@ -477,6 +486,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
     scriptNodes,
     items,
     pages,
+    variables,
     // TODO attachments
   } = await duplicateProjectData(projectData, newProjectName)
 
@@ -485,6 +495,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   const ScriptNode = mongoose.model("scriptNode");
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
+  const Variable = mongoose.model("variable");
 
   const errorReport = function(error, docs) { console.log(error, docs)}
 
@@ -495,6 +506,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   await ScriptNode.insertMany(scriptNodes, errorReport);
   await Item.insertMany(items, errorReport);
   await Page.insertMany(pages, errorReport);
+  await Variable.insertMany(variables, errorReport);
 
 }
 
