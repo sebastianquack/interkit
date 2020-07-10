@@ -27,7 +27,7 @@
     let json = await result.json();
     if(json.docs) {
       items = json.docs;
-      console.log(items);
+      //console.log(items);
     }
   }
 
@@ -43,7 +43,7 @@
       ...defaultPos
     }
     defaultZoom = await getConfig("defaultZoom");
-    console.log(defaultZoom)
+    //console.log(defaultZoom)
   });
 
   const createItem = () => {

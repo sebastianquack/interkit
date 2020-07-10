@@ -213,7 +213,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: (key, options) => { result.interfaceCommand = key; result.interfaceOptions = options; db.persistPlayerInterface(project._id, playerId, key, options); },
+      interface: async (key, options={}) => { result.interfaceCommand = key; result.interfaceOptions = options; await db.persistPlayerInterface(project._id, playerId, key, options); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
@@ -233,11 +233,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
   // expand script to execute appropriate hook
   switch(hook) {
     case "onReceive":
-      runScript += `; if(typeof onMessage === "function") onMessage(input);`;  // deprecated
-      runScript += `; if(typeof onReceive === "function") onReceive(input);`; 
+      runScript += `\n; if(typeof onMessage === "function") onMessage(input);`;  // deprecated
+      runScript += `\n; if(typeof onReceive === "function") onReceive(input);`; 
       break;
     case "onArrive":
-      runScript += `; if(typeof onArrive === "function") onArrive(from);`; 
+      runScript += `\n; if(typeof onArrive === "function") onArrive(from);`; 
       break;
   }
   //console.log("runScript", runScript);

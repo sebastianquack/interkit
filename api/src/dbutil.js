@@ -195,6 +195,7 @@ exports.getPlayersForNode = async (nodeId) => {
 // creates or update an item
 exports.createOrUpdateItem = async (payload, projectId) => {
   let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
+  delete payload._id; // remove key to prevent collisions when copying items
   if(items.docs.length == 0) {
     console.log("creating item with", payload, projectId);
     let item = await RestHapi.create(RestHapi.models.item, {...payload, project: projectId}, Log);  

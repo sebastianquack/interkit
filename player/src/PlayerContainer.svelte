@@ -124,7 +124,7 @@
   }
 
   // is called every time whe look at the map
-  // todo: optimize for when we have many markers - only receive updated markers and keep old ones
+  // todo: optimize for when we have many markers - load geographically
   const loadMarkers = async () => {
     let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();

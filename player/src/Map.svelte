@@ -66,9 +66,48 @@ const initGoogleMap = async ()=>{
     //console.log(map);
 }
 
+const createMarker = (item) => {
+
+  if(!(item.value.lat && item.value.lng)) return;
+
+  let placePosition = {lat: item.value.lat, lng: item.value.lng};
+
+  let icon = {
+    url: "/marker.png", // url
+    scaledSize: {height: 50, width: 50}, // scaled size
+    origin: {x:0, y:0}, // origin
+    anchor: {x:25, y:50}, // anchor
+    labelOrigin: new google.maps.Point(25, 60)
+  };
+
+  // add markers for user
+  let marker = new google.maps.Marker({
+    position: placePosition,
+    icon: icon,
+    visible: item.value.revealOnProximity ? false : true, 
+    label: {
+      color: "#000",
+      fontFamily: "sans-serif",
+      fontSize: "16px",
+      text: item.value.name ? item.value.name : item.key,
+    },
+    markerItemKey: item.key,
+    revealOnProximity: item.revealOnProximity ? item.revealOnProximity : undefined
+    //map
+  })
+    
+  marker.addListener('click', ()=> {
+    setItemModal(item);
+  });
+
+  markers.push(marker)
+  return marker;
+}
+
+
 const initMarkers = ()=>{
     console.log("initMarkers")
-    
+
     markers.forEach((m)=>{
       m.setMap(null);
     })
@@ -76,77 +115,64 @@ const initMarkers = ()=>{
 
     if(!markerItems) return;
 
-    markerItems.forEach((p, index)=>{ 
-
-      if(!(p.value.lat && p.value.lng)) return;
-
-      let placePosition = {lat: p.value.lat, lng: p.value.lng};
-
-      let icon = {
-        url: "/marker.png", // url
-        scaledSize: {height: 50, width: 50}, // scaled size
-        origin: {x:0, y:0}, // origin
-        anchor: {x:25, y:50}, // anchor
-        labelOrigin: new google.maps.Point(25, 60)
-      };
-    
-      // add markers for user
-      let marker = new google.maps.Marker({
-        position: placePosition,
-        icon: icon,
-        visible: p.value.revealOnProximity ? false : true, 
-        label: {
-          color: "#000",
-          fontFamily: "sans-serif",
-          fontSize: "16px",
-          text: p.value.name ? p.value.name : p.key,
-        },
-        //map
-      })
-        
-      marker.addListener('click', ()=> {
-        setItemModal(p);
-      });
-
-      markers.push(marker)
-
-      // for testig - set marker to arrowTarget
-      //if(!arrowTarget)
-      //arrowTarget = placePosition;
-    })
+    markerItems.forEach((mi)=>{ 
+      createMarker(mi)
+    });
 
     markerCluster = new MarkerClusterer(map, markers, {
         imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
         minimumClusterSize: 2,  
     });
 
-    console.log(markers);
+    //console.log(markers);
 }
 
 // callewd when markers are added or removed
-const updateMarkers = () => {
-  //console.log("todo updateMarkers");
+const updateMarkers = (markerItems) => {
+  if(!markerCluster) return;
+
+  console.log("updateMarkers");
+  
+  markerItems.forEach((markerItem)=> {
+    // is this not already on the map -> add
+    if(!markers.filter((m)=>m.markerItemKey == markerItem.key).length) {
+      console.log("new marker found, adding", markerItem.key)
+      let marker = createMarker(markerItem);
+      //console.log(marker)
+      markerCluster.addMarker(marker);
+    }
+  })
+
+  let i = markers.length
+  while (i--) {
+    if(!markerItems.filter((mi)=>mi.key == markers[i].markerItemKey).length) {
+      console.log("marker was removed, removing", markers[i].label.text)
+      //console.log(markers[i])
+      markerCluster.removeMarker(markers[i]);
+      markers.splice(i, 1);
+    }      
+  }
+
 }
 
 // called when user position changes
 const updateMarkersPositionChange = () => {
 
-  markerItems.forEach((mi, index)=>{ 
+  markers.forEach((m)=>{ 
 
-    if(mi.value.revealOnProximity) {
-      //console.log("found a marker with revealOnProximity, show/hide the corresponding marker?")
+    if(!m) return
+
+    if(m.revealOnProximity) {
       
       let distance = google.maps.geometry.spherical.computeDistanceBetween(
-        new google.maps.LatLng(userPosition), new google.maps.LatLng(mi.value)
+        new google.maps.LatLng(userPosition), m.position
       )
       //console.log(distance)
 
-      if(distance < mi.value.revealOnProximity) {
-        markers[index].setVisible(true)  
-        //console.log("reveal")
+      if(distance < m.revealOnProximity) {
+        m.setVisible(true)  
       } else {
-        markers[index].setVisible(false)  
-        //console.log("hide")
+        m.setVisible(false)  
       }
     }
 
@@ -181,8 +207,6 @@ const getUserPosition = (pan = false)=> {
       } else {
 
         userMarker.setPosition(userPosition);
-
-        //console.log("arrowMode?", arrowMode)
 
         if(arrowMode) {
           let rotation = arrowDirection
@@ -238,21 +262,22 @@ const initPositiontracking = () => {
 
 /* lifecycle methods */
 
+$: {
+  //console.log("markerItems changed", markerItems)
+  updateMarkers(markerItems);
+}
+
+
 afterUpdate(()=>{
-  //console.log("afterUpdate", visible)
+  //console.log("afterUpdate")
 
   if(!map && googleReady) {
     initGoogleMap();
   }
 
-  if(map) {
-    if(markers.length != markerItems.length) {
-      updateMarkers();
-    }
-  }
-
   if(map && visible) {
-    initMarkers();
+    if(!markerCluster)
+      initMarkers();
     if(!positionTrackerInterval)
       getUserPosition(true); // pan map to user once on open
     initPositiontracking();

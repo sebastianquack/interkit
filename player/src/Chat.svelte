@@ -303,7 +303,7 @@
     //console.log("mainView", mainView)
     //console.log("item", item)
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
-      if(!item.params.interfaceCommand && !item.params.option) {
+      if(!item.params.interfaceCommand && !item.params.option && !item.forceOpen) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         setLockScreen();  
       }
