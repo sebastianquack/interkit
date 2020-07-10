@@ -20,12 +20,12 @@ export let arrowTarget = null; // turn is to a target position
 let mapContainer;
 let markers = [];
 let userMarker;
-let fitBoundsDone = false;
-let latlngbounds;
 let markerCluster;
 let positionTrackerInterval;
 let arrowIcon;
 let dotIcon;
+
+let userPosition = null;
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
@@ -68,9 +68,7 @@ const initGoogleMap = async ()=>{
 
 const initMarkers = ()=>{
     console.log("initMarkers")
-    latlngbounds = new google.maps.LatLngBounds();
-    fitBoundsDone = false;
-
+    
     markers.forEach((m)=>{
       m.setMap(null);
     })
@@ -78,7 +76,7 @@ const initMarkers = ()=>{
 
     if(!markerItems) return;
 
-    markerItems.forEach((p, index)=>{      
+    markerItems.forEach((p, index)=>{ 
 
       if(!(p.value.lat && p.value.lng)) return;
 
@@ -96,6 +94,7 @@ const initMarkers = ()=>{
       let marker = new google.maps.Marker({
         position: placePosition,
         icon: icon,
+        visible: p.value.revealOnProximity ? false : true, 
         label: {
           color: "#000",
           fontFamily: "sans-serif",
@@ -110,14 +109,49 @@ const initMarkers = ()=>{
       });
 
       markers.push(marker)
-      latlngbounds.extend(placePosition);    
 
       // for testig - set marker to arrowTarget
       //if(!arrowTarget)
       //arrowTarget = placePosition;
     })
 
+    markerCluster = new MarkerClusterer(map, markers, {
+        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+        minimumClusterSize: 2,  
+    });
+
     console.log(markerItems);
+}
+
+// callewd when markers are added or removed
+const updateMarkers = () => {
+  console.log("todo updateMarkers");
+}
+
+// called when user position changes
+const updateMarkersPositionChange = () => {
+
+  markerItems.forEach((mi, index)=>{ 
+
+    if(mi.value.revealOnProximity) {
+      console.log("found a marker with revealOnProximity, show/hide the corresponding marker?")
+      
+      let distance = google.maps.geometry.spherical.computeDistanceBetween(
+        new google.maps.LatLng(userPosition), new google.maps.LatLng(mi.value)
+      )
+      console.log(distance)
+
+      if(distance < mi.value.revealOnProximity) {
+        markers[index].setVisible(true)  
+        //console.log("reveal")
+      } else {
+        markers[index].setVisible(false)  
+        //console.log("hide")
+      }
+    }
+
+  })
+
 }
 
 const getUserPosition = (pan = false)=> {
@@ -125,28 +159,28 @@ const getUserPosition = (pan = false)=> {
   // Try HTML5 geolocation
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((position)=> {
-      var pos = {
+      userPosition = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
       };
 
-      //console.log("setting userPosition");
       if(pan) {
-        map.panTo(pos);
+        map.panTo(userPosition);
         map.setZoom(16);
       }
 
       if(!userMarker) {
 
           userMarker = new google.maps.Marker({
-          map: map,
-          position: pos,
-          icon: arrowMode ? arrowIcon : dotIcon 
+            map: map,
+            position: userPosition,
+            icon: arrowMode ? arrowIcon : dotIcon 
+
         }); 
 
       } else {
 
-        userMarker.setPosition(pos);
+        userMarker.setPosition(userPosition);
 
         if(arrowMode) {
           let rotation = arrowDirection
@@ -154,7 +188,7 @@ const getUserPosition = (pan = false)=> {
           if(arrowTarget) {
             // calculate rotation
             //console.log("rotation for ", pos, arrowTarget, rotation)
-            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(pos), new google.maps.LatLng(arrowTarget))
+            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget))
           
           }
           arrowIcon.rotation = rotation;
@@ -168,6 +202,8 @@ const getUserPosition = (pan = false)=> {
         }
 
       }
+
+      updateMarkersPositionChange();
 
     }, ()=> {
       alert("couldn't get location");
@@ -185,7 +221,7 @@ const getUserPosition = (pan = false)=> {
 const initPositiontracking = () => {
   if(!positionTrackerInterval) {
 
-    setInterval(()=>{
+    positionTrackerInterval = setInterval(()=>{
 
       if(visible) {
         //console.log("checking user geolocation")
@@ -209,27 +245,20 @@ afterUpdate(()=>{
 
   if(map) {
     if(markers.length != markerItems.length) {
-      initMarkers(); // resets  fitsboundsdone
+      updateMarkers();
     }
   }
 
-  if(map && visible && !fitBoundsDone && markers.length > 1) {
-      console.log("doing positioning and clustering")
-      //map.fitBounds(latlngbounds); // this doesn't work while map is still in display: none
-      
-      markerCluster = new MarkerClusterer(map, markers, {
-        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-        minimumClusterSize: 2,  
-      });
-
-      fitBoundsDone = true;
-
-      initPositiontracking();
+  if(map && visible) {
+    initMarkers();
+    if(!positionTrackerInterval)
       getUserPosition(true); // pan map to user once on open
+    initPositiontracking();
   }
 })
 
 onDestroy(()=>{
+  console.log("onDestroy")
   if(positionTrackerInterval) {
     clearInterval(positionTrackerInterval)
   }

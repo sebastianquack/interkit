@@ -394,9 +394,6 @@
 
   {#if mainView == "archive"}
   <Archive
-    visible={true}
-    items={documentItems}
-    {setItemModal}
     {projectId}
     {playerId}
     {handleHtmlClicks}
