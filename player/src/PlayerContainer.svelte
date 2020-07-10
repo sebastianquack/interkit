@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -66,6 +66,16 @@
   }
 
   const setItemModal = (item)=>itemModal = item;
+
+  // load persistent interface state from player variable
+  const loadInterfaceState = async ()=> {
+    let interfaceState = await getPlayerVar({playerId, projectId}, "interfaceState")
+    console.log("interfaceState", interfaceState);
+
+    if("arrowMode" in interfaceState) arrowMode = interfaceState.arrowMode;
+    if("arrowTarget" in interfaceState) arrowTarget = interfaceState.arrowTarget;
+    if("arrowDirection" in interfaceState) arrowDirection = interfaceState.arrowDirection;
+  }
 
   // for projects with only one listed board, automatically go to that board    
   const loadListedBoards = async () => {
@@ -204,21 +214,9 @@
 
         if(message.params.interfaceCommand == "map") {
           console.log("map command", message.params.interfaceOptions)
-          if(message.params.interfaceOptions.arrowTargetItem) {
-            console.log("setting arrowMode")
-            arrowMode = true;
-            arrowTarget = message.params.interfaceOptions.arrowTargetItem.value
-          }
-
-          if(message.params.interfaceOptions.arrowDirection) {
-            arrowMode = true;
-            arrowTarget = null;
-            arrowDirection = message.params.interfaceOptions.arrowDirection;
-          }
-
-          if(message.params.interfaceOptions.showArrow) {
-            arrowMode = message.params.interfaceOptions.showArrow;
-          }
+          arrowMode = message.params.interfaceOptions.arrowMode;
+          arrowTarget = message.params.interfaceOptions.arrowTarget
+          arrowDirection = message.params.interfaceOptions.arrowDirection;
         }
       }
 
@@ -279,7 +277,7 @@
       body: JSON.stringify({item, button})
     });
     let resJSON = await res.json();
-    console.log(resJSON);
+    //console.log(resJSON);
     if(!resJSON.status == "ok") {
       alert("error moving player");
     }
@@ -328,6 +326,7 @@
       loadMarkers();
 
       if(projectId) {
+        loadInterfaceState();
         loadListedBoards();        
         checkForUnseenMessages();    
       } 

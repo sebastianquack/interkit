@@ -182,7 +182,7 @@
         console.log("warning, message is from a different board")
 
         if(item.forceOpen) {
-          console.log("openening different board, cancelling queue here")
+          console.log("forceOpen: openening different board, cancelling queue here")
           openBoardFromNodeId(item.node)
           messageQueue = []; // remove items from queue, board reloads them anyway
           status = "resetting"

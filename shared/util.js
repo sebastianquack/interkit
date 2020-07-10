@@ -17,6 +17,23 @@ export const getConfig = async (key) => {
     return null;
 }
 
+export const getPlayerVar = async (ids, key) => {
+  const res = await fetch("/api/variable?varScope=player&key=" + key + "&player=" + ids.playerId + "&project=" + ids.projectId);
+  if(!res.ok) {
+    console.log("error fetching var ", key);
+    return null;
+  }
+  const json = await res.json();
+  //console.log(json);
+
+  if(json.docs.length) {
+    return json.docs[0].value
+  }
+  else 
+    return null;
+}
+
+
 const createPlayer = async () => {
   const res = await fetch("/api/player", {
     method: "POST", 

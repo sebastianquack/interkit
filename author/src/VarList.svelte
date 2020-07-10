@@ -5,7 +5,7 @@ import CodeEditor from './CodeEditor.svelte';
 
 export let scope;
 export let ids;
-export let authoring = true;
+export let authoring;
 
 let vars = [];
 
@@ -116,7 +116,7 @@ const types = ["number", "string", "object"]
 
 </script>
 
-<h4>{scope} variables <button on:click={loadVars}>reload</button> <button on:click={createVar}>create</button></h4> 
+<h4>{scope} variables <button on:click={loadVars}>reload</button> {#if authoring}<button on:click={createVar}>create</button>{/if}</h4> 
 
 {#if editVar}
 

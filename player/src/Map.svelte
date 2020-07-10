@@ -125,7 +125,7 @@ const initMarkers = ()=>{
 
 // callewd when markers are added or removed
 const updateMarkers = () => {
-  console.log("todo updateMarkers");
+  //console.log("todo updateMarkers");
 }
 
 // called when user position changes
@@ -182,7 +182,7 @@ const getUserPosition = (pan = false)=> {
 
         userMarker.setPosition(userPosition);
 
-        console.log("arrowMode?", arrowMode)
+        //console.log("arrowMode?", arrowMode)
 
         if(arrowMode) {
           let rotation = arrowDirection
@@ -190,7 +190,7 @@ const getUserPosition = (pan = false)=> {
           if(arrowTarget) {
             // calculate rotation
             // console.log("rotation for ", userPosition, arrowTarget, rotation)
-            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget))
+            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget.value))
           
           }
           arrowIcon.rotation = rotation;
@@ -239,7 +239,7 @@ const initPositiontracking = () => {
 /* lifecycle methods */
 
 afterUpdate(()=>{
-  console.log("afterUpdate", visible)
+  //console.log("afterUpdate", visible)
 
   if(!map && googleReady) {
     initGoogleMap();

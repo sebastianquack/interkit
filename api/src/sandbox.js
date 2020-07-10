@@ -213,8 +213,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      // todo: rework
-      interface: (key, options) => { result.interfaceCommand = key; result.interfaceOptions = options },
+      interface: (key, options) => { result.interfaceCommand = key; result.interfaceOptions = options; db.persistPlayerInterface(project._id, playerId, key, options); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
