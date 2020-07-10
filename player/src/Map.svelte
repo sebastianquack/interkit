@@ -92,7 +92,7 @@ const createMarker = (item) => {
       text: item.value.name ? item.value.name : item.key,
     },
     markerItemKey: item.key,
-    revealOnProximity: item.revealOnProximity ? item.revealOnProximity : undefined
+    revealOnProximity: item.value.revealOnProximity ? item.value.revealOnProximity : undefined
     //map
   })
     
@@ -160,6 +160,8 @@ const updateMarkersPositionChange = () => {
 
   markers.forEach((m)=>{ 
 
+    console.log(m)
+
     if(!m) return
 
     if(m.revealOnProximity) {
@@ -167,7 +169,7 @@ const updateMarkersPositionChange = () => {
       let distance = google.maps.geometry.spherical.computeDistanceBetween(
         new google.maps.LatLng(userPosition), m.position
       )
-      //console.log(distance)
+      console.log(distance)
 
       if(distance < m.revealOnProximity) {
         m.setVisible(true)  
