@@ -13,15 +13,43 @@ export let map = null;
 export let markerItems;
 export let setItemModal;
 
+export let arrowMode = false; // activate to turn on the directional arrow
+export let arrowDirection = 0; // turn it manually
+export let arrowTarget = null; // turn is to a target position
+
 let mapContainer;
 let markers = [];
 let userMarker;
 let fitBoundsDone = false;
 let latlngbounds;
 let markerCluster;
+let positionTrackerInterval;
+let arrowIcon;
+let dotIcon;
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
+
+    arrowIcon = {
+      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+      fillColor: '#000',
+      fillOpacity: 0.6,
+      strokeColor: '#000',
+      strokeOpacity: 0.9,
+      strokeWeight: 1,
+      scale: 6,
+      rotation: 0
+    }
+
+    dotIcon = {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: '#000',
+      fillOpacity: 0.6,
+      strokeColor: '#000',
+      strokeOpacity: 0.9,
+      strokeWeight: 1,
+      scale: 6,
+    }
 
     let defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     let defaultZoom = await getConfig("defaultZoom");
@@ -83,38 +111,16 @@ const initMarkers = ()=>{
 
       markers.push(marker)
       latlngbounds.extend(placePosition);    
+
+      // for testig - set marker to arrowTarget
+      //if(!arrowTarget)
+      //arrowTarget = placePosition;
     })
 
     console.log(markerItems);
 }
 
-afterUpdate(()=>{
-  console.log("afterUpdate", visible)
-
-  if(!map && googleReady) {
-    initGoogleMap();
-  }
-
-  if(map) {
-    if(markers.length != markerItems.length) {
-      initMarkers();
-    }
-  }
-
-  if(map && visible && !fitBoundsDone && markers.length > 1) {
-      console.log("doing fitbounds and clustering")
-      map.fitBounds(latlngbounds); // this doesn't work while map is still in display none
-      
-      markerCluster = new MarkerClusterer(map, markers, {
-        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-        minimumClusterSize: 2,  
-      });
-
-      fitBoundsDone = true;
-  }
-})
-
-const getUserPosition = ()=> {
+const getUserPosition = (pan = false)=> {
 
   // Try HTML5 geolocation
   if (navigator.geolocation) {
@@ -124,25 +130,44 @@ const getUserPosition = ()=> {
         lng: position.coords.longitude
       };
 
-      console.log("setting userPosition");
-      map.panTo(pos);
-      map.setZoom(16);
+      //console.log("setting userPosition");
+      if(pan) {
+        map.panTo(pos);
+        map.setZoom(16);
+      }
 
-      if(userMarker) userMarker.setMap(null);
-      userMarker = new google.maps.Marker({
+      if(!userMarker) {
+
+          userMarker = new google.maps.Marker({
           map: map,
           position: pos,
-          icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              fillColor: '#000',
-              fillOpacity: 0.6,
-              strokeColor: '#000',
-              strokeOpacity: 0.9,
-              strokeWeight: 1,
-              scale: 6
-          }
+          icon: arrowMode ? arrowIcon : dotIcon 
+        }); 
 
-      });
+      } else {
+
+        userMarker.setPosition(pos);
+
+        if(arrowMode) {
+          let rotation = arrowDirection
+          
+          if(arrowTarget) {
+            // calculate rotation
+            //console.log("rotation for ", pos, arrowTarget, rotation)
+            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(pos), new google.maps.LatLng(arrowTarget))
+          
+          }
+          arrowIcon.rotation = rotation;
+
+          userMarker.setIcon(arrowIcon);  
+        
+        } else {
+          
+          userMarker.setIcon(dotIcon);  
+        
+        }
+
+      }
 
     }, ()=> {
       alert("couldn't get location");
@@ -157,11 +182,65 @@ const getUserPosition = ()=> {
 
 }
 
+const initPositiontracking = () => {
+  if(!positionTrackerInterval) {
+
+    setInterval(()=>{
+
+      if(visible) {
+        //console.log("checking user geolocation")
+        getUserPosition()
+      }
+
+    }, 2000)
+  }
+}
+
+
+
+/* lifecycle methods */
+
+afterUpdate(()=>{
+  console.log("afterUpdate", visible)
+
+  if(!map && googleReady) {
+    initGoogleMap();
+  }
+
+  if(map) {
+    if(markers.length != markerItems.length) {
+      initMarkers(); // resets  fitsboundsdone
+    }
+  }
+
+  if(map && visible && !fitBoundsDone && markers.length > 1) {
+      console.log("doing positioning and clustering")
+      //map.fitBounds(latlngbounds); // this doesn't work while map is still in display: none
+      
+      markerCluster = new MarkerClusterer(map, markers, {
+        imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+        minimumClusterSize: 2,  
+      });
+
+      fitBoundsDone = true;
+
+      initPositiontracking();
+      getUserPosition(true); // pan map to user once on open
+  }
+})
+
+onDestroy(()=>{
+  if(positionTrackerInterval) {
+    clearInterval(positionTrackerInterval)
+  }
+})
+
+
 </script>
 
 <div id="map-container" style="display: {visible ? 'block' : 'none'}">     
   <div id="map" bind:this={mapContainer}></div>
-  <img id="locate-button" alt="locat button" src="locate.png" on:click={getUserPosition} />
+  <img id="locate-button" alt="locat button" src="locate.png" on:click={()=>getUserPosition(true)} />
 </div>
 
 

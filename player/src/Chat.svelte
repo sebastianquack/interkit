@@ -198,6 +198,29 @@
         }
     }
 
+    // request for geoposition
+    if(item.params.interfaceCommand == "request-geoposition") {
+      console.log("geoposition requested, responding...")
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position)=>{
+          let item = {
+            attachment: {
+              mediatype: "GPS",
+              lat: position.coords.latitude, 
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            },
+            params: {
+              interfaceCommand: "request-geoposition-response"
+            },
+            node: currentNode._id, board: currentNode.board, project: projectId, sender: playerId        
+          }
+          postPlayerMessage(item)
+        })
+      }
+      return; 
+    }
+
     // switch player to chat view of foreOpen is set
     if(item.forceOpen && mainView != "chat") {
       openChatView();
@@ -273,8 +296,8 @@
         }, 500);
     }
 
-    console.log("mainView", mainView)
-    console.log("item", item)
+    //console.log("mainView", mainView)
+    //console.log("item", item)
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
       if(!item.params.interfaceCommand && !item.params.option) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});

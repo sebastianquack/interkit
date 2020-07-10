@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -30,6 +30,9 @@
   let map;
   let markerItems;
   let documentItems;
+  let arrowMode = false;
+  let arrowTarget = null;
+  let arrowDirection = 0;
 
   let chatMessageHandler = null;
   
@@ -187,6 +190,19 @@
     console.log("re-initialising socket message listener on player container");
     listenForMessages(async (message)=>{
       //console.log("player container received message");
+
+
+      // process map commands here
+      if(message.params) {
+        if(message.params.interfaceCommand == "map") {
+          console.log("map command", message.params.interfaceOptions)
+          if(message.params.interfaceOptions.arrowTargetItem) {
+            arrowMode = true;
+            arrowTarget = message.params.interfaceOptions.arrowTargetItem.value
+          }
+        }
+      }
+
       if(chatMessageHandler) {
         //console.log("handing off to chatMessageHandler");
         chatMessageHandler(message);
@@ -371,6 +387,9 @@
     visible={mainView=="map"}
     {markerItems}
     {setItemModal}
+    {arrowMode}
+    {arrowTarget}
+    {arrowDirection}
   />
 
   {#if mainView == "archive"}
