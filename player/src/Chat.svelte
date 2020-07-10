@@ -95,10 +95,6 @@
 
     let firstTimeOnBoard = true // flag to see if we are on the board for the very first time
 
-    // load history 
-    await loadMoreItems(currentBoard); 
-    scrollUp();
-
     // find where player is now on this board
     let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
     let lastNode = await response.json();
@@ -112,18 +108,7 @@
     fileServerURL = await getConfig("fileServerURL");
 
     // set up socket events
-    registerMessageHandler(async (message)=>{
-      console.log("chat message received, putting in queue");
-      messageQueue.push(message);
-      console.log("messageQueue.length", messageQueue.length);
-
-      if(messageQueue.length == 1) {
-        console.log("start processing queue");
-        processQueue();
-      } else {
-        console.log("message handler busy, waiting...");
-      }
-    })
+    registerMessageHandler(receiveMessage)
 
     // loads node we want to be in and saves it
     await setCurrentNode(nodeId)
@@ -144,11 +129,28 @@
       if(resJSON.statusCode == 500) {
         alert(resJSON.error)
       }
-
     }
 
     // we are ready receive messages
     status = "ready"
+
+    // load history - and process any unseen messages in it
+    await loadMoreItems(currentBoard); 
+    scrollUp();
+  }
+
+  // takes in a new message
+  const receiveMessage = async (message) => {
+    console.log("chat message received, putting in queue");
+      messageQueue.push(message);
+      console.log("messageQueue.length", messageQueue.length);
+
+      if(messageQueue.length == 1) {
+        console.log("start processing queue");
+        processQueue();
+      } else {
+        console.log("message handler busy, waiting...");
+      }
   }
 
   const processQueue = async () => {
@@ -183,8 +185,8 @@
 
         if(item.forceOpen) {
           console.log("forceOpen: openening different board, cancelling queue here")
-          openBoardFromNodeId(item.node)
-          messageQueue = []; // remove items from queue, board reloads them anyway
+          openBoardFromNodeId(item.node)          
+          messageQueue = []; // remove all itmes from queue, board reloads them anyway
           status = "resetting"
           return;
         }
@@ -196,6 +198,16 @@
           setLockScreen();
           return;
         }
+    }
+
+    // mark as seen
+    if(!item.seen || item.seen.indexOf(playerId) == -1) {
+      await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },            
+      });
     }
 
     // request for geoposition
@@ -237,14 +249,6 @@
           return;
         }
     }
-
-    if(!item.seen || item.seen.indexOf(playerId) == -1)
-        await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-          method: "PUT",
-          headers: {
-            'Content-Type': 'application/json'
-          },            
-        });
 
     if(item.params.interfaceCommand) {
       if(item.params.interfaceCommand == "alert") {
@@ -348,26 +352,46 @@
       } else {
         showMoreItems = true;
       }
-      // show options only if they are the last ones at bottom
-      // TODO: disable but still show old options!
-      let activeOptions = true; 
+
+      let unseenMessages = [];
+
+      // if this is the very bottom of the chat, still allow options to be shown
+      let allowOptions = false
+      if(chatItems.length == 0) allowOptions = true;
+      
+      // go over loaded items from oldest to newest
+      // show options only if they are the last ones at bottom - TODO: disable but still show old options!
       for(let i = 0; i < historyItems.docs.length; i++) {
         let item = historyItems.docs[i];
         if(!item.params) item.params = {};
-        if(!item.params.option || (activeOptions && item.params.option)) {
-          let i = parseItem(item);
-          if(i) chatItems.unshift(i);
-          if(!item.seen || item.seen.indexOf(playerId) == -1)
-            await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-              method: "PUT",
-              headers: {
-                'Content-Type': 'application/json'
-              },              
-              });
+
+        // sort out unseen ones for processing
+        if(!item.seen || item.seen.indexOf(playerId) == -1) {
+            unseenMessages.push(item);
+        } else {
+
+          
+          if(!item.params.option // non-options are always allowed
+            || (item.params.option && allowOptions) // options if still allowed
+            || (item.params.option && item.sender == playerId) // or if player already chose and sent this
+            ) {
+            let i = parseItem(item);
+            if(i) chatItems.unshift(i); // adds item at beginning array
+          }
+
+          // turn off options as soon as a non-option non-interface command comes by
+          if(!item.params.option && !item.params.interfaceCommand) {
+            allowOptions = false
+          }
+
+
         }
-        if(!item.params.option && !item.params.interfaceCommand) activeOptions = false;
       }
       chatItems = chatItems;
+
+      // process the unseen messages
+      unseenMessages.forEach(async (m)=>await receiveMessage(m));
+
       updateUnseenMessages();
   } 
 
@@ -423,6 +447,10 @@
     });
     chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
     scrollUp();
+
+    // remove option param for chosen one - but preserve params.key
+    if(item)
+      item.params.option = undefined;
     
     let res = postPlayerMessage({
       sender: playerId, 
@@ -479,11 +507,11 @@
           {item}
           onClick={()=>{
             if(item.params.option) {
-              if(!item.params.key) {
-                autoType(item)
-              } else {
+              //if(!item.params.key) {
+              //  autoType(item)
+              //} else {
                 submitInput(item);
-              }
+              //}
             }
             if(item.attachment.mediatype == "GPS") mapClick(item)
           }}

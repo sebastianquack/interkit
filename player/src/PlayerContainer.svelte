@@ -72,9 +72,11 @@
     let interfaceState = await getPlayerVar({playerId, projectId}, "interfaceState")
     console.log("interfaceState", interfaceState);
 
-    if("arrowMode" in interfaceState) arrowMode = interfaceState.arrowMode;
-    if("arrowTarget" in interfaceState) arrowTarget = interfaceState.arrowTarget;
-    if("arrowDirection" in interfaceState) arrowDirection = interfaceState.arrowDirection;
+    if(interfaceState) {
+      if("arrowMode" in interfaceState) arrowMode = interfaceState.arrowMode;
+      if("arrowTarget" in interfaceState) arrowTarget = interfaceState.arrowTarget;
+      if("arrowDirection" in interfaceState) arrowDirection = interfaceState.arrowDirection;
+    }
   }
 
   // for projects with only one listed board, automatically go to that board    
@@ -118,7 +120,7 @@
     setTimeout(()=>{
       map.panTo(chatItem.attachment);
       map.setZoom(17);  
-    }, 500)
+    }, 1000) // this is a messy solution - when it interrups the marker clusterer it can lose markers!
   }
 
   // is called every time whe look at the map

@@ -175,6 +175,7 @@ export const deleteFile = async (file, token) => {
 }
 
 export const postPlayerMessage = async (msgData) => {
+  msgData.seen = [msgData.sender] // add seen 
   console.log("postPlayerMessage", msgData);
   let response = await fetch("/api/player/message", {
     method: "POST",
