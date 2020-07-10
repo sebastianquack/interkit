@@ -108,8 +108,14 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         },
       },
       boards: {
-        list: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, true),
-        unlist: (boardKey) => db.listBoardForPlayer(playerId, boardKey, project._id, false)
+        list: (boardKey) => {
+          db.listBoardForPlayer(playerId, boardKey, project._id, true);
+          result.interfaceCommand = "updateBoards"
+        },
+        unlist: (boardKey) => {
+          db.listBoardForPlayer(playerId, boardKey, project._id, false);
+          result.interfaceCommand = "updateBoards"
+        }
       },
       
       send: {
@@ -161,6 +167,20 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           delay: options.delay ? options.delay : null,
           forceOpen: options.forceOpen
         })},  
+
+        location: async (latlng, options={}) => { result.outputs.push({
+            attachment: {
+              mediatype: "GPS", 
+              imgSrc: await db.createLocationThumbnail(latlng),
+              lat: latlng.lat,
+              lng: latlng.lng,
+            }, 
+            to: options.to ? options.to : "sender",
+            delay: options.delay ? options.delay : null,
+            forceOpen: options.forceOpen,
+            label: options.label ? options.label : varCache.board.narrator
+        })},
+
       },
 
       moveTo: (nodeId, options={}) => { result.moveTo = true; result.moveToOptions = {
@@ -185,7 +205,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
 
       createOrUpdateItem: async (payload) => { await db.createOrUpdateItem(payload, project._id) },
-      awardItem: (key, options = {}) => { db.awardItemToPlayer(playerId, project._id, key, options.to) },
+      awardItem: async (key, options = {}) => { return await db.awardItemToPlayer(playerId, project._id, key, options.to) },
       removeItem: (key, options = {}) => { db.removeItemFromPlayer(playerId, project._id, key, options.from) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
@@ -194,7 +214,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
       // todo: rework
-      interface: (key, options) => { result.interfaceCommand = key, result.interfaceOptions = options },
+      interface: (key, options) => { result.interfaceCommand = key; result.interfaceOptions = options },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },

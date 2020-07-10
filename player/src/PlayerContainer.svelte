@@ -105,8 +105,10 @@
   const openMapTo = (chatItem) => {
     console.log(chatItem);
     mainView = "map";
-    map.panTo(chatItem.attachment);
-    map.setZoom(17);
+    setTimeout(()=>{
+      map.panTo(chatItem.attachment);
+      map.setZoom(17);  
+    }, 500)
   }
 
   // is called every time whe look at the map
@@ -177,6 +179,7 @@
     if(loading) return;
     resetPlayer();
     menuOpen = false;
+    boards = [];
     currentBoard = null;
     mainView = "chat";
   }
@@ -192,13 +195,29 @@
       //console.log("player container received message");
 
 
-      // process map commands here
+      // process some interface commands here
       if(message.params) {
+        if(message.params.interfaceCommand == "updateBoards") {
+          console.log("updateBoard command")
+          loadListedBoards();  
+        }
+
         if(message.params.interfaceCommand == "map") {
           console.log("map command", message.params.interfaceOptions)
           if(message.params.interfaceOptions.arrowTargetItem) {
+            console.log("setting arrowMode")
             arrowMode = true;
             arrowTarget = message.params.interfaceOptions.arrowTargetItem.value
+          }
+
+          if(message.params.interfaceOptions.arrowDirection) {
+            arrowMode = true;
+            arrowTarget = null;
+            arrowDirection = message.params.interfaceOptions.arrowDirection;
+          }
+
+          if(message.params.interfaceOptions.showArrow) {
+            arrowMode = message.params.interfaceOptions.showArrow;
           }
         }
       }

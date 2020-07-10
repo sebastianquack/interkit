@@ -92,6 +92,15 @@ function onArrive(from) {
 boards.list("boardName") // reveal unlisted board to player
 boards.unlist("boardName") // hide listed board
 
+
+interface("map", {arrowTargetItem: item}) // set map arrow to point to an item
+interface("map", {arrowDirection: 45}) // set map arrow to point to a specific direction
+interface("map", {showArrow: false}) // turn off arrow
+
+interface("request-geoposition") // client responds with coordinates (use with caution)
+
+
+
 // deprecated
 
 output("hello"); // sends message with default narrator

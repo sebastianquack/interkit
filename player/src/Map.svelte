@@ -15,7 +15,7 @@ export let setItemModal;
 
 export let arrowMode = false; // activate to turn on the directional arrow
 export let arrowDirection = 0; // turn it manually
-export let arrowTarget = null; // turn is to a target position
+export let arrowTarget = null; // turn arrow to a target position (should be an item object)
 
 let mapContainer;
 let markers = [];
@@ -120,7 +120,7 @@ const initMarkers = ()=>{
         minimumClusterSize: 2,  
     });
 
-    console.log(markerItems);
+    console.log(markers);
 }
 
 // callewd when markers are added or removed
@@ -134,12 +134,12 @@ const updateMarkersPositionChange = () => {
   markerItems.forEach((mi, index)=>{ 
 
     if(mi.value.revealOnProximity) {
-      console.log("found a marker with revealOnProximity, show/hide the corresponding marker?")
+      //console.log("found a marker with revealOnProximity, show/hide the corresponding marker?")
       
       let distance = google.maps.geometry.spherical.computeDistanceBetween(
         new google.maps.LatLng(userPosition), new google.maps.LatLng(mi.value)
       )
-      console.log(distance)
+      //console.log(distance)
 
       if(distance < mi.value.revealOnProximity) {
         markers[index].setVisible(true)  
@@ -182,12 +182,14 @@ const getUserPosition = (pan = false)=> {
 
         userMarker.setPosition(userPosition);
 
+        console.log("arrowMode?", arrowMode)
+
         if(arrowMode) {
           let rotation = arrowDirection
           
           if(arrowTarget) {
             // calculate rotation
-            //console.log("rotation for ", pos, arrowTarget, rotation)
+            // console.log("rotation for ", userPosition, arrowTarget, rotation)
             rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget))
           
           }
