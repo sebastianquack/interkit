@@ -200,6 +200,18 @@
         }
     }
 
+    //if this comes from a different node on the same board, quietly switch to that node
+    if(currentBoard._id == message.board && currentNode._id != message.node) {
+        console.log("warning, message is from a different node")
+        if(message.recipients.includes(playerId)) {
+          await setCurrentNode(message.node);
+          setEditNodeId(message.node);    
+        } else {
+          console.log("message wasn't for me, ignoring");
+          return;
+        }
+    }
+
     // mark as seen
     if(!item.seen || item.seen.indexOf(playerId) == -1) {
       await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
@@ -208,6 +220,13 @@
           'Content-Type': 'application/json'
         },            
       });
+    }
+
+    /* interface commands */
+
+    // switch player to chat view of foreOpen is set
+    if(item.forceOpen && mainView != "chat") {
+      openChatView();
     }
 
     // request for geoposition
@@ -233,23 +252,7 @@
       return; 
     }
 
-    // switch player to chat view of foreOpen is set
-    if(item.forceOpen && mainView != "chat") {
-      openChatView();
-    }
-
-    //if this comes from a different node on the same board, quietly switch to that node
-    if(currentBoard._id == message.board && currentNode._id != message.node) {
-        console.log("warning, message is from a different node")
-        if(message.recipients.includes(playerId)) {
-          await setCurrentNode(message.node);
-          setEditNodeId(message.node);    
-        } else {
-          console.log("message wasn't for me, ignoring");
-          return;
-        }
-    }
-
+    
     if(item.params.interfaceCommand) {
       if(item.params.interfaceCommand == "alert") {
         displayAlert(item.params.interfaceOptions);
@@ -259,6 +262,8 @@
         setLockScreen();
       }
     }
+
+    /* message processing */
 
     if(item.attachment.mediatype) {
       item.side = "left";
@@ -300,8 +305,17 @@
         }, 500);
     }
 
-    //console.log("mainView", mainView)
-    //console.log("item", item)
+    // show optionsArray
+    if(item.params.optionsArray) {
+      chatItems.push({...item, 
+        side: "left",
+        placeholder: false,
+      });
+      sortItems();
+      scrollUp();
+    }
+
+    // show additional notification if chat is not open because we're on the map
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
       if(!item.params.interfaceCommand && !item.params.option && !item.forceOpen) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
@@ -370,7 +384,9 @@
             unseenMessages.push(item);
         } else {
 
-          
+          // ignore optionsArrays with no selection, these are replaced with selected items
+          if(item.params.optionsArray && item.params.index == undefined) continue
+
           if(!item.params.option // non-options are always allowed
             || (item.params.option && allowOptions) // options if still allowed
             || (item.params.option && item.sender == playerId) // or if player already chose and sent this
@@ -395,16 +411,6 @@
       updateUnseenMessages();
   } 
 
-  const sortItems = () => {
-    chatItems.sort((a,b)=> {
-      let x = a.timestamp - b.timestamp;
-      return x == 0 ? a.outputOrder - b.outputOrder : x;
-    });
-    //items.sort((a,b)=>a.timestamp-b.timestamp);
-    chatItems = chatItems;
-    console.log("sorted items", chatItems);
-  }
-
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};
     if(!rawItem.params) rawItem.params = {};
@@ -428,6 +434,16 @@
     }
   }
 
+  const sortItems = () => {
+    chatItems.sort((a,b)=> {
+      let x = a.timestamp - b.timestamp;
+      return x == 0 ? a.outputOrder - b.outputOrder : x;
+    });
+    chatItems = chatItems;
+    console.log("sorted items", chatItems);
+  }
+
+
   const scrollUp = ()=> {
     setTimeout(()=>{
       if(div)
@@ -435,34 +451,62 @@
     }, 400);
   }
 
-  const submitInput = (item = null)=>{
+  const submitInput = (item = null, index = undefined)=>{
     console.log("submitInput", item)
+    
+    // sanitise
     if (!inputValue && !item) return;
-
-    chatItems = chatItems.concat({
-      side: 'right',
-      message: item ? item.message : inputValue,
-      attachment: {},
-      params: {}
-    });
-    chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
-    scrollUp();
-
-    // remove option param for chosen one - but preserve params.key
+    let optionsArray = false
     if(item)
+      if(item.params.optionsArray) {
+        optionsArray = true;
+        //message = item.params.optionsArray[index]
+      }
+    let message = item ? item.message : inputValue;
+
+    // if this is not an optionsArray, add an extra item to the chat
+    if(!optionsArray) {
+      chatItems = chatItems.concat({
+        side: 'right',
+        message,
+        attachment: {},
+        params: {}
+      });
+      chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
+      scrollUp();
+    
+    } else {
+      // for optionsArrays just mark selected item
+      item.params.index = index;
+      chatItems = chatItems;
+    }
+
+    // prepare submission to server
+    if(item) {
+      // remove option param for chosen on in individual option - but preserve params.key
       item.params.option = undefined;
     
+      // for optionsArray save index of chosen option in array
+      if(item.params.optionsArray) {
+        item.params.index = index 
+        item.message = item.params.optionsArray[index]
+      }
+    }
+
+    // submission
     let res = postPlayerMessage({
       sender: playerId, 
-      message: item ? item.message : inputValue, 
+      message, 
       node: currentNode._id, 
       board: currentBoard._id, 
       project: projectId,
       params: item ? item.params : undefined,
     });
-    inputValue = "";
+    // todo handle submission errors!
 
-    // todo handle errors
+
+    // clear input field at bottom of chat
+    inputValue = "";
   }
 
   const handleKeydown = (event)=>{
@@ -505,12 +549,12 @@
       {#each chatItems as item}
         <ChatItemBubble 
           {item}
-          onClick={()=>{
-            if(item.params.option) {
+          onClick={(index = undefined)=>{
+            if(item.params.option || item.params.optionsArray) {
               //if(!item.params.key) {
               //  autoType(item)
               //} else {
-                submitInput(item);
+                submitInput(item, index);
               //}
             }
             if(item.attachment.mediatype == "GPS") mapClick(item)

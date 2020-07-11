@@ -13,6 +13,7 @@ function onReceive(input) {
   input.text // the text lowercase and trimmed
   input.raw  // the raw input without processing
   input.key  // the option key if player tapped option
+  input.index // the index of option sent via send.options
   input.filename // the image or audio file
   input.coords   // the GPS coordinates {lat: 10, lng: 10}
   input.QRCode   // the decoded QR code
@@ -26,6 +27,8 @@ send.system("hello") // styles message as system message
 
 send.option("option 1") // presents an option
 send.option("option with long text", {key: "1"}) // adds a short reference key
+
+send.options(["yes", "no"], {key: "optionGroup1"}) // presents a set of options
 
 send.image("image.jpg") // sends an image
 send.audio("audio.mp3") // sends an audio file

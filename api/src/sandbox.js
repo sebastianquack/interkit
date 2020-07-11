@@ -56,10 +56,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       text: msgData.message ? msgData.message.trim().toLowerCase() : null,
       raw: msgData.message,
       key: msgData.params ? msgData.params.key : undefined,
+      index: msgData.params ? (msgData.params.index + 1) : undefined,
       filename: msgData.attachment ? msgData.attachment.filename : null,
       coords: type == "GPS" ? {lat: msgData.attachment.lat, lng: msgData.attachment.lng} : null,
-      QRcode: type == "QRcode" ? msgData.attachment.QRCode : null, 
-
+      QRcode: type == "QRcode" ? msgData.attachment.QRCode : null,
       msgData: msgData // pass original msgData in for debugging
     }
     
@@ -119,83 +119,94 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
       
       send: {
-        text: (message, options={}) => { result.outputs.push({
+        text: (message, params={}) => { result.outputs.push({
           message, 
-          label: options.label ? options.label : varCache.board.narrator, 
-          to: options.to ? options.to : "sender",
-          system: options.system ? true : false,
-          delay: options.delay ? options.delay : null,
-          forceOpen: options.forceOpen
+          label: params.label ? params.label : varCache.board.narrator, 
+          to: params.to ? params.to : "sender",
+          system: params.system ? true : false,
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen
         })}, 
 
-        system: (message, options={}) => { result.outputs.push({
+        system: (message, params={}) => { result.outputs.push({
           message, 
           system: true,
-          to: options.to ? options.to : "sender",
-          delay: options.delay ? options.delay : null,
-          forceOpen: options.forceOpen
+          to: params.to ? params.to : "sender",
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen
         })}, 
 
-        option: (message, options={}) => { result.outputs.push({
+        option: (message, params={}) => { result.outputs.push({
           message, 
           params: {
-            ...options, // add possibility to send additional params
+            ...params, // add possibility to send additional params
             option: true,
-            key: options.key ? options.key : undefined
+            key: params.key ? params.key : undefined
           },
-          to: options.to ? options.to : "sender",
-          delay: options.delay ? options.delay : null,
-          forceOpen: options.forceOpen
-        })},       
+          to: params.to ? params.to : "sender",
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen
+        })},
+
+        // this takes an array of options ["yes", "no"]
+        options: (optionsArray, params={}) => { result.outputs.push({
+          params: {
+            optionsArray,
+            ...params, // add possibility to send additional params
+          },
+          to: params.to ? params.to : "sender",
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen
+        })},              
         
-        image: (filename, options={}) => { result.outputs.push({
+        image: (filename, params={}) => { result.outputs.push({
             attachment: {
               mediatype: "image", 
               filename, 
-              alt: options.alt ? options.alt : undefined,
+              alt: params.alt ? params.alt : undefined,
             }, 
-            label: options.label ? options.label : varCache.board.narrator,
-            to: options.to ? options.to : "sender",
-            delay: options.delay ? options.delay : null,
-            forceOpen: options.forceOpen
+            label: params.label ? params.label : varCache.board.narrator,
+            to: params.to ? params.to : "sender",
+            delay: params.delay ? params.delay : null,
+            forceOpen: params.forceOpen
         })},
 
-        audio: (filename, options={}) => { result.outputs.push({
+        audio: (filename, params={}) => { result.outputs.push({
           attachment: {mediatype: "audio", filename}, 
-          label: options.label ? options.label : varCache.board.narrator,
-          to: options.to ? options.to : "sender",
-          delay: options.delay ? options.delay : null,
-          forceOpen: options.forceOpen
+          label: params.label ? params.label : varCache.board.narrator,
+          to: params.to ? params.to : "sender",
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen
         })},  
 
-        location: async (latlng, options={}) => { result.outputs.push({
+        location: async (latlng, params={}) => { result.outputs.push({
             attachment: {
               mediatype: "GPS", 
               imgSrc: await db.createLocationThumbnail(latlng),
               lat: latlng.lat,
               lng: latlng.lng,
             }, 
-            to: options.to ? options.to : "sender",
-            delay: options.delay ? options.delay : null,
-            forceOpen: options.forceOpen,
-            label: options.label ? options.label : varCache.board.narrator
+            to: params.to ? params.to : "sender",
+            delay: params.delay ? params.delay : null,
+            forceOpen: params.forceOpen,
+            label: params.label ? params.label : varCache.board.narrator
         })},
 
       },
 
-      moveTo: (nodeId, options={}) => { result.moveTo = true; result.moveToOptions = {
+      moveTo: (nodeId, params={}) => { result.moveTo = true; result.moveToOptions = {
         destination: nodeId, 
-        delay: options.delay ? options.delay : undefined, 
-        all: options.for == "all",
-        execOnArrive: !options.hasOwnProperty('execOnArrive') ? true : options.execOnArrive
+        delay: params.delay ? params.delay : undefined, 
+        all: params.for == "all",
+        execOnArrive: !params.hasOwnProperty('execOnArrive') ? true : params.execOnArrive
       }},
 
       // this is mainly for forwarding the input object to others in the node
-      echo: (input, options={}) => {
+      echo: (input, params={}) => {
         result.outputs.push({
           ...input,
-          label: options.label ? options.label : varCache.player.name,
-          to: options.to ? options.to : "others",
+          label: params.label ? params.label : varCache.player.name,
+          to: params.to ? params.to : "others",
         })
       },
 
@@ -205,15 +216,15 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
 
       createOrUpdateItem: async (payload) => { await db.createOrUpdateItem(payload, project._id) },
-      awardItem: async (key, options = {}) => { return await db.awardItemToPlayer(playerId, project._id, key, options.to) },
-      removeItem: (key, options = {}) => { db.removeItemFromPlayer(playerId, project._id, key, options.from) },
+      awardItem: async (key, params = {}) => { return await db.awardItemToPlayer(playerId, project._id, key, params.to) },
+      removeItem: (key, params = {}) => { db.removeItemFromPlayer(playerId, project._id, key, params.from) },
       getItem: async (key) => { return await db.getItem(key, project._id) },
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
       getItemsQuery: async (query) => {return await db.getItemsQuery(project._id, query) },
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: async (key, options={}) => { result.interfaceCommand = key; result.interfaceOptions = options; await db.persistPlayerInterface(project._id, playerId, key, options); },
+      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = options; await db.persistPlayerInterface(project._id, playerId, key, options); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
