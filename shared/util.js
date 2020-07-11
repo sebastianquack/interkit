@@ -189,4 +189,22 @@ export const postPlayerMessage = async (msgData) => {
 }
 
 
+export const getCurrentNodeId = async (playerId, board) => {
+  //console.log("getCurrentNode", playerId, board);
+  let query = {
+    player: playerId,
+    board: board._id,
+    timestamp: {$lt: Date.now()},
+    scheduled: {$ne: true}
+  }
+  let limit = 1;
+  let response = await fetch("/api/nodeLog?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+  let nodes = await response.json();
+  //console.log(nodes);
+  if(nodes.docs.length)
+    return nodes.docs[0].node
+  else 
+    return null
+}
+
 

@@ -182,7 +182,7 @@
   const doMoveTo = async (nodeId) => {
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
     let resJSON = await res.json();
-    console.log(resJSON);
+    //console.log(resJSON);
   }
   
 

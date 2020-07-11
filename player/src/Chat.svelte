@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { getConfig, postPlayerMessage } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage, getCurrentNodeId } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -96,11 +96,13 @@
     let firstTimeOnBoard = true // flag to see if we are on the board for the very first time
 
     // find where player is now on this board
-    let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
-    let lastNode = await response.json();
-    console.log("lastNode", lastNode);
-    if(lastNode.docs.length > 0) {
-      nodeId = lastNode.docs[0].node;
+    /*let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
+    let lastNode = await response.json();*/
+
+    let lastNodeId = await getCurrentNodeId(playerId, currentBoard)
+    console.log("lastNode", lastNodeId);
+    if(lastNodeId) {
+      nodeId = lastNodeId;
       firstTimeOnBoard = false; // there is history, we have been here before
     }
     
