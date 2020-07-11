@@ -272,7 +272,7 @@
       }
       if(item.attachment.mediatype == "audio") {
         item.attachment.audioSrc = fileServerURL + item.attachment.filename;
-        item.attachment.autoplay = true;
+        //item.attachment.autoplay = true;
       }
       chatItems.push(item);
       sortItems();
@@ -281,12 +281,16 @@
     }
 
     let isSystemMessage = false;
+    if(!item.seen) {
+      item.seen = [];
+    }
 
     if(item.message) {
 
       isSystemMessage = message.system || message.label == "system";
       let showPlaceholder = !(isSystemMessage || item.params.option);
 
+      // push item into displayed chat
       chatItems.push({...item, 
         side: isSystemMessage ? "system" : "left",
         placeholder: showPlaceholder,
@@ -391,8 +395,8 @@
             || (item.params.option && allowOptions) // options if still allowed
             || (item.params.option && item.sender == playerId) // or if player already chose and sent this
             ) {
-            let i = parseItem(item);
-            if(i) chatItems.unshift(i); // adds item at beginning array
+            let parsedItem = parseItem(item);
+            if(parsedItem) chatItems.unshift(parsedItem); // adds item at beginning array
           }
 
           // turn off options as soon as a non-option non-interface command comes by
@@ -430,6 +434,7 @@
         
     return {
       ...rawItem,
+      loaded: true,
       side: rawItem.sender == playerId ? "right" : (isSystemMessage ? "system" : "left"),
     }
   }
@@ -539,6 +544,21 @@
     chatItems = [];
   }
 
+  // audio player management - play the next player after one is finished
+  let audioPlayers = [];
+  const registerAudioPlayer = (audio) => {
+    if(audio) {
+      audioPlayers.push(audio)
+      console.log("added audioPlayer", audioPlayers)  
+      return audioPlayers.length - 1;
+    }
+  }
+  const onAudioEnded = (index) => {
+    if(index + 1 < audioPlayers.length) {
+      audioPlayers[index + 1].play()
+    }
+  }
+
 </script>
 
 <div class="chat">
@@ -549,6 +569,8 @@
       {#each chatItems as item}
         <ChatItemBubble 
           {item}
+          {registerAudioPlayer}
+          {onAudioEnded}
           onClick={(index = undefined)=>{
             if(item.params.option || item.params.optionsArray) {
               //if(!item.params.key) {

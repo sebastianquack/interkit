@@ -172,11 +172,12 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         })},
 
         audio: (filename, params={}) => { result.outputs.push({
+          params: params,
           attachment: {mediatype: "audio", filename}, 
           label: params.label ? params.label : varCache.board.narrator,
           to: params.to ? params.to : "sender",
           delay: params.delay ? params.delay : null,
-          forceOpen: params.forceOpen
+          forceOpen: params.forceOpen,
         })},  
 
         location: async (latlng, params={}) => { result.outputs.push({
@@ -263,9 +264,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     }
   } catch (err) {
     clearTimeout(t);
-    console.error('script execution failed!', err);
+    let report = "error: " + err.message + " details: " + err.stack
+    console.log("script execution failed", report)
     if(!sentResponse) {
-      callback({error: err.toString()});  
+      callback({error: report});  
     }
   }
 }

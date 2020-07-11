@@ -1,6 +1,20 @@
 <script>
+
+  import { onMount } from 'svelte';
+
   export let item = {};
   export let onClick;
+
+  export let registerAudioPlayer;
+  export let onAudioEnded;
+  
+  let audioPlayer;
+  let audioIndex;
+  onMount(()=>{
+    if(registerAudioPlayer)
+      audioIndex = registerAudioPlayer(audioPlayer)
+  })
+
 </script>
 
 {#if item.params && item.attachment}
@@ -18,7 +32,15 @@
             <img alt={item.attachment.alt} src={item.attachment.imgSrc}/>
           {/if}
           {#if item.attachment.audioSrc} 
-             <audio controls autoplay={item.attachment.autoplay ? true : false}>
+             <audio 
+                bind:this={audioPlayer} 
+                controls 
+                on:ended={()=>{
+                  if(!item.params.stopAfterEnded)
+                    onAudioEnded(audioIndex)
+                }} 
+                autoplay={item.params.autoplay ? !item.loaded : false}
+              >
               <source src={item.attachment.audioSrc} type="audio/mpeg">
             </audio> 
           {/if}

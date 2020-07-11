@@ -33,6 +33,9 @@ send.options(["yes", "no"], {key: "optionGroup1"}) // presents a set of options
 send.image("image.jpg") // sends an image
 send.audio("audio.mp3") // sends an audio file
 
+send.audio("audio.mp3", {autoplay: true}) // automatically start playing 
+send.audio("audio.mp3", {stopAfterEnded: true}) // stop after ended (default is to coninute to next loaded file)
+
 send.text("hello", {to: "sender"}) // specify that only the sender (or the player that just arrived) should receive the message
 send.text("hello", {to: "all"}) // specify that all players in this node should get it
 send.text("hello", {to: "others"}) // specify that only the other players should get it
