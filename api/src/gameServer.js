@@ -185,14 +185,18 @@ exports.init = (listener) => {
   
   const scheduledTasksInterval = setInterval(async ()=>{
     
+    let start = Date.now()
+
     let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
     for(let m of messages) {
       await sendMessage(m);    
     }
 
-    db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
+    await db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
 
-  }, 10000);
+    console.log("completed scheduled task processinng in " + (Date.now() - start) + "ms")
+
+  }, 2000);
 
 } 
 
@@ -235,11 +239,15 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         
         // call getPlayersForNode only when needed
         if(output.to == "all" || output.to == "others") {
-          if(!recipients.all && !recipients.others) {
+          console.log("load other players in node if needed")
+          if(recipients["all"] == undefined && recipients["others"] == undefined) {
             recipients.all = await db.getPlayersForNode(node);
             recipients.others = recipients.all.filter(r=>r!=playerId); 
           }
         }
+
+        console.log("recipients", recipients)
+        console.log("output.to", output.to)
 
         let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
         console.log(msgObj);

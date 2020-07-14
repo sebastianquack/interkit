@@ -70,7 +70,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     sandbox: {
       input: input,
       from: msgData,
-
+      currentNode: node.name,
       player: {
         ...varCache.player,
         id: playerId,
@@ -133,7 +133,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: true,
           to: params.to ? params.to : "sender",
           delay: params.delay ? params.delay : null,
-          forceOpen: params.forceOpen
+          forceOpen: params.forceOpen,
+          params: {...params}
         })}, 
 
         option: (message, params={}) => { result.outputs.push({
@@ -207,7 +208,9 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         result.outputs.push({
           ...input,
           label: params.label ? params.label : varCache.player.name,
+          system: params.system ? true : false,
           to: params.to ? params.to : "others",
+          delay: params.delay ? params.delay : null,
         })
       },
 

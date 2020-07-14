@@ -272,7 +272,7 @@ exports.logPlayerToNode = async (playerId, node) => {
 
 // retrieves players currently logged to a node
 exports.getPlayersForNode = async (nodeId) => {
-  console.log("getPlayersForNode")
+  console.log("getPlayersForNode", nodeId)
 
   // lode the node
   let node = await RestHapi.find(RestHapi.models.scriptNode, nodeId, null, Log);
@@ -288,11 +288,14 @@ exports.getPlayersForNode = async (nodeId) => {
 
   // take only the ones that are currently here
   let result = []
-  playerIds.forEach((playerId)=> {
-    let currentNodeId = exports.getCurrentNodeId(playerId, node.board)
-    if(currentNodeId == nodeId) 
+  for(let playerId of playerIds) {
+    let currentNodeId = await exports.getCurrentNodeId(playerId, node.board)
+    //console.log("compare", currentNodeId, nodeId)
+    if(currentNodeId.toString() == nodeId.toString()) 
       result.push(playerId)
-  })
+  }
+
+  console.log("result", result)
 
   return result;
 }
