@@ -41,7 +41,7 @@
 
   // set starting node checkbox initially
   const setStartingNodeEdit = ()=>{
-    console.log("setStartingNodeEdit");
+    //console.log("setStartingNodeEdit");
     if(currentBoardData)
       startingNodeEdit = currentBoardData.startingNode == scriptNodeEdit._id;
     else 

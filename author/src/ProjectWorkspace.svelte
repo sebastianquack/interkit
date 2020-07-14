@@ -22,12 +22,15 @@
 
   let editNodeId = null;
   const setEditNodeId = async (nodeId)=>{
-    const res = await fetch("/api/scriptNode/" + nodeId);
-    const json = await res.json();
-    
-    if(!currentBoardData || currentBoardData._id != json.board) {
-      currentBoardId = json.board;  
-      loadBoardData()
+
+    if(nodeId) {
+      const res = await fetch("/api/scriptNode/" + nodeId);
+      const json = await res.json();
+      
+      if(!currentBoardData || currentBoardData._id != json.board) {
+        currentBoardId = json.board;  
+        loadBoardData()
+      }
     }
     
     editNodeId = nodeId
@@ -41,7 +44,7 @@
   }
 
   let currentBoardId = null;
-  const setCurrentBoardId = (boardId)=>{currentBoardId = boardId};
+  const setCurrentBoardId = (boardId)=>{console.log("setCurrentBoardId"); currentBoardId = boardId;};
 
   let currentBoardData = null;
   const setCurrentBoardData = (boardData)=>{
