@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+/* CONFIGS */
+
 export const getConfig = async (key) => {
   const res = await fetch("/api/config?key=" + key);
   if(!res.ok) {
@@ -17,6 +19,9 @@ export const getConfig = async (key) => {
     return null;
 }
 
+
+/* VARIABLES */
+
 export const getPlayerVar = async (ids, key) => {
   const res = await fetch("/api/variable?varScope=player&key=" + key + "&player=" + ids.playerId + "&project=" + ids.projectId);
   if(!res.ok) {
@@ -33,6 +38,8 @@ export const getPlayerVar = async (ids, key) => {
     return null;
 }
 
+
+/* PLAYERS */
 
 const createPlayer = async () => {
   const res = await fetch("/api/player", {
@@ -87,6 +94,29 @@ export const refreshPlayerId = async () => {
   return playerId;
 }
 
+
+
+/* HELPERS PLAYERS, PROJECTS, NODES */
+
+export const getCurrentNodeId = async (playerId, board) => {
+  //console.log("getCurrentNode", playerId, board);
+  let query = {
+    player: playerId,
+    board: board._id,
+    timestamp: {$lt: Date.now()},
+    scheduled: {$ne: true}
+  }
+  let limit = 1;
+  let response = await fetch("/api/nodeLog?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+  let nodes = await response.json();
+  //console.log(nodes);
+  if(nodes.docs.length)
+    return nodes.docs[0].node
+  else 
+    return null
+}
+
+
 // find or create project log for given player and project (pass in ids)
 export const logPlayerToProject = async (player, project) => {
   const res = await fetch("/api/projectLog?&player=" + player + "&project=" + project);
@@ -101,6 +131,28 @@ export const logPlayerToProject = async (player, project) => {
     // todo error handling
   }
 }
+
+
+
+/* MESSAGES */
+
+export const postPlayerMessage = async (msgData) => {
+  msgData.seen = [msgData.sender] // add seen 
+  console.log("postPlayerMessage", msgData);
+  let response = await fetch("/api/player/message", {
+    method: "POST",
+    body: JSON.stringify(msgData)
+  })
+  let responseJSON = {};
+  if(response.ok)
+    responseJSON = await response.json();
+  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
+  return responseJSON.status == "ok";
+}
+
+
+
+/* FILES */
 
 function getFileExtension (file) {
     const filenameParts = file.name.split('.')
@@ -174,37 +226,6 @@ export const deleteFile = async (file, token) => {
   console.log(response);
 }
 
-export const postPlayerMessage = async (msgData) => {
-  msgData.seen = [msgData.sender] // add seen 
-  console.log("postPlayerMessage", msgData);
-  let response = await fetch("/api/player/message", {
-    method: "POST",
-    body: JSON.stringify(msgData)
-  })
-  let responseJSON = {};
-  if(response.ok)
-    responseJSON = await response.json();
-  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
-  return responseJSON.status == "ok";
-}
 
-
-export const getCurrentNodeId = async (playerId, board) => {
-  //console.log("getCurrentNode", playerId, board);
-  let query = {
-    player: playerId,
-    board: board._id,
-    timestamp: {$lt: Date.now()},
-    scheduled: {$ne: true}
-  }
-  let limit = 1;
-  let response = await fetch("/api/nodeLog?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
-  let nodes = await response.json();
-  //console.log(nodes);
-  if(nodes.docs.length)
-    return nodes.docs[0].node
-  else 
-    return null
-}
 
 

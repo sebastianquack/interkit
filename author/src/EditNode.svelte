@@ -22,9 +22,9 @@
   let scriptNode = {};
   let scriptNodeEdit = {};
   let startingNodeEdit;
+  let editTitle = false;  
+  let showHelp = false;
 
-  let editTitle = false;
- 
   const loadNoad = async (id) => {
     const res = await fetch("/api/scriptNode/" + editNodeId);
     const json = await res.json();
@@ -39,6 +39,7 @@
     }   
   }
 
+  // set starting node checkbox initially
   const setStartingNodeEdit = ()=>{
     console.log("setStartingNodeEdit");
     if(currentBoardData)
@@ -47,43 +48,35 @@
       console.log("warning: loading node without currentBoardData")
   }
 
-
-  const saveAndLoad = async (nodeId)=>{
-    if(changed) {
-      if(scriptNodeEdit._id) {
-        if(confirm("save " + scriptNodeEdit.name + "?")) {
-          await save();
-          loadNoad(nodeId);
-        } else {
-          loadNoad(nodeId);
-        }
-      }
-    } else {
-      loadNoad(nodeId);
-    }
+  // track changes in starting node checkbox
+  let startingNodeChanged = false;
+  const updateStartingNodeChanged = () => {
+    console.log("updateStartingNodeChanged", startingNodeEdit, currentBoardData.startingNode, scriptNodeEdit._id)
+    startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id)
   }
 
-  // run whenever editNodeId prop changes
+  /* LIFECYCLE / REACTIVE */
+
+  // run whenever editNodeId prop changes - user selects a new node to edit
   $: {    
      console.log('editNodeId changed', editNodeId);
-     saveAndLoad(editNodeId);
+     saveAndLoad(editNodeId); // ask if user want to change befure switching
   }
 
-  // update starting node whenever currentBoardData changes
+  // update starting node whenever currentBoardData changes - user selects a new board
   $: {
     if(currentBoardData) {
       setStartingNodeEdit();
+      startingNodeChanged = false; // reset changed tracker
     }  
   }
 
   // track changes in node object
   $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
   
-  // track changes in starting node checkbox
-  let startingNodeChanged = false;
-  const updateStartingNodeChanged = () => {
-    startingNodeChanged = startingNodeEdit != (currentBoardData.startingNode == scriptNodeEdit._id)
-  }
+
+  /* SAVING */
+
 
   async function save(andRun=false) {
 
@@ -166,6 +159,21 @@
     
   }
 
+  const saveAndLoad = async (nodeId)=>{
+    if(changed) {
+      if(scriptNodeEdit._id) {
+        if(confirm("save " + scriptNodeEdit.name + "?")) {
+          await save();
+          loadNoad(nodeId);
+        } else {
+          loadNoad(nodeId);
+        }
+      }
+    } else {
+      loadNoad(nodeId);
+    }
+  }
+
   const deleteNode = async ()=> {
     if(confirm("really?")) {
       await fetch("/api/scriptNode/" + editNodeId, {
@@ -176,8 +184,6 @@
       reloadBoardData();
     }
   }
-
-  let showHelp = false;
 
   const doMoveTo = async (nodeId) => {
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});

@@ -12,6 +12,9 @@ let io = null;
 // we store the sockets associated with players like so {playerId1: socket1, playerId2: socket2, ...}
 let playerSockets = {}
 
+
+/* SEND MESSAGE TO PLAYER */
+
 // we send messages to individual sockets depending on recipients
 const sendMessage = async (data) => {
 
@@ -43,6 +46,9 @@ const sendMessage = async (data) => {
   }
   console.log("done emitting");
 }
+
+
+/* JOIN A NODE */
 
 // log a player to a node and run onArrive script if requested
 async function joinNode(data) {
@@ -107,8 +113,10 @@ async function joinNodeMulti(data) {
   }
 }
 
+
+/* HANDLE INCOMING MESSAGE FROM PLAYER */
+
 // player input something (called via rest api)
-    
 async function handlePlayerMessage(data) {
   console.log("message received", data);
 
@@ -137,12 +145,13 @@ async function handlePlayerMessage(data) {
   
   return true;
 }
-
-
 exports.handlePlayerMessage = handlePlayerMessage;
 
-// set up socket event handling on server (called once on start)
 
+
+/* INIT */
+
+// set up socket event handling on server (called once on start)
 exports.init = (listener) => {
 
   io = require("socket.io")(listener)
@@ -187,8 +196,10 @@ exports.init = (listener) => {
 
 } 
 
-// runs a node's script in the sandbox and updates socket connected clients
 
+/* HANDLE SCRIPTS */
+
+// runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
   console.log("handleScript playerId", playerId)
@@ -216,13 +227,20 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     if(result.outputs.length > 0) {
 
       let recipients = {
-        "all": await db.getPlayersForNode(node),
         "sender": [playerId]
       }
-      recipients["others"] = recipients["all"].filter(r=>r!=playerId); 
-
+      
       for(let i = 0; i < result.outputs.length; i++) {
         let output = result.outputs[i];
+        
+        // call getPlayersForNode only when needed
+        if(output.to == "all" || output.to == "others") {
+          if(!recipients.all && !recipients.others) {
+            recipients.all = await db.getPlayersForNode(node);
+            recipients.others = recipients.all.filter(r=>r!=playerId); 
+          }
+        }
+
         let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
         console.log(msgObj);
 
@@ -235,8 +253,8 @@ async function handleScript(currentNode, playerId, hook, msgData) {
       }
     }
 
-    // send off interface commands
-
+    // send interface commands
+    
     if(result.interfaceCommand) {
       await sendMessage({params: {
             interfaceCommand: result.interfaceCommand,
