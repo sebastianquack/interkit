@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -30,6 +30,9 @@
   let map;
   let markerItems;
   let documentItems;
+  let arrowMode = false;
+  let arrowTarget = null;
+  let arrowDirection = 0;
 
   let chatMessageHandler = null;
   
@@ -63,6 +66,18 @@
   }
 
   const setItemModal = (item)=>itemModal = item;
+
+  // load persistent interface state from player variable
+  const loadInterfaceState = async ()=> {
+    let interfaceState = await getPlayerVar({playerId, projectId}, "interfaceState")
+    console.log("interfaceState", interfaceState);
+
+    if(interfaceState) {
+      if("arrowMode" in interfaceState) arrowMode = interfaceState.arrowMode;
+      if("arrowTarget" in interfaceState) arrowTarget = interfaceState.arrowTarget;
+      if("arrowDirection" in interfaceState) arrowDirection = interfaceState.arrowDirection;
+    }
+  }
 
   // for projects with only one listed board, automatically go to that board    
   const loadListedBoards = async () => {
@@ -102,12 +117,14 @@
   const openMapTo = (chatItem) => {
     console.log(chatItem);
     mainView = "map";
-    map.panTo(chatItem.attachment);
-    map.setZoom(17);
+    setTimeout(()=>{
+      map.panTo(chatItem.attachment);
+      map.setZoom(17);  
+    }, 1000) // this is a messy solution - when it interrups the marker clusterer it can lose markers!
   }
 
   // is called every time whe look at the map
-  // todo: optimize for when we have many markers - only receive updated markers and keep old ones
+  // todo: optimize for when we have many markers - load geographically
   const loadMarkers = async () => {
     let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
@@ -174,6 +191,7 @@
     if(loading) return;
     resetPlayer();
     menuOpen = false;
+    boards = [];
     currentBoard = null;
     mainView = "chat";
   }
@@ -187,6 +205,23 @@
     console.log("re-initialising socket message listener on player container");
     listenForMessages(async (message)=>{
       //console.log("player container received message");
+
+
+      // process some interface commands here
+      if(message.params) {
+        if(message.params.interfaceCommand == "updateBoards") {
+          console.log("updateBoard command")
+          loadListedBoards();  
+        }
+
+        if(message.params.interfaceCommand == "map") {
+          console.log("map command", message.params.interfaceOptions)
+          arrowMode = message.params.interfaceOptions.arrowMode;
+          arrowTarget = message.params.interfaceOptions.arrowTarget
+          arrowDirection = message.params.interfaceOptions.arrowDirection;
+        }
+      }
+
       if(chatMessageHandler) {
         //console.log("handing off to chatMessageHandler");
         chatMessageHandler(message);
@@ -244,7 +279,7 @@
       body: JSON.stringify({item, button})
     });
     let resJSON = await res.json();
-    console.log(resJSON);
+    //console.log(resJSON);
     if(!resJSON.status == "ok") {
       alert("error moving player");
     }
@@ -293,6 +328,7 @@
       loadMarkers();
 
       if(projectId) {
+        loadInterfaceState();
         loadListedBoards();        
         checkForUnseenMessages();    
       } 
@@ -371,13 +407,13 @@
     visible={mainView=="map"}
     {markerItems}
     {setItemModal}
+    {arrowMode}
+    {arrowTarget}
+    {arrowDirection}
   />
 
   {#if mainView == "archive"}
   <Archive
-    visible={true}
-    items={documentItems}
-    {setItemModal}
     {projectId}
     {playerId}
     {handleHtmlClicks}

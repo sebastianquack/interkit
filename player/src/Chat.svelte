@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { getConfig, postPlayerMessage } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage, getCurrentNodeId } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -95,16 +95,14 @@
 
     let firstTimeOnBoard = true // flag to see if we are on the board for the very first time
 
-    // load history 
-    await loadMoreItems(currentBoard); 
-    scrollUp();
-
     // find where player is now on this board
-    let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
-    let lastNode = await response.json();
-    console.log("lastNode", lastNode);
-    if(lastNode.docs.length > 0) {
-      nodeId = lastNode.docs[0].node;
+    /*let response = await fetch("/api/nodeLog?player="+playerId+"&board="+currentBoard._id);
+    let lastNode = await response.json();*/
+
+    let lastNodeId = await getCurrentNodeId(playerId, currentBoard)
+    console.log("lastNode", lastNodeId);
+    if(lastNodeId) {
+      nodeId = lastNodeId;
       firstTimeOnBoard = false; // there is history, we have been here before
     }
     
@@ -112,18 +110,7 @@
     fileServerURL = await getConfig("fileServerURL");
 
     // set up socket events
-    registerMessageHandler(async (message)=>{
-      console.log("chat message received, putting in queue");
-      messageQueue.push(message);
-      console.log("messageQueue.length", messageQueue.length);
-
-      if(messageQueue.length == 1) {
-        console.log("start processing queue");
-        processQueue();
-      } else {
-        console.log("message handler busy, waiting...");
-      }
-    })
+    registerMessageHandler(receiveMessage)
 
     // loads node we want to be in and saves it
     await setCurrentNode(nodeId)
@@ -144,11 +131,28 @@
       if(resJSON.statusCode == 500) {
         alert(resJSON.error)
       }
-
     }
 
     // we are ready receive messages
     status = "ready"
+
+    // load history - and process any unseen messages in it
+    await loadMoreItems(currentBoard); 
+    scrollUp();
+  }
+
+  // takes in a new message
+  const receiveMessage = async (message) => {
+    console.log("chat message received, putting in queue");
+      messageQueue.push(message);
+      console.log("messageQueue.length", messageQueue.length);
+
+      if(messageQueue.length == 1) {
+        console.log("start processing queue");
+        processQueue();
+      } else {
+        console.log("message handler busy, waiting...");
+      }
   }
 
   const processQueue = async () => {
@@ -182,9 +186,9 @@
         console.log("warning, message is from a different board")
 
         if(item.forceOpen) {
-          console.log("openening different board, cancelling queue here")
-          openBoardFromNodeId(item.node)
-          messageQueue = []; // remove items from queue, board reloads them anyway
+          console.log("forceOpen: openening different board, cancelling queue here")
+          openBoardFromNodeId(item.node)          
+          messageQueue = []; // remove all itmes from queue, board reloads them anyway
           status = "resetting"
           return;
         }
@@ -196,11 +200,6 @@
           setLockScreen();
           return;
         }
-    }
-
-    // switch player to chat view of foreOpen is set
-    if(item.forceOpen && mainView != "chat") {
-      openChatView();
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
@@ -215,14 +214,47 @@
         }
     }
 
-    if(!item.seen || item.seen.indexOf(playerId) == -1)
-        await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-          method: "PUT",
-          headers: {
-            'Content-Type': 'application/json'
-          },            
-        });
+    // mark as seen
+    if(!item.seen || item.seen.indexOf(playerId) == -1) {
+      await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },            
+      });
+    }
 
+    /* interface commands */
+
+    // switch player to chat view of foreOpen is set
+    if(item.forceOpen && mainView != "chat") {
+      openChatView();
+    }
+
+    // request for geoposition
+    if(item.params.interfaceCommand == "request-geoposition") {
+      console.log("geoposition requested, responding...")
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position)=>{
+          let item = {
+            attachment: {
+              mediatype: "GPS",
+              lat: position.coords.latitude, 
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+            },
+            params: {
+              interfaceCommand: "request-geoposition-response"
+            },
+            node: currentNode._id, board: currentNode.board, project: projectId, sender: playerId        
+          }
+          postPlayerMessage(item)
+        })
+      }
+      return; 
+    }
+
+    
     if(item.params.interfaceCommand) {
       if(item.params.interfaceCommand == "alert") {
         displayAlert(item.params.interfaceOptions);
@@ -233,6 +265,8 @@
       }
     }
 
+    /* message processing */
+
     if(item.attachment.mediatype) {
       item.side = "left";
       if(item.attachment.mediatype == "image") {
@@ -240,7 +274,7 @@
       }
       if(item.attachment.mediatype == "audio") {
         item.attachment.audioSrc = fileServerURL + item.attachment.filename;
-        item.attachment.autoplay = true;
+        //item.attachment.autoplay = true;
       }
       chatItems.push(item);
       sortItems();
@@ -249,12 +283,16 @@
     }
 
     let isSystemMessage = false;
+    if(!item.seen) {
+      item.seen = [];
+    }
 
     if(item.message) {
 
       isSystemMessage = message.system || message.label == "system";
       let showPlaceholder = !(isSystemMessage || item.params.option);
 
+      // push item into displayed chat
       chatItems.push({...item, 
         side: isSystemMessage ? "system" : "left",
         placeholder: showPlaceholder,
@@ -273,10 +311,19 @@
         }, 500);
     }
 
-    console.log("mainView", mainView)
-    console.log("item", item)
+    // show optionsArray
+    if(item.params.optionsArray) {
+      chatItems.push({...item, 
+        side: "left",
+        placeholder: false,
+      });
+      sortItems();
+      scrollUp();
+    }
+
+    // show additional notification if chat is not open because we're on the map
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
-      if(!item.params.interfaceCommand && !item.params.option) {
+      if(!item.params.interfaceCommand && !item.params.option && !item.forceOpen) {
         setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         setLockScreen();  
       }
@@ -325,38 +372,50 @@
       } else {
         showMoreItems = true;
       }
-      // show options only if they are the last ones at bottom
-      // TODO: disable but still show old options!
-      let activeOptions = true; 
+
+      let unseenMessages = [];
+
+      // if this is the very bottom of the chat, still allow options to be shown
+      let allowOptions = false
+      if(chatItems.length == 0) allowOptions = true;
+      
+      // go over loaded items from oldest to newest
+      // show options only if they are the last ones at bottom - TODO: disable but still show old options!
       for(let i = 0; i < historyItems.docs.length; i++) {
         let item = historyItems.docs[i];
         if(!item.params) item.params = {};
-        if(!item.params.option || (activeOptions && item.params.option)) {
-          let i = parseItem(item);
-          if(i) chatItems.unshift(i);
-          if(!item.seen || item.seen.indexOf(playerId) == -1)
-            await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-              method: "PUT",
-              headers: {
-                'Content-Type': 'application/json'
-              },              
-              });
+
+        // sort out unseen ones for processing
+        if(!item.seen || item.seen.indexOf(playerId) == -1) {
+            unseenMessages.push(item);
+        } else {
+
+          // ignore optionsArrays with no selection, these are replaced with selected items
+          if(item.params.optionsArray && item.params.index == undefined) continue
+
+          if(!item.params.option // non-options are always allowed
+            || (item.params.option && allowOptions) // options if still allowed
+            || (item.params.option && item.sender == playerId) // or if player already chose and sent this
+            ) {
+            let parsedItem = parseItem(item);
+            if(parsedItem) chatItems.unshift(parsedItem); // adds item at beginning array
+          }
+
+          // turn off options as soon as a non-option non-interface command comes by
+          if(!item.params.option && !item.params.interfaceCommand) {
+            allowOptions = false
+          }
+
+
         }
-        if(!item.params.option && !item.params.interfaceCommand) activeOptions = false;
       }
       chatItems = chatItems;
+
+      // process the unseen messages
+      unseenMessages.forEach(async (m)=>await receiveMessage(m));
+
       updateUnseenMessages();
   } 
-
-  const sortItems = () => {
-    chatItems.sort((a,b)=> {
-      let x = a.timestamp - b.timestamp;
-      return x == 0 ? a.outputOrder - b.outputOrder : x;
-    });
-    //items.sort((a,b)=>a.timestamp-b.timestamp);
-    chatItems = chatItems;
-    console.log("sorted items", chatItems);
-  }
 
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};
@@ -377,9 +436,20 @@
         
     return {
       ...rawItem,
+      loaded: true,
       side: rawItem.sender == playerId ? "right" : (isSystemMessage ? "system" : "left"),
     }
   }
+
+  const sortItems = () => {
+    chatItems.sort((a,b)=> {
+      let x = a.timestamp - b.timestamp;
+      return x == 0 ? a.outputOrder - b.outputOrder : x;
+    });
+    chatItems = chatItems;
+    console.log("sorted items", chatItems);
+  }
+
 
   const scrollUp = ()=> {
     setTimeout(()=>{
@@ -388,30 +458,62 @@
     }, 400);
   }
 
-  const submitInput = (item = null)=>{
+  const submitInput = (item = null, index = undefined)=>{
     console.log("submitInput", item)
-    if (!inputValue && !item) return;
-
-    chatItems = chatItems.concat({
-      side: 'right',
-      message: item ? item.message : inputValue,
-      attachment: {},
-      params: {}
-    });
-    chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
-    scrollUp();
     
+    // sanitise
+    if (!inputValue && !item) return;
+    let optionsArray = false
+    if(item)
+      if(item.params.optionsArray) {
+        optionsArray = true;
+        //message = item.params.optionsArray[index]
+      }
+    let message = item ? item.message : inputValue;
+
+    // if this is not an optionsArray, add an extra item to the chat
+    if(!optionsArray) {
+      chatItems = chatItems.concat({
+        side: 'right',
+        message,
+        attachment: {},
+        params: {}
+      });
+      chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
+      scrollUp();
+    
+    } else {
+      // for optionsArrays just mark selected item
+      item.params.index = index;
+      chatItems = chatItems;
+    }
+
+    // prepare submission to server
+    if(item) {
+      // remove option param for chosen on in individual option - but preserve params.key
+      item.params.option = undefined;
+    
+      // for optionsArray save index of chosen option in array
+      if(item.params.optionsArray) {
+        item.params.index = index 
+        item.message = item.params.optionsArray[index]
+      }
+    }
+
+    // submission
     let res = postPlayerMessage({
       sender: playerId, 
-      message: item ? item.message : inputValue, 
+      message, 
       node: currentNode._id, 
       board: currentBoard._id, 
       project: projectId,
       params: item ? item.params : undefined,
     });
-    inputValue = "";
+    // todo handle submission errors!
 
-    // todo handle errors
+
+    // clear input field at bottom of chat
+    inputValue = "";
   }
 
   const handleKeydown = (event)=>{
@@ -444,6 +546,21 @@
     chatItems = [];
   }
 
+  // audio player management - play the next player after one is finished
+  let audioPlayers = [];
+  const registerAudioPlayer = (audio) => {
+    if(audio) {
+      audioPlayers.push(audio)
+      console.log("added audioPlayer", audioPlayers)  
+      return audioPlayers.length - 1;
+    }
+  }
+  const onAudioEnded = (index) => {
+    if(index + 1 < audioPlayers.length) {
+      audioPlayers[index + 1].play()
+    }
+  }
+
 </script>
 
 <div class="chat">
@@ -454,13 +571,15 @@
       {#each chatItems as item}
         <ChatItemBubble 
           {item}
-          onClick={()=>{
-            if(item.params.option) {
-              if(!item.params.key) {
-                autoType(item)
-              } else {
-                submitInput(item);
-              }
+          {registerAudioPlayer}
+          {onAudioEnded}
+          onClick={(index = undefined)=>{
+            if(item.params.option || item.params.optionsArray) {
+              //if(!item.params.key) {
+              //  autoType(item)
+              //} else {
+                submitInput(item, index);
+              //}
             }
             if(item.attachment.mediatype == "GPS") mapClick(item)
           }}

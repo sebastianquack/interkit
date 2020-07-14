@@ -182,7 +182,7 @@
   const doMoveTo = async (nodeId) => {
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
     let resJSON = await res.json();
-    console.log(resJSON);
+    //console.log(resJSON);
   }
   
 
@@ -222,8 +222,8 @@
 
 
 {#if editNodeId}
-  <VarList scope="node" ids={{node: editNodeId}}/>
-  <VarList scope="playerNode" ids={{node: editNodeId, player: playerId}}/>
+  <VarList scope="node" ids={{node: editNodeId}} authoring/>
+  <VarList scope="playerNode" ids={{node: editNodeId, player: playerId}} authoring/>
 {/if}
 
 </div>

@@ -54,7 +54,7 @@
 
   </ResourceAdmin>
 
-  <VarList scope="project" ids={{project: projectId}}/>
+  <VarList scope="project" ids={{project: projectId}} authoring/>
 
 </div>
 

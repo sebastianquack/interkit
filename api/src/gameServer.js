@@ -115,14 +115,16 @@ async function handlePlayerMessage(data) {
   //let id = mongoose.Types.ObjectId(data.node);
 
   // new & safer: determine node based on server logs and ignore where client thinks it is
-  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, {player: data.sender, board: data.board}, Log);
+  //let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, {player: data.sender, board: data.board}, Log);
 
-  if(nodeLogItem.docs.length == 0) {
+  let currentNodeId = await db.getCurrentNodeId(data.sender, data.board)
+
+  if(!currentNodeId) {
     console.log("cannot find player nodelog");
     return null;
   }
   
-  let currentNode = await RestHapi.find(RestHapi.models.scriptNode, nodeLogItem.docs[0].node, {}, Log)
+  let currentNode = await RestHapi.find(RestHapi.models.scriptNode, currentNodeId, {}, Log)
   
   // save incoming message
   await db.logMessage({...data, 
@@ -170,16 +172,17 @@ exports.init = (listener) => {
   });
     
 
-  // check for scheduled messages, deliver and inform connected players via socket
+  // check for scheduled messages and moves
   
-  const scheduleMessagesInterval = setInterval(async ()=>{
-    let clients = Object.keys(io.sockets.sockets);
-
-    let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
+  const scheduledTasksInterval = setInterval(async ()=>{
     
+    let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
     for(let m of messages) {
       await sendMessage(m);    
     }
+
+    db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
+
   }, 10000);
 
 } 
@@ -263,24 +266,35 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         
         if(destinations.docs.length == 1) {
           let destination = destinations.docs[0];
-          console.log("moving player to node " + destination.name);
+          console.log("processing move to node " + destination.name);
           if(destination._id != currentNode._id) {
             
             await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
             
-            // move player directly on backend
-            setTimeout(async ()=>{
+            // move player(s) immediately
+            if(!result.moveToOptions.delay) {
 
               if(!result.moveToOptions.all) {
                 // move single player to different node
                 await joinNode({playerId, nodeId: destination._id, execOnArrive: result.moveToOptions.execOnArrive});
-                
+  
               } else {
                 // move multiple players at once
                 await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: result.moveToOptions.execOnArrive});
               }
 
-            }, result.moveToOptions.delay ? result.moveToOptions.delay : 0);              
+            // schedule move of players for later
+            } else {
+
+              console.log("scheduling move...")
+              
+              await db.scheduleMoveTo(playerId, destination, result.moveToOptions.delay);  
+              
+              if(result.moveToOptions.all) {
+                console.log("warninng - scheduled moveTo all not implemented yet")
+              }
+
+            }
 
           } else {
             console.log("node " + result.moveToOptions.destination + " not found");

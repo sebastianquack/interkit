@@ -69,9 +69,7 @@ $: {
   {#each Object.keys(nodeLogs) as key}
     <li>{nodeLogs[key][0].board.name}:
     {#each nodeLogs[key] as nl}
-      {#if nl.node}
-        <span class="nl">{nl.node.name}</span> 
-      {/if}
+      {#if nl.node} -> <span class="nl">{nl.node.name} {nl.scheduled ? "(scheduled)" : ""}</span> {/if}
     {/each}
     </li>
   {/each}
@@ -117,7 +115,7 @@ $: {
   }
 
   span.nl {
-    margin-right: 0.5em;
+    
   }
 
 </style>
