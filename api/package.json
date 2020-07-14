@@ -9,6 +9,7 @@
         "@hapi/hapi": "^19.1.1",
         "@hapi/inert": "^6.0.1",
         "@hapi/joi": "^17.1.1",
+        "@nodepit/migrate-state-store-mongodb": "^2.0.0",
         "archiver": "^4.0.1",
         "aws-sdk": "^2.693.0",
         "bcryptjs": "^2.4.3",
@@ -21,6 +22,7 @@
         "hapi-require-https": "^5.0.0",
         "js-beautify": "^1.11.0",
         "marked": "^1.1.0",
+        "migrate": "^1.7.0",
         "moment": "^2.26.0",
         "mongoose": "^5.9.18",
         "node-stream-zip": "^1.11.2",
@@ -35,6 +37,12 @@
     },
     "scripts": {
         "dev": "nodemon ./server.js localhost 9000",
-        "start": "node ./server.js"
+        "start": "node ./server.js",
+        "migrate+start": "npm run migrate:up && npm start",
+        "migrate:create": "migrate create",
+        "migrate:list": "migrate list",
+        "migrate:up": "migrate up --store=./migrate.js",
+        "migrate:down": "migrate down --store=./migrate.js",
+        "migrate": "migrate"
     }
 }
