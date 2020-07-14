@@ -56,7 +56,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       text: msgData.message ? msgData.message.trim().toLowerCase() : null,
       raw: msgData.message,
       key: msgData.params ? msgData.params.key : undefined,
-      filename: msgData.attachment ? msgData.attachment.filename : null,
+      filename: msgData.attachment ? msgData.attachment.key : null, // it's actually the "key", not the filename. 
       coords: type == "GPS" ? {lat: msgData.attachment.lat, lng: msgData.attachment.lng} : null,
       QRcode: type == "QRcode" ? msgData.attachment.QRCode : null, 
 
@@ -142,10 +142,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           forceOpen: options.forceOpen
         })},       
         
-        image: (filename, options={}) => { result.outputs.push({
+        image: async (keyOrName, options={}) => { 
+            result.outputs.push({
             attachment: {
               mediatype: "image", 
-              filename, 
+              filename: await db.getAttachmentFilename(keyOrName),
               alt: options.alt ? options.alt : undefined,
             }, 
             label: options.label ? options.label : varCache.board.narrator,
@@ -154,8 +155,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             forceOpen: options.forceOpen
         })},
 
-        audio: (filename, options={}) => { result.outputs.push({
-          attachment: {mediatype: "audio", filename}, 
+        audio: async (keyOrName, options={}) => { result.outputs.push({
+          attachment: {
+            mediatype: "audio", 
+            filename: await db.getAttachmentFilename(keyOrName),
+          }, 
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
           delay: options.delay ? options.delay : null,
@@ -204,7 +208,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       option: (message) => { result.outputs.push({message, params: {option: true}}); },       
       image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
       audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},
-    }  
+    }
   });
 
   let board = await db.getBoard(node.board);

@@ -341,6 +341,16 @@ exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) 
 
 }
 
+exports.getAttachmentFilename = async (keyOrName) => {
+  let attachments = await mongoose.model("file").find({
+   $or: [ { key: keyOrName }, { name: keyOrName } ]
+  })
+  if (attachments.length === 0) { console.warn(`attachment "${keyOrName}" not found`); return ""; }
+  if (attachments.length === 1) { return attachments[0].filename; }
+  if (attachments.length > 1)   { console.warn(`several attachments found for "${keyOrName}"`); return attachments[0].filename; }
+}
+
+
 // uses moment add, ie moment().add({days:7,months:1}); // with object literal
 
 exports.scheduleMessage = (timeFromNowObj, data) => {
@@ -466,6 +476,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
   pages = translateKeys(pages, "_id")
   pages = translateKeys(pages, "project")
 
+  // translate variables
   variables = translateKeys(variables, "_id")
   variables = translateKeys(variables, "project")
 

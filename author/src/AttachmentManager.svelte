@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { getConfig, upload, deleteFile } from '../../shared/util.js';
 
+  import AttachmentTable from './AttachmentTable.svelte'
   import { token } from './stores.js';
 
   export let projectId;
@@ -37,7 +38,7 @@
     if(fileInput.files.length) {
       Array.from(fileInput.files).forEach(async (file)=>{
         uploadProgress = "";
-        let newFile = await upload(file, (progress)=>{uploadProgress = progress + "%"}, projectId);
+        let newFile = await upload(file, (progress)=>{uploadProgress = progress + "%"}, projectId, true);
         uploadProgress = "";
         if(newFile)
           attachments = attachments.concat(newFile);
@@ -68,24 +69,18 @@
 {#if loading }
   <p> Loading ... </p>
 {:else}
-  <ul>
-    {#each attachments as attachment}
-      <li>
-        {attachment.filename}
-        {#if attachment.simpletype === "image"}
-          <img src={fileServerURL + attachment.filename} alt={attachment.filename} />
-        {:else if attachment.simpletype === "audio"}
-          <audio controls>
-            <source src={encodeURI(fileServerURL + attachment.filename)} type={attachment.mimetype}>
-          </audio>        
-        {:else}
-          <small>{attachment.filetype}</small>
-        {/if}
-        <a target="_blank" title={fileServerURL + attachment.filename} href={fileServerURL + attachment.filename}>link</a>
-        <span class="link" on:click={()=>doDeleteFile(attachment)}>delete</span>
-      </li>
-    {/each}
-  </ul>
+  <h3>Project Attachments</h3>
+  <AttachmentTable 
+    attachments={attachments.filter(a => a.authored)} 
+    {fileServerURL}
+    {doDeleteFile}
+    />
+  <h3>Uploaded by Players</h3>
+  <AttachmentTable 
+    attachments={attachments.filter(a => !a.authored)}
+    {fileServerURL}
+    {doDeleteFile}
+    />
 {/if}
 
 </div>
@@ -104,21 +99,6 @@
     overflow: scroll;
     width: 100%;
     background-color: #fff;
-  }
-
-  img {
-    width: 1em;
-    height: 1em;
-    object-fit: contain;
-  }
-
-  span.link {
-    color: rgb(0,100,200);
-    text-decoration: none;
-  }
-  span.link:hover {
-    cursor: pointer;
-    text-decoration: underline;
   }
 
 </style>  

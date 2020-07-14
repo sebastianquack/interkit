@@ -210,7 +210,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     // proccess collected script outputs
     
-    if(result.outputs.length > 0) {
+    if(result.outputs && result.outputs.length > 0) {
 
       let recipients = {
         "all": await db.getPlayersForNode(node),

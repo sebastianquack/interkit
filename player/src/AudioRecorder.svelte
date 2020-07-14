@@ -388,8 +388,9 @@ const send = async (blob)=> {
   let fileName = "audio-" + Math.floor(10000 * Math.random()) + "." + audioType;
   var file = new File( [blob], fileName, { type: 'audio/' + audioType } ); 
   console.log(file)
-  await upload(file, progressEvent => {console.log(progressEvent); uploadProgress = progressEvent}, projectId) 
-  await onUpload(fileName);
+  const files = await upload(file, progressEvent => {console.log(progressEvent); uploadProgress = progressEvent}, projectId) 
+  // TODO fail better if file is not an array (if possible)
+  await onUpload(files[0]);
 }
 
 const startRecordingCounter = () => {
