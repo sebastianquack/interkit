@@ -9,7 +9,7 @@ Log.logLevel = 'WARNING';
 
 let io = null;
 
-// we store the sockets associated with players like so {playerId1: socket1, playerId2: socket2, ...}
+// we store the sockets associated with players like so {playerId1: [socket1], playerId2: [socket2]|, ...}
 let playerSockets = {}
 
 
@@ -41,7 +41,9 @@ const sendMessage = async (data) => {
   for(playerId of data.recipients) {
     if(playerSockets[playerId]) {
       console.log("emitting to", playerId);
-      io.to(playerSockets[playerId]).emit('message', {...msgData, _id: msgId});
+      playerSockets[playerId].forEach((socket)=>{
+        io.to(socket).emit('message', {...msgData, _id: msgId});  
+      });
     }
   }
   console.log("done emitting");
@@ -174,8 +176,16 @@ exports.init = (listener) => {
     
     socket.on('registerPlayer', async (data) => {
       console.log('registerPlayer');
-      playerSockets[data.playerId] = socket.id;
-      console.log(Object.keys(playerSockets))
+
+      if(!playerSockets[data.playerId]) {
+        playerSockets[data.playerId] = []
+      }
+
+      if(playerSockets[data.playerId].indexOf(socket.id) == -1) {
+        playerSockets[data.playerId].push(socket.id);  
+      }
+      
+      console.log(playerSockets)
     })
 
   });
