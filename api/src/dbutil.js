@@ -518,6 +518,24 @@ exports.getItemsQuery = async (project, query) => {
 }
 
 
+/* FILES / ATTACHMENTS */
+
+exports.getAttachmentFilename = async (keyOrName, projectId) => {
+  let query = {
+    $or: [ { key: keyOrName }, { name: keyOrName, authored: true } ],
+  }
+  if (projectId) {
+    query = {
+      ...query,
+      project: projectId
+    }
+  }
+  const attachments = await mongoose.model("file").find(query)
+  if (attachments.length === 0) { console.warn(`attachment "${keyOrName}" not found`); return ""; }
+  if (attachments.length === 1) { return attachments[0].filename; }
+  if (attachments.length > 1)   { console.warn(`several attachments found for "${keyOrName}"`, attachments); return attachments[0].filename; }
+}
+
 
 /* IMPORT / EXPORT */
 
@@ -667,10 +685,4 @@ exports.duplicateProject = async function (projectId) {
   const projectData = await getAllOfProject(projectId)
   insertProjectAsDuplicate(projectData)
 }
-
-
-
-
-
-
 

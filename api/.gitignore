@@ -13,3 +13,6 @@ node_modules/
 
 # temporary directories
 public/tmp
+
+# local migration status
+.migrate

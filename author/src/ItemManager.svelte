@@ -92,9 +92,10 @@
       return;
     }
     console.log(editItem);
-    let saveItem = {...editItem, 
+    const saveItem = {...editItem, 
       type: editItem.type == "custom" ? customType : editItem.type, 
       value: parseItem(), 
+      authored: editItem.new,
       new: undefined,
       players: undefined
     };
@@ -211,8 +212,22 @@
   <button on:click={()=>editItem = null}>cancel</button>
   
 {:else}
+
+  <h4>Project Items</h4>
   <ul>
-    {#each items as item}
+    {#each items.filter(i => i.authored) as item}
+      <li>{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
+        <button on:click={()=>award(item._id)}>award</button> 
+        <button on:click={()=>revoke(item._id)}>revoke</button> 
+        <button on:click={()=>setEditItem(item)}>edit</button> 
+        <button on:click={()=>deleteItem(item._id)}>delete</button>
+      </li>
+    {/each}
+  </ul>
+
+  <h4>User generated Items</h4>
+  <ul>
+    {#each items.filter(i => !i.authored) as item}
       <li>{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
         <button on:click={()=>award(item._id)}>award</button> 
         <button on:click={()=>revoke(item._id)}>revoke</button> 

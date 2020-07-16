@@ -56,8 +56,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       text: msgData.message ? msgData.message.trim().toLowerCase() : null,
       raw: msgData.message,
       key: msgData.params ? msgData.params.key : undefined,
+      filename: msgData.attachment ? msgData.attachment.key : null, // it's actually the "key", not the filename. 
       index: msgData.params ? (msgData.params.index + 1) : undefined,
-      filename: msgData.attachment ? msgData.attachment.filename : null,
       coords: type == "GPS" ? {lat: msgData.attachment.lat, lng: msgData.attachment.lng} : null,
       QRcode: type == "QRcode" ? msgData.attachment.QRCode : null,
       msgData: msgData // pass original msgData in for debugging
@@ -159,10 +159,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           forceOpen: params.forceOpen
         })},              
         
-        image: (filename, params={}) => { result.outputs.push({
+        image: async (keyOrName, params={}) => { 
+            result.outputs.push({
             attachment: {
               mediatype: "image", 
-              filename, 
+              filename: await db.getAttachmentFilename(keyOrName, project._id),
               alt: params.alt ? params.alt : undefined,
             }, 
             label: params.label ? params.label : varCache.board.narrator,
@@ -171,9 +172,12 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             forceOpen: params.forceOpen
         })},
 
-        audio: (filename, params={}) => { result.outputs.push({
+        audio: async (keyOrName, params={}) => { result.outputs.push({
+          attachment: {
+            mediatype: "audio", 
+            filename: await db.getAttachmentFilename(keyOrName, project._id),
+          }, 
           params: params,
-          attachment: {mediatype: "audio", filename}, 
           label: params.label ? params.label : varCache.board.narrator,
           to: params.to ? params.to : "sender",
           delay: params.delay ? params.delay : null,
@@ -235,7 +239,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       option: (message) => { result.outputs.push({message, params: {option: true}}); },       
       image: (filename, alt="default image", label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "image", filename, alt}, label})},
       audio: (filename, label=varCache.board.narrator) => { result.outputs.push({attachment: {mediatype: "audio", filename}, label})},
-    }  
+    }
   });
 
   let board = await db.getBoard(node.board);

@@ -75,16 +75,18 @@
     closeAttachmentMenu();
   }
 
-  const sendAttachment = async (filename, mediatype) => {
+  const sendAttachment = async (fileObject, mediatype) => {
     let fileServerURL = await getConfig("fileServerURL");
     console.log("fileServerURL", fileServerURL);
+
+    console.log("fileObj", fileObject)
 
     let item = {
       attachment: {
         mediatype,
-        imgSrc: mediatype == "image" ? fileServerURL + filename : undefined,  
-        audioSrc: mediatype == "audio" ? fileServerURL + filename : undefined,
-        filename: filename
+        imgSrc: mediatype == "image" ? fileServerURL + fileObject.filename : undefined,  
+        audioSrc: mediatype == "audio" ? fileServerURL + fileObject.filename : undefined,
+        key: fileObject.key
       },
       params: {},
       node: currentNode._id, board: currentNode.board, project: projectId, sender: playerId
@@ -126,9 +128,9 @@
   <div class="tool-container">
     <Camera
       {projectId}
-      onUpload={async (imageURL)=>{
+      onUpload={async (fileObject)=>{
         closeTool();
-        await sendAttachment(imageURL, "image");
+        await sendAttachment(fileObject, "image");
       }}
       onClose={closeTool}
     />
