@@ -11,11 +11,7 @@ cd -
 
 2. npm install
 ```sh
-cd api && npm i; cd -
-cd shared && npm i; cd -
-cd author && npm i; cd -
-cd admin && npm i; cd -
-cd player && npm i; cd -
+npm run install:all
 ```
 
 2. run local minio (S3 service) and mongodb

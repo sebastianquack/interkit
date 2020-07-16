@@ -1,0 +1,21 @@
+{
+  "name": "interkit-all",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+      "install-shared" : "cd shared && npm i",
+      "install-api"    : "cd api    && npm i",
+      "install-player" : "cd player && npm i",
+      "install-author" : "cd author && npm i",
+      "install-admin"  : "cd admin  && npm i",
+      "install:all"    : "npm run install-shared && npm run install-api && npm run install-player && npm run install-author && npm run install-admin",
+      "build-player"   : "cd player && bin/build_and_copy",
+      "build-author"   : "cd author && bin/build_and_copy",
+      "build-admin"    : "cd admin  && bin/build_and_copy",
+      "build:prepare"  : "mkdir -p api/public",
+      "build:all": "npm run build-player && npm run build-author && npm run build-admin",
+      "build": "npm run install:all && npm run build:prepare && npm run build:all",
+      "start": "cd api && npm start"
+  }
+}

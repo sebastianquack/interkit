@@ -2,6 +2,6 @@
 
 set -x
 npm run build
-trash -rf ../api/public/admin
+rm -rf ../api/public/admin
 mkdir ../api/public/admin
 mv ./build/* ../api/public/admin*
