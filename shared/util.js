@@ -159,15 +159,17 @@ function getFileExtension (file) {
     return filenameParts[filenameParts.length - 1].toLowerCase()
 }
 
-export const upload = async (file, progress, projectId = null) => {
+export const upload = async (file, progress, projectId = null, authored = false) => {
 
-  console.log(file);
+  // TODO server side mime type detection? https://stackoverflow.com/questions/1201945/how-is-mime-type-of-an-uploaded-file-determined-by-browser
+
+  console.log("UTIL", file);
   let fileType = file.type;
-  let fileName = file.name;
+  let fileName = generateId()
   
   let response = await axios.post("/api/s3_sign", {
-      fileName : fileName,
-      fileType : fileType
+      fileName,
+      fileType
   });
   if(!response) return null;
   console.log(response);
@@ -191,12 +193,20 @@ export const upload = async (file, progress, projectId = null) => {
   let uploadResponse = await axios.put(signedRequest, file, options)
   console.log("Response from s3", uploadResponse);
 
+  if (!projectId) {
+    console.warn(`upload lacked project: ${fileName}`)
+  }
+
   const entry = {
+    key: generateId(24),
+    name: file.name,
+    uploadedFilename: file.name,
     filename: fileName,
     mimetype: fileType,
     simpletype: fileType && fileType.indexOf("/") > 0 ? fileType.split("/")[0] : "",
     path: fileName,
-    project: projectId
+    project: projectId,
+    authored
   }
 
   //console.log(entry)
@@ -208,7 +218,7 @@ export const upload = async (file, progress, projectId = null) => {
       },      
       body: JSON.stringify([entry])
   });
-  const json = await res.json();  
+  const json = await res.json();  // -> array of objects
   console.log("new file created", json);
   return json;
 }
@@ -226,6 +236,16 @@ export const deleteFile = async (file, token) => {
   console.log(response);
 }
 
-
-
-
+// https://stackoverflow.com/questions/9407892/how-to-generate-random-sha1-hash-to-use-as-id-in-node-js
+// str byteToHex(uint8 byte)
+//   converts a single byte to a hex string 
+function byteToHex(byte) {
+  return ('0' + byte.toString(16)).slice(-2);
+}
+// str generateId(int len);
+//   len - must be an even number (default: 40)
+function generateId(len = 40) {
+  var arr = new Uint8Array(len / 2);
+  window.crypto.getRandomValues(arr);
+  return Array.from(arr, byteToHex).join("");
+}

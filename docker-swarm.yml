@@ -1,0 +1,78 @@
+version: '3.3'
+services:
+  app:
+    image: interkit/interkit:latest
+    environment:
+      AWSAccessKeyId: 2QnjrZa8xskGDkgRHa
+      AWSEndpoint: http://minio:9002
+      Bucket: dreamshiplocal
+      MONGODB_URI: mongodb://mongo:27017
+      NODE_ENV: development
+      PORT: '9000'
+    secrets:
+      - JWT_SECRET      
+      - AWSSecretKey
+      - ADMIN_PASSWORD
+    ports:
+     - 9000:9000
+    networks:
+     - default
+    logging:
+      driver: json-file
+  minio:
+    image: minio/minio:latest
+    command:
+     - server
+     - /data
+    environment:
+      MINIO_ACCESS_KEY: 2QnjrZa8xskGDkgRHa
+    secrets:
+      - MINIO_SECRET_KEY
+    ports:
+     - 9002:9000
+    volumes:
+     - minio:/data
+    networks:
+     - default
+    logging:
+      driver: json-file
+  minio-mc-init:
+    image: minio/mc:latest
+    environment:
+      MINIO_ACCESS_KEY: 2QnjrZa8xskGDkgRHa
+    secrets:
+      - MINIO_SECRET_KEY
+    networks:
+     - default
+    logging:
+      driver: json-file
+    deploy:
+      restart_policy:
+        condition: none
+  mongo:
+    image: mongo:4.2
+    volumes:
+     - mongo:/data/db
+    ports:
+     - 27017:27017
+    networks:
+     - default
+    logging:
+      driver: json-file
+networks:
+  default:
+    driver: overlay
+volumes:
+  minio:
+    external: true
+  mongo:
+    external: true
+secrets:
+  MINIO_SECRET_KEY:
+    external: true
+  JWT_SECRET:
+    external: true
+  AWSSecretKey:
+    external: true
+  ADMIN_PASSWORD:
+    external: true

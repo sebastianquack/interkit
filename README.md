@@ -53,3 +53,15 @@ cd admin && npm start
 - Mongo Express: `http://localhost:9001/`
 - Minio: `http://localhost:9002/`
 - Swagger API documentation: `http://localhost:9000/api`
+
+## migrations
+
+based on https://github.com/tj/node-migrate
+
+create migration: 
+- `npm run migrate:create some-description` and edit the new file in `migrations/`
+
+run migrations:
+- `npm run migrate:up`
+- `npm run migrate:down`
+

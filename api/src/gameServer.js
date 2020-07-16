@@ -256,7 +256,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     // proccess collected script outputs
     
-    if(result.outputs.length > 0) {
+    if(result.outputs && result.outputs.length > 0) {
 
       let recipients = {
         "sender": [playerId]
@@ -335,67 +335,69 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     // handle moveTo requests - limitation: we process a single moveTo per script result
 
-    if(result.moveTo) {
+    if(result.moveTos.length) {
 
-      if(moveCounter < moveLimit) {
+        result.moveTos.forEach(async moveTo => {
         
-        // find destination via name and board
-        let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
-          name: result.moveToOptions.destination,
-          board: currentNode.board
-        }, Log)
-        
-        if(destinations.docs.length == 1) {
-          let destination = destinations.docs[0];
-          console.log("processing move to node " + destination.name);
-          if(destination._id != currentNode._id) {
-            
-            await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
-            
-            // move player(s) immediately
-            if(!result.moveToOptions.delay) {
+          // find destination via name and board
+          let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
+            name: moveTo.destination,
+            board: currentNode.board
+          }, Log)
+          
+          if(destinations.docs.length == 1) {
+            let destination = destinations.docs[0];
+            console.log("processing move to node " + destination.name);
+            if(destination._id != currentNode._id) {
+              
+              // move player(s) immediately
+              if(!moveTo.delay) {
 
-              if(!result.moveToOptions.all) {
-                // move single player to different node
-                await joinNode({playerId, nodeId: destination._id, execOnArrive: result.moveToOptions.execOnArrive});
-  
+                await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
+
+                if(moveCounter < moveLimit) {
+
+                  if(!moveTo.all) {
+                    // move single player to different node
+                    await joinNode({playerId, nodeId: destination._id, execOnArrive: moveTo.execOnArrive});
+
+                  } else {
+                    // move multiple players at once
+                    await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: moveTo.execOnArrive});
+                  }
+                
+                } else {
+                  await abortTooManyMoves(playerId, node, board)        
+                }
+
+              // schedule move of players for later
               } else {
-                // move multiple players at once
-                await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: result.moveToOptions.execOnArrive});
+
+                console.log("scheduling move...")
+                
+                await db.scheduleMoveTo(playerId, destination, moveTo.delay);  
+                
+                if(moveTo.all) {
+                  console.log("warninng - scheduled moveTo all not implemented yet")
+                }
+
               }
 
-            // schedule move of players for later
             } else {
-
-              console.log("scheduling move...")
-              
-              await db.scheduleMoveTo(playerId, destination, result.moveToOptions.delay);  
-              
-              if(result.moveToOptions.all) {
-                console.log("warninng - scheduled moveTo all not implemented yet")
-              }
-
+              console.log("node " + moveTo.destination + " not found");
+              await sendMessage({
+                message: "node " + moveTo.destination + " not found", 
+                system: true, 
+                recipients: [playerId],
+                node, board
+              });
             }
-
-          } else {
-            console.log("node " + result.moveToOptions.destination + " not found");
-            await sendMessage({
-              message: "node " + result.moveToOptions.destination + " not found", 
-              system: true, 
-              recipients: [playerId],
-              node, board
-            });
           }
-        }
 
-      } else {
-
-        await abortTooManyMoves(playerId, node, board)        
-
-      }
+        })
 
     }
-    
+
     if(result.outputs.length == 0 && !result.interfaceCommand && !result.moveTo) {
 
       console.log("no outputs on hook ", hook);
