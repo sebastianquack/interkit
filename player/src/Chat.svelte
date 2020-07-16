@@ -355,7 +355,8 @@
         board: board._id,
         recipients: playerId,
         timestamp: {$lt: showItemsSince},
-        scheduled: {$ne: true}
+        scheduled: {$ne: true},
+        'params.interfaceCommand': {$ne: "nodeInfo"} // ignore node infos
       }
       let limit = 10;
       let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));

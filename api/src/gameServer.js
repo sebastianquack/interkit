@@ -27,7 +27,7 @@ const sendMessage = async (data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
 
-  console.log("sendMessage '"+msgData.label+"' '"+msgData.message+"'");
+  console.log("sendMessage '"+msgData.label+"' '"+msgData.message+"' "+msgData.params.interfaceCommand);
   //console.log("playerSockets", playerSockets);
   
   // get an id for the message
@@ -398,7 +398,10 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     }
 
-    if(result.outputs.length == 0 && !result.interfaceCommand && !result.moveTo) {
+    /*if(result.outputs.length == 0 
+    && !result.interfaceCommand 
+    && !result.moveTos.length 
+    && !result.forwards.length) {
 
       console.log("no outputs on hook ", hook);
 
@@ -411,7 +414,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         }) 
       }
 
-    }
+    }*/
 
     if(!result.moveTo && result.forwards.length == 0) {
       // reset move counter if no move or forward requested
