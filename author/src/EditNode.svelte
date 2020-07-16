@@ -16,6 +16,7 @@
   export let setEditNodeId;
   export let reloadBoardData;
   export let currentBoardData;
+  export let projectId;
 
   export let createNode;
   
@@ -26,6 +27,11 @@
   let showHelp = false;
 
   const loadNoad = async (id) => {
+    if(!id) {
+      setEditNodeId(null)
+      return
+    }
+
     const res = await fetch("/api/scriptNode/" + editNodeId);
     const json = await res.json();
     //console.log(json);
@@ -57,6 +63,9 @@
 
   /* LIFECYCLE / REACTIVE */
 
+  // track changes in node object
+  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
+  
   // run whenever editNodeId prop changes - user selects a new node to edit
   $: {    
      console.log('editNodeId changed', editNodeId);
@@ -68,13 +77,15 @@
     if(currentBoardData) {
       setStartingNodeEdit();
       startingNodeChanged = false; // reset changed tracker
+
+      if(currentBoardData._id != scriptNodeEdit.board && scriptNodeEdit.board) {
+        console.log("board does not fit with open edit node", scriptNodeEdit.name)
+        saveAndCloseNode();
+      }
     }  
   }
 
-  // track changes in node object
-  $: changed = JSON.stringify(scriptNode) !== JSON.stringify(scriptNodeEdit);
   
-
   /* SAVING */
 
 
@@ -140,7 +151,7 @@
           name: scriptNodeEdit.name, 
           script: scriptNodeEdit.script,
           multiPlayer: scriptNodeEdit.multiPlayer,
-          board: currentBoardData._id,
+          board: scriptNodeEdit.board ? scriptNodeEdit.board : currentBoardData._id,
         })
       });
       if(response.ok) {
@@ -159,11 +170,24 @@
     
   }
 
+  const saveAndCloseNode = async ()=> {
+    if(changed) {
+      if(scriptNodeEdit._id) {
+        if(confirm("save " + scriptNodeEdit.name + "?")) {
+          await save(false);
+          setEditNodeId(null);
+        }
+      }
+    } else {
+      setEditNodeId(null);
+    } 
+  }
+
   const saveAndLoad = async (nodeId)=>{
     if(changed) {
       if(scriptNodeEdit._id) {
         if(confirm("save " + scriptNodeEdit.name + "?")) {
-          await save();
+          await save(false);
           loadNoad(nodeId);
         } else {
           loadNoad(nodeId);
@@ -230,6 +254,9 @@
 {#if editNodeId}
   <VarList scope="node" ids={{node: editNodeId}} authoring/>
   <VarList scope="playerNode" ids={{node: editNodeId, player: playerId}} authoring/>
+  <VarList scope="player" ids={{player: playerId}} authoring/>
+  <VarList scope="project" ids={{project: projectId}} authoring/>
+
 {/if}
 
 </div>

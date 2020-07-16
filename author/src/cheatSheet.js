@@ -71,6 +71,7 @@ createOrUpdateItem({
       value: {
         lat: 52.493606, 
         lng: 13.438209,
+        revealOnProximity: 100, // option to show marker only when user is close and hide when far away
         description: "Hier wurde eine hohe Wahrscheinlichkeit für Lebensform B78-C# gemessen.",
         sound: "twitscher.mp3",
         buttons: [{label: "tap me", node: "boardName/nodeName"}]

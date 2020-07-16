@@ -38,6 +38,7 @@
   };
 
   let playerNodeId = null;
+
   const updatePlayerNodeId = (nodeId)=>{
     console.log("updatePlayerNodeId", nodeId);
     playerNodeId = nodeId
@@ -258,6 +259,7 @@ function onReceive(input) {
       {currentBoardData}
       {createNode}
       {playerId}
+      projectId={project._id}
     />
     {/if}
   </div>

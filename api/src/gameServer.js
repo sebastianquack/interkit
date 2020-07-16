@@ -90,6 +90,11 @@ exports.joinNode = joinNode;
 // step 1: move all players
 // step 2: run onArrive scripts for all players
 
+// being logged to a node means: 
+// - a single player is only always in a single node per board
+// - this node processes any incoming messages from the player
+// - and receives messages {to: "all"} from other players in this node
+
 async function joinNodeMulti(data) {
   if(!data) data = {};
   if(!data.arriveFrom) data.arriveFrom = {};
@@ -143,6 +148,10 @@ async function handlePlayerMessage(data) {
     board: currentNode.board,
     timestamp: Date.now()
   });
+
+  // reset moveCounter when player interacts with system
+  await db.setPlayerAttribute(data.sender, "moveCounter", 0);  
+
   await handleScript(currentNode, data.sender, "onReceive", data);  
   
   return true;
@@ -216,7 +225,7 @@ exports.init = (listener) => {
 // runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
-  console.log("handleScript playerId", playerId)
+  console.log("handleScript", playerId, currentNode.name, hook)
 
   let node = currentNode._id;
   let board = currentNode.board;
@@ -235,6 +244,15 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         node, board
       });
     }
+
+    // limit amount of chained moves and forwards
+
+    let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
+    if(!moveCounter) {
+      await db.setPlayerAttribute(playerId, "moveCounter", 0);  
+      moveCounter = 0;
+    }
+    let moveLimit = 4;
 
     // proccess collected script outputs
     
@@ -281,18 +299,45 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           recipients: [playerId], node, board});  
     }
 
-    // handle moveTo requests
+    // handle forwards
+
+    if(result.forwards.length) {
+
+      result.forwards.forEach(async forward=>{
+
+        console.log("forward", forward)
+
+        let forwardNodes = await RestHapi.list(RestHapi.models.scriptNode, {
+          name: forward.node,
+          board: forward.input.board
+        }, Log)
+
+        console.log(forwardNodes);
+
+        if(forwardNodes.docs.length > 0) {
+
+          let forwardNode = forwardNodes.docs[0]
+
+          if(moveCounter < moveLimit) {
+
+            console.log("forwarding input to node " + forwardNode.name)
+            await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1) // count towards moveTo limit
+            await handleScript(forwardNode, msgData.sender, "onReceive", msgData);
+          
+          } else {
+            
+            await abortTooManyMoves(playerId, node, board)        
+          }
+        }
+      })
+    }
+
+
+    // handle moveTo requests - limitation: we process a single moveTo per script result
 
     if(result.moveTo) {
 
-      // limit amount of chained moves
-      let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
-      if(!moveCounter) {
-        await db.setPlayerAttribute(playerId, "moveCounter", 0);  
-        moveCounter = 0;
-      }
-
-      if(moveCounter < 4) {
+      if(moveCounter < moveLimit) {
         
         // find destination via name and board
         let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
@@ -345,19 +390,10 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
       } else {
 
-        console.log("too many moves, aborting")
-          await sendMessage({
-            message: "too many chained moveTos in script, aborting", 
-            system: true, 
-            recipients: [playerId],
-            node, board
-          });
-          await db.setPlayerAttribute(playerId, "moveCounter", 0)
-        }
+        await abortTooManyMoves(playerId, node, board)        
 
-    } else {
-      // reset move counter if no move requested
-      await db.setPlayerAttribute(playerId, "moveCounter", 0)
+      }
+
     }
     
     if(result.outputs.length == 0 && !result.interfaceCommand && !result.moveTo) {
@@ -372,10 +408,29 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           params: {interfaceCommand: "nodeInfo"}
         }) 
       }
-    
+
+    }
+
+    if(!result.moveTo && result.forwards.length == 0) {
+      // reset move counter if no move or forward requested
+      await db.setPlayerAttribute(playerId, "moveCounter", 0)
     }
  
   });
+
+}
+
+
+async function abortTooManyMoves(playerId, node, board) {
+
+  console.log("too many moves, aborting")
+  await sendMessage({
+    message: "too many chained moveTos in script, aborting", 
+    system: true, 
+    recipients: [playerId],
+    node, board
+  });
+  await db.setPlayerAttribute(playerId, "moveCounter", 0)
 
 }
 

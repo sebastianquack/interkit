@@ -46,7 +46,7 @@ const checkRefs = (scope, refs) => {
 }
 
 exports.setVar = async (scope, refs, key, value) => {
-  //console.log("setVar", scope, refs, key, value);
+  console.log("setVar", scope, refs, key, value);
 
   if(checkRefs(scope, refs)) {
 
@@ -66,7 +66,7 @@ exports.setVar = async (scope, refs, key, value) => {
     // update
     } else {
       await RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
-        value: value 
+        value: value, stringValue: null 
       }, Log);  
     }
   } else {
@@ -327,6 +327,7 @@ exports.executeScheduledMoves = async (nodeLogModel, log) => {
       let nodeLog = nodeLogs.docs[i];
       if(nodeLog.moveTime <= Date.now()) {
         // execute moveto
+        await exports.setPlayerAttribute(nodeLog.player, "moveCounter", 0) // reset move counter
         await gameServer.joinNode({
           nodeId: nodeLog.node, 
           playerId: nodeLog.player, 
@@ -335,7 +336,7 @@ exports.executeScheduledMoves = async (nodeLogModel, log) => {
         // mark as done
         await RestHapi.update(nodeLogModel, nodeLog._id, {scheduled: false}, log)
       } else {
-        console.log("found a scheduled move but not yet time to execute");
+        console.log("scheduled move found to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
       }
     };
   } else {

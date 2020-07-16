@@ -21,7 +21,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
   let result = {
     outputs: [],
-    moveTo: null
+    moveTo: null,
+    forwards: [],
   };
 
   let project = await db.getProjectForNode(node);
@@ -42,6 +43,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
     //format input to be somewhat consistent with send api
     let type = "text";
+    if(!msgData.params) msgData.params = {};
     if(msgData.params && msgData.params.option) type = "option";
     if(msgData.attachment) type = msgData.attachment.mediatype; // image or audio
 
@@ -70,7 +72,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     sandbox: {
       input: input,
       from: msgData,
-      currentNode: node.name,
+      currentNode: node ? node.name : null,
       player: {
         ...varCache.player,
         id: playerId,
@@ -214,6 +216,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         })
       },
 
+      forward: (input, node) => {
+        result.forwards.push({input, node});
+      },
+
       alert: (alertMessage) => {
         result.interfaceCommand = "alert";
         result.interfaceOptions = {alertMessage};
@@ -228,7 +234,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = options; await db.persistPlayerInterface(project._id, playerId, key, options); },
+      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = params; await db.persistPlayerInterface(project._id, playerId, key, params); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
