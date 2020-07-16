@@ -146,7 +146,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             result.outputs.push({
             attachment: {
               mediatype: "image", 
-              filename: await db.getAttachmentFilename(keyOrName),
+              filename: await db.getAttachmentFilename(keyOrName, project._id),
               alt: options.alt ? options.alt : undefined,
             }, 
             label: options.label ? options.label : varCache.board.narrator,
@@ -158,7 +158,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         audio: async (keyOrName, options={}) => { result.outputs.push({
           attachment: {
             mediatype: "audio", 
-            filename: await db.getAttachmentFilename(keyOrName),
+            filename: await db.getAttachmentFilename(keyOrName, project._id),
           }, 
           label: options.label ? options.label : varCache.board.narrator,
           to: options.to ? options.to : "sender",
