@@ -40,7 +40,7 @@
         "start": "node ./server.js",
         "migrate+start": "npm run migrate:up && npm start",
         "migrate:create": "migrate create",
-        "migrate:list": "migrate list",
+        "migrate:list": "migrate list --store=./migrate.js",
         "migrate:up": "migrate up --store=./migrate.js",
         "migrate:down": "migrate down --store=./migrate.js",
         "migrate": "migrate"

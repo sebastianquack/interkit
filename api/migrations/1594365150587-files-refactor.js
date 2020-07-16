@@ -6,12 +6,12 @@ const fileModel = require('../models/file.model')
 const fileSchema = fileModel(mongoose)
 const File = mongoose.model("file", fileSchema);
 
-console.log("connecting to " + process.env.MONGODB_URI)
-mongoose.connect(process.env.MONGODB_URI, {useNewUrlParser: true});
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
+mongoose.connect(process.env.MONGODB_URI, {useNewUrlParser: true});
+
+module.exports.description = "add authored, key, name, uploadedFilename"
 
 module.exports.up = async function (next) {
-
   const files = await File.find({ key: { $exists: false } })
   await files.forEach(async function(doc) {
     console.log("updating " + doc.path, doc._id)
