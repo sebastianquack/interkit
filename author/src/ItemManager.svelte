@@ -224,6 +224,7 @@
       </li>
     {/each}
   </ul>
+  <button on:click={createItem}>new item</button>
 
   <h4>User generated Items</h4>
   <ul>
@@ -237,7 +238,6 @@
     {/each}
   </ul>
 
-<button on:click={createItem}>new item</button>
 {/if}
 
 
