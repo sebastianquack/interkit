@@ -62,6 +62,8 @@ create migration:
 - `npm run migrate:create some-description` and edit the new file in `migrations/`
 
 run migrations:
-- `npm run migrate:up`
-- `npm run migrate:down`
+- `npm run migrate:up` migrate up to latest
+- `npm run migrate:down` migrate all the way down
+- `npm run migrate:up -- 1594365150587-files-refactor.js` migrate up to a certain migration
+- `npm run migrate:down -- 1594365150587-files-refactor.js` migrate down to a certain migration
 
