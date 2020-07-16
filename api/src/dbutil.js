@@ -541,7 +541,7 @@ exports.getAttachmentFilename = async (keyOrName, projectId) => {
 
 
 // get project and all it's associated documents
-exports.getAllOfProject = async function (projectId) {
+exports.getAllOfProject = async function (projectId, includeUserContent=false) {
   const Project = mongoose.model("project");
   const Board = mongoose.model("board");
   const ScriptNode = mongoose.model("scriptNode");
@@ -552,8 +552,8 @@ exports.getAllOfProject = async function (projectId) {
   const project = await Project.findOne({_id: projectId})
   const boards = await Board.find({project: projectId});
   const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } });
-  const items = await Item.find({project: projectId});
-  const pages = await Page.find({project: projectId});
+  const items = await Item.find({project: projectId, authored: true});
+  const pages = await ( includeUserContent ? Page.find({project: projectId}) : Page.find({project: projectId, authored: true}) );
   const variables = await Variable.find({project: projectId, varScope: "project"}); // for now get only project variables
 
   return {
