@@ -79,16 +79,17 @@ function getHistory(server, model, options, logger) {
       let playerId = request.params._id;      
       let groupedNodeLogs = {};
       let result = await model.find({ player: playerId }).sort('-timestamp').populate('node', 'name').populate('board', 'name');
+      //console.log(result);
       result.forEach((entry)=>{
         if(entry.board) {
           if(!groupedNodeLogs[entry.board._id]) {
             groupedNodeLogs[entry.board._id] = [entry]
           } else {
-            groupedNodeLogs[entry.board._id].push([entry]);
+            groupedNodeLogs[entry.board._id].push(entry);
           }
         }
       });
-      console.log(groupedNodeLogs);
+      //console.log("loading nodeLog history", groupedNodeLogs);
 
       if (result) {
         return h.response(groupedNodeLogs).code(200)
@@ -153,10 +154,16 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       ref: "project"
     },
-    timestamp: {
-      type: Types.Date,
-      default: Date.now
+    timestamp: {              
+      type: Types.Number
     },
+    scheduled: {
+      type: Types.Boolean,
+      default: false
+    },
+    moveTime: {
+      type: Types.Number
+    }
   });
   
   Schema.statics = {
