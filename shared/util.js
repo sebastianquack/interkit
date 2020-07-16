@@ -17,6 +17,23 @@ export const getConfig = async (key) => {
     return null;
 }
 
+export const getPlayerVar = async (ids, key) => {
+  const res = await fetch("/api/variable?varScope=player&key=" + key + "&player=" + ids.playerId + "&project=" + ids.projectId);
+  if(!res.ok) {
+    console.log("error fetching var ", key);
+    return null;
+  }
+  const json = await res.json();
+  //console.log(json);
+
+  if(json.docs.length) {
+    return json.docs[0].value
+  }
+  else 
+    return null;
+}
+
+
 const createPlayer = async () => {
   const res = await fetch("/api/player", {
     method: "POST", 
@@ -158,6 +175,7 @@ export const deleteFile = async (file, token) => {
 }
 
 export const postPlayerMessage = async (msgData) => {
+  msgData.seen = [msgData.sender] // add seen 
   console.log("postPlayerMessage", msgData);
   let response = await fetch("/api/player/message", {
     method: "POST",
@@ -168,6 +186,25 @@ export const postPlayerMessage = async (msgData) => {
     responseJSON = await response.json();
   if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
   return responseJSON.status == "ok";
+}
+
+
+export const getCurrentNodeId = async (playerId, board) => {
+  //console.log("getCurrentNode", playerId, board);
+  let query = {
+    player: playerId,
+    board: board._id,
+    timestamp: {$lt: Date.now()},
+    scheduled: {$ne: true}
+  }
+  let limit = 1;
+  let response = await fetch("/api/nodeLog?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+  let nodes = await response.json();
+  //console.log(nodes);
+  if(nodes.docs.length)
+    return nodes.docs[0].node
+  else 
+    return null
 }
 
 
