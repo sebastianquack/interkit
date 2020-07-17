@@ -170,30 +170,31 @@ function onReceive(input) {
 
 <WorkspaceFrame>
 
-  <div slot="left-top-menu">
+  <div slot="left-top-menu" id="toolbar">
     
     <div class="project-title">
-        <h2>{project.name}</h2>
-        <button on:click={close}>close</button><br>
+      <button on:click={close}>&lt;</button>
+      <h2 title={project.name}>{project.name}</h2>
     </div>
 
+    <div class="board-controls">
+      <button class="project-menu-toggle" class:active={tabNavigation == "pages"} on:click={()=>{toggleTab("pages")}} title="pages">📄</button>
+      <button id="toggle-player-monitoring" class:active={tabNavigation == "players"} on:click={()=>{toggleTab("players")}} title="players">👥</button>
+      <button id="toggle-item-manager" class:active={tabNavigation == "items"} on:click={()=>{toggleTab("items")}} title="items">🧳</button>
+      <button id="toggle-attachment-manager" class:active={tabNavigation == "attachments"} on:click={()=>{toggleTab("attachments")}} title="attachments">📎</button>
+      <button id="open-board" class:active={tabNavigation == "boards"} on:click={()=>{tabNavigation = "boards"}} title="boards">🗂</button>
+        
+      <select bind:value={currentBoardId} on:change={loadBoardData}>
+        <option value={null}>select a board</option>
+        <option disabled>_________</option>
+      {#each boards as board}
+        <option value={board._id}>{board.name}</option>
+      {/each}
+        <option disabled>_________</option>
+        <option value={"new"}>new board</option>
+      </select>
 
-    <button class="project-menu-toggle" class:active={tabNavigation == "pages"} on:click={()=>{toggleTab("pages")}}>📄</button>
-    <button id="toggle-player-monitoring" class:active={tabNavigation == "players"} on:click={()=>{toggleTab("players")}}>👥</button>
-    <button id="toggle-item-manager" class:active={tabNavigation == "items"} on:click={()=>{toggleTab("items")}}>🧳</button>
-    <button id="toggle-attachment-manager" class:active={tabNavigation == "attachments"} on:click={()=>{toggleTab("attachments")}}>📎</button>
-    <button id="open-board" class:active={tabNavigation == "boards"} on:click={()=>{tabNavigation = "boards"}}>🗂</button>
-    
-    
-    <select bind:value={currentBoardId} on:change={loadBoardData}>
-      <option value={null}>select a board</option>
-      <option disabled>_________</option>
-    {#each boards as board}
-      <option value={board._id}>{board.name}</option>
-    {/each}
-      <option disabled>_________</option>
-      <option value={"new"}>new board</option>
-    </select>
+    </div>
 
   </div>
 
@@ -284,10 +285,21 @@ function onReceive(input) {
 
 <style>
 
+  #toolbar {
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
+    align-items: baseline;
+  }
+
   .project-title {
-    position: absolute;
-    z-index: 20;
-    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .board-controls {
+    white-space: nowrap;
   }
 
   .project-title button {
@@ -295,11 +307,8 @@ function onReceive(input) {
     margin-left: 5px;
   }
 
-
   h2 {
-    display: inline-block;
-    margin: 0px;
-    margin-top: 3px;
+    display: inline;
   }
 
   #toggle-attachment-manager {
