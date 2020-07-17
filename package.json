@@ -16,6 +16,6 @@
       "build:prepare"  : "mkdir -p api/public",
       "build:all": "npm run build-player && npm run build-author && npm run build-admin",
       "build": "npm run install:all && npm run build:prepare && npm run build:all",
-      "start": "cd api && npm start"
+      "start": "cd api && npm run migrate+start"
   }
 }
