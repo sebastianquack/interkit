@@ -13,7 +13,7 @@ module.exports.description = "add authored, key, name, uploadedFilename"
 
 module.exports.up = async function (next) {
   const files = await File.find({ key: { $exists: false } })
-  await files.forEach(async function(doc) {
+  for (const doc of files) {
     console.log("updating " + doc.path, doc._id)
     const result = await File.updateOne({_id:doc._id},{ $set: { 
         key: doc.filename,
@@ -22,7 +22,7 @@ module.exports.up = async function (next) {
         authored: true
     }})
     //console.log(result)
-  })
+  }
   next()
 
 }
