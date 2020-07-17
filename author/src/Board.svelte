@@ -27,8 +27,7 @@
 
   let editMode;
 
-
-  let changed = false;
+  let changed = true;
 
   $: {
     if(currentBoardId && currentBoardData && currentBoardData.expired)
@@ -112,7 +111,9 @@
     <div class="scroll">
 
     <h2>edit board <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button></h2>
+    <label>key</label>
     <input bind:value={currentBoardData.key} type="text"/><br>
+    <label>display name</label>
     <input bind:value={currentBoardData.name} type="text"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
@@ -121,11 +122,10 @@
     {#if changed}
       <button on:click={saveBoard}>save</button>
     {/if}
-    <button on:click={()=>editMode=false}>close</button>
     <br>
 
     {#if !currentBoardData.new}
-      <VarList scope="board" ids={{board: currentBoardData._id}}/>
+      <VarList authoring scope="board" ids={{board: currentBoardData._id}}/>
     {/if}
 
     {#if currentBoardData && !currentBoardData.new}

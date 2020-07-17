@@ -76,9 +76,11 @@ const send = async ()=> {
 
   console.log(file)
 
-  await upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
+  const files = await upload(file, progressEvent => {console.log(progressEvent.loaded)}, projectId) 
 
-  await onUpload(fileName);
+  // TODO fail better if file is not an array (if possible)
+  await onUpload(files[0]);
+
 }
 
 onMount(init);

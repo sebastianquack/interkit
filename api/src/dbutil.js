@@ -2,9 +2,14 @@ let mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
 const Moment = require('moment')
 const dateFormat = require('dateformat');
-
 const Log = RestHapi.getLogger('socket');
+
+const gameServer = require('./gameServer.js');
+
 Log.logLevel = 'WARNING';
+
+
+/* CONFIGS */
 
 // seeds config vars if needed
 exports.seedConfig = async (key, value, type="text") => {
@@ -16,6 +21,9 @@ exports.seedConfig = async (key, value, type="text") => {
     console.log("found config ", config.docs[0].key, config.docs[0].value);
   }
 }
+
+
+/* VARIABLES */
 
 const makeQuery = (scope, refs, key) => {
   let where = {
@@ -38,7 +46,7 @@ const checkRefs = (scope, refs) => {
 }
 
 exports.setVar = async (scope, refs, key, value) => {
-  //console.log("setVar", scope, refs, key, value);
+  console.log("setVar", scope, refs, key, value);
 
   if(checkRefs(scope, refs)) {
 
@@ -58,7 +66,7 @@ exports.setVar = async (scope, refs, key, value) => {
     // update
     } else {
       await RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
-        value: value 
+        value: value, stringValue: null 
       }, Log);  
     }
   } else {
@@ -128,47 +136,23 @@ exports.embedVars = async (content, projectId, playerId=null) => {
   return content;
 }
 
-exports.getBoard = async (boardId) => {
-  let board = await RestHapi.find(RestHapi.models.board, boardId, null, Log);
-  return board;
-}
+// updates the persistent player interface variable that is loaded on player reload
+exports.persistPlayerInterface = async (projectId, playerId, key, options) => {
 
-exports.getProjectForNode = async (node) => {
-  let board = await exports.getBoard(node.board);
-  let project = await RestHapi.find(RestHapi.models.project, board.project, null, Log);
-  return project;
-}
+  let playerInterface = await exports.getVar("player", {project: projectId, player: playerId}, "interfaceState");
 
-exports.logMessage = async (data) => {
-  //console.log("logMessage", data);
-  let message = await RestHapi.create(RestHapi.models.message, data, Log);  
-  return message;
-}
-
-exports.logPlayerToNode = async (playerId, node) => {
-  //console.log("logPlayerToNode", playerId, node._id);
-
-  let project = await exports.getProjectForNode(node);
-  let query = {
-    player: mongoose.Types.ObjectId(playerId),  
-    board: node.board,
-    project: project._id
+  if(!playerInterface) {
+    playerInterface = {}  
   }
-  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
 
-  if(nodeLogItem.docs.length == 0) {
-    await RestHapi.create(RestHapi.models.nodeLog, {...query, node: mongoose.Types.ObjectId(node._id)}, Log);       
-  } else {
-    await RestHapi.update(RestHapi.models.nodeLog, nodeLogItem.docs[0]._id, {node: mongoose.Types.ObjectId(node._id)}, Log);   
-    
-    let prevNode = await RestHapi.find(RestHapi.models.scriptNode, nodeLogItem.docs[0].node, null, Log);
-    
-    // return previous node name to expose to script
-    return prevNode.name;
-  }  
-
-
+  playerInterface = {...playerInterface, ...options};
+  
+  await exports.setVar("player", {project: projectId, player: playerId}, "interfaceState", playerInterface)
 }
+
+
+
+/* HELPERS MODIFYING PLAYER OBJECTS */
 
 exports.setPlayerAttribute = async (playerId, attribute, value) => {
   let player = await RestHapi.find(RestHapi.models.player, playerId, null, Log);
@@ -182,19 +166,260 @@ exports.getPlayerAttribute = async (playerId, attribute) => {
   return player[attribute];
 }
 
+
+
+
+/* HELPERS PROJECTS, BOARDS, NODES */
+
+
+exports.getProjectForNode = async (node) => {
+  let board = await exports.getBoard(node.board);
+  let project = await RestHapi.find(RestHapi.models.project, board.project, null, Log);
+  return project;
+}
+
+exports.getBoard = async (boardId) => {
+  let board = await RestHapi.find(RestHapi.models.board, boardId, null, Log);
+  return board;
+}
+
+exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) => {
+
+  let boards = await RestHapi.list(RestHapi.models.board, {
+    key: boardKey,
+    project: projectId
+  }, Log)
+
+  if(boards.docs.length == 1) {
+
+    let board = boards.docs[0];
+
+    let boardLog = await RestHapi.list(RestHapi.models.boardLog, {
+      player: playerId,
+      board: board._id,
+      project: projectId
+    }, Log)
+
+    if(boardLog.docs.length == 1) {
+      await RestHapi.update(RestHapi.models.boardLog, boardLog.docs[0]._id, {listed}, Log)
+    } else {
+      await RestHapi.create(RestHapi.models.boardLog, {
+        player: playerId,
+        board: board._id,
+        project: projectId,
+        listed
+      }, Log);
+    }
+
+  } else {
+    console.log("couldn't find board to log to player")
+  }
+
+}
+
+
+
+/* PLAYER MOVEMENT, NODELOGS */
+
+// retrieves the current node for a given player and board
+exports.getCurrentNodeId = async (playerId, boardId) => {
+  console.log("getCurrentNodeId", playerId, boardId);
+  
+  // retrieve current node
+  let nodeLogHistory = await RestHapi.list(RestHapi.models.nodeLog, {
+    player: mongoose.Types.ObjectId(playerId),  
+    board: mongoose.Types.ObjectId(boardId),
+    $sort: {timestamp: -1},
+    $limit: 1,
+    $where: {
+      timestamp: {$lt: Date.now()},
+      scheduled: {$ne: true},
+    }
+  }, Log);
+
+  //console.log("nodeLogHistory", nodeLogHistory)
+
+  if(nodeLogHistory.docs.length) {
+    return nodeLogHistory.docs[0].node
+  } else {
+    return null;
+  }
+}
+
+// creates a new nodelog and return the name of the current (now previous node)
+exports.logPlayerToNode = async (playerId, node) => {
+  console.log("logPlayerToNode", playerId, node._id);
+
+  let prevNodeId = await exports.getCurrentNodeId(playerId, node.board)
+  let prevNode = null;
+  if(prevNodeId) {
+    prevNode = await RestHapi.find(RestHapi.models.scriptNode, prevNodeId, null, Log);
+  }
+    
+  // create a new nodeLog
+  await RestHapi.create(RestHapi.models.nodeLog, {
+    player: mongoose.Types.ObjectId(playerId),
+    board: mongoose.Types.ObjectId(node.board),
+    project: mongoose.Types.ObjectId(node.project),
+    node: mongoose.Types.ObjectId(node._id),
+    timestamp: Date.now(),
+    scheduled: false
+  }, Log);       
+
+  if(prevNode)
+    return prevNode.name;
+}
+
+// retrieves players currently logged to a node
 exports.getPlayersForNode = async (nodeId) => {
+  console.log("getPlayersForNode", nodeId)
+
+  // lode the node
+  let node = await RestHapi.find(RestHapi.models.scriptNode, nodeId, null, Log);
+
+  // get all players that have visited this node
   let query = {
     node: mongoose.Types.ObjectId(nodeId),  
+    timestamp: {$lt: Date.now()},
+    scheduled: {$ne: true}
   }
-  let nodeLogItem = await RestHapi.list(RestHapi.models.nodeLog, query, Log);
-  //console.log("nodeLogItem", nodeLogItem);
-  let playerIds = nodeLogItem.docs.map((doc)=>doc.player);
-  return playerIds;
+  let playerIds = await RestHapi.models.nodeLog.distinct("player", query);
+  console.log("playerIds", playerIds);
+
+  // take only the ones that are currently here
+  let result = []
+  for(let playerId of playerIds) {
+    let currentNodeId = await exports.getCurrentNodeId(playerId, node.board)
+    //console.log("compare", currentNodeId, nodeId)
+    if(currentNodeId.toString() == nodeId.toString()) 
+      result.push(playerId)
+  }
+
+  console.log("result", result)
+
+  return result;
 }
+
+// creates a nodelog for a move scheduled in the future
+exports.scheduleMoveTo = async (playerId, node, timeFromNowObj) => {
+  //console.log("scheduleMoveTo", node)
+
+  let query = {
+    player: mongoose.Types.ObjectId(playerId),
+    board: mongoose.Types.ObjectId(node.board),
+    project: mongoose.Types.ObjectId(node.project),
+    node: mongoose.Types.ObjectId(node._id),
+    timestamp: Moment().add(timeFromNowObj).valueOf(),
+    scheduled: true,
+    moveTime: Moment().add(timeFromNowObj).valueOf()
+  }
+
+  await RestHapi.create(RestHapi.models.nodeLog, query, Log);         
+}
+
+// pass in nodeLogModel and log so we are able to call this from outside of server application through helper script
+exports.executeScheduledMoves = async (nodeLogModel, log) => {
+  //console.log("executeScheduledMoves");
+  let nodeLogs = await RestHapi.list(nodeLogModel, {$where: {scheduled: true }}, log)
+  
+  if(nodeLogs.docs.length) {
+    for(let i = 0; i < nodeLogs.docs.length; i++) {
+      let nodeLog = nodeLogs.docs[i];
+      if(nodeLog.moveTime <= Date.now()) {
+        // execute moveto
+        await exports.setPlayerAttribute(nodeLog.player, "moveCounter", 0) // reset move counter
+        await gameServer.joinNode({
+          nodeId: nodeLog.node, 
+          playerId: nodeLog.player, 
+          execOnArrive: true
+        })
+        // mark as done
+        await RestHapi.update(nodeLogModel, nodeLog._id, {scheduled: false}, log)
+      } else {
+        console.log("scheduled move found to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
+      }
+    };
+  } else {
+    //console.log("nothing to do");
+  } 
+}
+
+
+
+
+/* MESSAGES */
+
+exports.logMessage = async (data) => {
+  //console.log("logMessage", data);
+  let message = await RestHapi.create(RestHapi.models.message, data, Log);  
+  return message;
+}
+
+// uses moment add, ie moment().add({days:7,months:1}); // with object literal
+
+exports.scheduleMessage = (timeFromNowObj, data) => {
+  let message = {
+    ...data,
+    scheduled: true,
+    deliveryTime: Moment().add(timeFromNowObj).valueOf()
+  }
+  exports.logMessage(message);  
+}
+
+// pass in messageModel and log so we are able to call it from outside of server application through helper script
+exports.deliverScheduledMessages = async (messageModel, log) => {
+  //console.log("deliverScheduledMessages");
+  let messages = await RestHapi.list(messageModel, {$where: {scheduled: true }}, log)
+  let deliveredMesssages = [];
+  if(messages.docs.length) {
+    for(let i = 0; i < messages.docs.length; i++) {
+      let m = messages.docs[i];
+      if(m.deliveryTime <= Date.now()) {
+        console.log("delivering: ", m);
+        let result = await RestHapi.update(messageModel, m._id, {
+          scheduled: false,
+          timestamp: Date.now(),
+        }, log)
+        console.log(result);
+        deliveredMesssages.push(result);
+        let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
+        exports.logPlayerToNode(m.recipients[0], node);
+      } else {
+        console.log("found a scheduled message but not yet time to deliver");
+      }
+    };
+  } else {
+    //console.log("no messages scheduled");
+  }
+  return deliveredMesssages;
+}
+
+// helper for location message type
+exports.createLocationThumbnail = async (coords) => {
+
+  let googleMapsAPIKey = await RestHapi.list(RestHapi.models.config, {key: "googleMapsAPIKey"}, Log);
+  console.log(googleMapsAPIKey)
+
+  if(googleMapsAPIKey.docs)
+    return mapImgUrl = 
+          "https://maps.googleapis.com/maps/api/staticmap?center="
+          +coords.latitude+","+coords.longitude
+          +"&zoom=18&size=150x150"
+          //+"&markers=size:small%7Ccolor:black%7C"+position.coords.latitude+","+position.coords.longitude
+          +"&key="+googleMapsAPIKey.docs[0].value
+          +"&style=element:geometry%7Ccolor:0xf5f5f5&style=element:labels.icon%7Cvisibility:off&style=element:labels.text.fill%7Ccolor:0x616161&style=element:labels.text.stroke%7Ccolor:0xf5f5f5&style=feature:administrative.land_parcel%7Celement:labels.text.fill%7Ccolor:0xbdbdbd&style=feature:poi%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:poi%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:poi.park%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:poi.park%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:road%7Celement:geometry%7Ccolor:0xffffff&style=feature:road.arterial%7Celement:labels.text.fill%7Ccolor:0x757575&style=feature:road.highway%7Celement:geometry%7Ccolor:0xdadada&style=feature:road.highway%7Celement:labels.text.fill%7Ccolor:0x616161&style=feature:road.local%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&style=feature:transit.line%7Celement:geometry%7Ccolor:0xe5e5e5&style=feature:transit.station%7Celement:geometry%7Ccolor:0xeeeeee&style=feature:water%7Celement:geometry%7Ccolor:0xc9c9c9&style=feature:water%7Celement:labels.text.fill%7Ccolor:0x9e9e9e&";
+}
+
+
+
+
+
+/* ITEMS */
 
 // creates or update an item
 exports.createOrUpdateItem = async (payload, projectId) => {
   let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
+  delete payload._id; // remove key to prevent collisions when copying items
   if(items.docs.length == 0) {
     console.log("creating item with", payload, projectId);
     let item = await RestHapi.create(RestHapi.models.item, {...payload, project: projectId}, Log);  
@@ -242,6 +467,8 @@ exports.awardItemToPlayer = async (playerId, projectId, key, to = "one") => {
       )
     }
 
+    return item;
+
   } else {
       console.log("awardItemToPlayer - item not found")
   }
@@ -285,8 +512,8 @@ exports.getItemsForPlayer = async (playerId) => {
 
 exports.getItemsQuery = async (project, query) => {
 
-  // mongo query to search inside nested document
-  //{ 'value.latIndex': 1000 } 
+  // tip: mongo query to search inside nested document
+  // { 'value.latIndex': 1000 } 
 
   let items = await RestHapi.list(RestHapi.models.item, {...query, project}, Log);
   console.log("retrieved items for player", playerId, items.docs);
@@ -294,91 +521,28 @@ exports.getItemsQuery = async (project, query) => {
 
 }
 
-/*
-exports.getItemForPlayerByKey = asnyc (playerId, key) => {
-  let item = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {key}, Log);
-  if(item.docs.length) {
-    console.log("retrieved item for player", item.docs[0]);
-    return item.docs[0];
-  } else {
-    return null;
+
+/* FILES / ATTACHMENTS */
+
+exports.getAttachmentFilename = async (keyOrName, projectId) => {
+  let query = {
+    $or: [ { key: keyOrName }, { name: keyOrName, authored: true } ],
   }
-}
-*/
-
-
-exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) => {
-
-  let boards = await RestHapi.list(RestHapi.models.board, {
-    key: boardKey,
-    project: projectId
-  }, Log)
-
-  if(boards.docs.length == 1) {
-
-    let board = boards.docs[0];
-
-    let boardLog = await RestHapi.list(RestHapi.models.boardLog, {
-      player: playerId,
-      board: board._id,
+  if (projectId) {
+    query = {
+      ...query,
       project: projectId
-    }, Log)
-
-    if(boardLog.docs.length == 1) {
-      await RestHapi.update(RestHapi.models.boardLog, boardLog.docs[0]._id, {listed}, Log)
-    } else {
-      await RestHapi.create(RestHapi.models.boardLog, {
-        player: playerId,
-        board: board._id,
-        project: projectId,
-        listed
-      }, Log);
     }
-
-  } else {
-    console.log("couldn't find board to log to player")
   }
-
+  const attachments = await mongoose.model("file").find(query)
+  if (attachments.length === 0) { console.warn(`attachment "${keyOrName}" not found`); return ""; }
+  if (attachments.length === 1) { return attachments[0].filename; }
+  if (attachments.length > 1)   { console.warn(`several attachments found for "${keyOrName}"`, attachments); return attachments[0].filename; }
 }
 
-// uses moment add, ie moment().add({days:7,months:1}); // with object literal
 
-exports.scheduleMessage = (timeFromNowObj, data) => {
-  let message = {
-    ...data,
-    scheduled: true,
-    deliveryTime: Moment().add(timeFromNowObj).valueOf()
-  }
-  exports.logMessage(message);  
-}
+/* IMPORT / EXPORT */
 
-// pass in messageModel and log so we are able to call it from outside of server application through helper script
-exports.deliverScheduledMessages = async (messageModel, log) => {
-  //console.log("deliverScheduledMessages");
-  let messages = await RestHapi.list(messageModel, {$where: {scheduled: true }}, log)
-  let deliveredMesssages = [];
-  if(messages.docs.length) {
-    for(let i = 0; i < messages.docs.length; i++) {
-      let m = messages.docs[i];
-      if(m.deliveryTime <= Date.now()) {
-        console.log("delivering: ", m);
-        let result = await RestHapi.update(messageModel, m._id, {
-          scheduled: false,
-          timestamp: Date.now(),
-        }, log)
-        console.log(result);
-        deliveredMesssages.push(result);
-        let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
-        exports.logPlayerToNode(m.recipients[0], node);
-      } else {
-        console.log("found a scheduled message but not yet time to deliver");
-      }
-    };
-  } else {
-    //console.log("no messages scheduled");
-  }
-  return deliveredMesssages;
-}
 
 // get project and all it's associated documents
 exports.getAllOfProject = async function (projectId) {
@@ -525,3 +689,4 @@ exports.duplicateProject = async function (projectId) {
   const projectData = await getAllOfProject(projectId)
   insertProjectAsDuplicate(projectData)
 }
+

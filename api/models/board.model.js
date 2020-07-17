@@ -131,7 +131,7 @@ module.exports = function (mongoose) {
           }
 
           let board = await RestHapi.find(RestHapi.models.board, _id, {}, Log);
-          if(board.listed != payload.listed) {
+          if(payload.listed != undefined && board.listed != payload.listed) {
             await configureBoardLogs(payload); // todo: make this step optional in authoring  
           }
           return payload;

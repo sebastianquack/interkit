@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+/* CONFIGS */
+
 export const getConfig = async (key) => {
   const res = await fetch("/api/config?key=" + key);
   if(!res.ok) {
@@ -16,6 +18,28 @@ export const getConfig = async (key) => {
   else 
     return null;
 }
+
+
+/* VARIABLES */
+
+export const getPlayerVar = async (ids, key) => {
+  const res = await fetch("/api/variable?varScope=player&key=" + key + "&player=" + ids.playerId + "&project=" + ids.projectId);
+  if(!res.ok) {
+    console.log("error fetching var ", key);
+    return null;
+  }
+  const json = await res.json();
+  //console.log(json);
+
+  if(json.docs.length) {
+    return json.docs[0].value
+  }
+  else 
+    return null;
+}
+
+
+/* PLAYERS */
 
 const createPlayer = async () => {
   const res = await fetch("/api/player", {
@@ -70,6 +94,29 @@ export const refreshPlayerId = async () => {
   return playerId;
 }
 
+
+
+/* HELPERS PLAYERS, PROJECTS, NODES */
+
+export const getCurrentNodeId = async (playerId, board) => {
+  //console.log("getCurrentNode", playerId, board);
+  let query = {
+    player: playerId,
+    board: board._id,
+    timestamp: {$lt: Date.now()},
+    scheduled: {$ne: true}
+  }
+  let limit = 1;
+  let response = await fetch("/api/nodeLog?$sort=-timestamp&$limit="+limit+"&$where=" +  JSON.stringify(query));
+  let nodes = await response.json();
+  //console.log(nodes);
+  if(nodes.docs.length)
+    return nodes.docs[0].node
+  else 
+    return null
+}
+
+
 // find or create project log for given player and project (pass in ids)
 export const logPlayerToProject = async (player, project) => {
   const res = await fetch("/api/projectLog?&player=" + player + "&project=" + project);
@@ -85,20 +132,44 @@ export const logPlayerToProject = async (player, project) => {
   }
 }
 
+
+
+/* MESSAGES */
+
+export const postPlayerMessage = async (msgData) => {
+  msgData.seen = [msgData.sender] // add seen 
+  console.log("postPlayerMessage", msgData);
+  let response = await fetch("/api/player/message", {
+    method: "POST",
+    body: JSON.stringify(msgData)
+  })
+  let responseJSON = {};
+  if(response.ok)
+    responseJSON = await response.json();
+  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
+  return responseJSON.status == "ok";
+}
+
+
+
+/* FILES */
+
 function getFileExtension (file) {
     const filenameParts = file.name.split('.')
     return filenameParts[filenameParts.length - 1].toLowerCase()
 }
 
-export const upload = async (file, progress, projectId = null) => {
+export const upload = async (file, progress, projectId = null, authored = false) => {
 
-  console.log(file);
+  // TODO server side mime type detection? https://stackoverflow.com/questions/1201945/how-is-mime-type-of-an-uploaded-file-determined-by-browser
+
+  console.log("UTIL", file);
   let fileType = file.type;
-  let fileName = file.name;
+  let fileName = generateId()
   
   let response = await axios.post("/api/s3_sign", {
-      fileName : fileName,
-      fileType : fileType
+      fileName,
+      fileType
   });
   if(!response) return null;
   console.log(response);
@@ -122,12 +193,20 @@ export const upload = async (file, progress, projectId = null) => {
   let uploadResponse = await axios.put(signedRequest, file, options)
   console.log("Response from s3", uploadResponse);
 
+  if (!projectId) {
+    console.warn(`upload lacked project: ${fileName}`)
+  }
+
   const entry = {
+    key: generateId(24),
+    name: file.name,
+    uploadedFilename: file.name,
     filename: fileName,
     mimetype: fileType,
     simpletype: fileType && fileType.indexOf("/") > 0 ? fileType.split("/")[0] : "",
     path: fileName,
-    project: projectId
+    project: projectId,
+    authored
   }
 
   //console.log(entry)
@@ -139,7 +218,7 @@ export const upload = async (file, progress, projectId = null) => {
       },      
       body: JSON.stringify([entry])
   });
-  const json = await res.json();  
+  const json = await res.json();  // -> array of objects
   console.log("new file created", json);
   return json;
 }
@@ -157,17 +236,16 @@ export const deleteFile = async (file, token) => {
   console.log(response);
 }
 
-export const postPlayerMessage = async (msgData) => {
-  console.log("postPlayerMessage", msgData);
-  let response = await fetch("/api/player/message", {
-    method: "POST",
-    body: JSON.stringify(msgData)
-  })
-  let responseJSON = {};
-  if(response.ok)
-    responseJSON = await response.json();
-  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
-  return responseJSON.status == "ok";
+// https://stackoverflow.com/questions/9407892/how-to-generate-random-sha1-hash-to-use-as-id-in-node-js
+// str byteToHex(uint8 byte)
+//   converts a single byte to a hex string 
+function byteToHex(byte) {
+  return ('0' + byte.toString(16)).slice(-2);
 }
-
-
+// str generateId(int len);
+//   len - must be an even number (default: 40)
+function generateId(len = 40) {
+  var arr = new Uint8Array(len / 2);
+  window.crypto.getRandomValues(arr);
+  return Array.from(arr, byteToHex).join("");
+}

@@ -22,12 +22,15 @@
 
   let editNodeId = null;
   const setEditNodeId = async (nodeId)=>{
-    const res = await fetch("/api/scriptNode/" + nodeId);
-    const json = await res.json();
-    
-    if(!currentBoardData || currentBoardData._id != json.board) {
-      currentBoardId = json.board;  
-      loadBoardData()
+
+    if(nodeId) {
+      const res = await fetch("/api/scriptNode/" + nodeId);
+      const json = await res.json();
+      
+      if(!currentBoardData || currentBoardData._id != json.board) {
+        currentBoardId = json.board;  
+        loadBoardData()
+      }
     }
     
     editNodeId = nodeId
@@ -35,13 +38,14 @@
   };
 
   let playerNodeId = null;
+
   const updatePlayerNodeId = (nodeId)=>{
     console.log("updatePlayerNodeId", nodeId);
     playerNodeId = nodeId
   }
 
   let currentBoardId = null;
-  const setCurrentBoardId = (boardId)=>{currentBoardId = boardId};
+  const setCurrentBoardId = (boardId)=>{console.log("setCurrentBoardId"); currentBoardId = boardId;};
 
   let currentBoardData = null;
   const setCurrentBoardData = (boardData)=>{
@@ -255,6 +259,7 @@ function onReceive(input) {
       {currentBoardData}
       {createNode}
       {playerId}
+      projectId={project._id}
     />
     {/if}
   </div>

@@ -13,6 +13,7 @@ function onReceive(input) {
   input.text // the text lowercase and trimmed
   input.raw  // the raw input without processing
   input.key  // the option key if player tapped option
+  input.index // the index of option sent via send.options
   input.filename // the image or audio file
   input.coords   // the GPS coordinates {lat: 10, lng: 10}
   input.QRCode   // the decoded QR code
@@ -27,20 +28,27 @@ send.system("hello") // styles message as system message
 send.option("option 1") // presents an option
 send.option("option with long text", {key: "1"}) // adds a short reference key
 
+send.options(["yes", "no"], {key: "optionGroup1"}) // presents a set of options
+
 send.image("image.jpg") // sends an image
 send.audio("audio.mp3") // sends an audio file
+
+send.audio("audio.mp3", {autoplay: true}) // automatically start playing 
+send.audio("audio.mp3", {stopAfterEnded: true}) // stop after ended (default is to coninute to next loaded file)
 
 send.text("hello", {to: "sender"}) // specify that only the sender (or the player that just arrived) should receive the message
 send.text("hello", {to: "all"}) // specify that all players in this node should get it
 send.text("hello", {to: "others"}) // specify that only the other players should get it
 
-echo(input, {to: "others"}) // forward a received input to the other players in this node (useful for multiplayer)
+echo(input, {to: "others"}) // send a received input to the other players in this node (useful for multiplayer)
 echo(input) // short form, {to: "others"} is default 
 
 moveTo("nodeName") // moves this player to another node on the same board
-moveTo("nodeName", {delay: 100}) // move player to another node afer 100ms delay
-moveTo("nodeName", {for: "all"}) // moves all players in this node to another node
-moveTo("nodeName", {execOnArrive: false}) // moves to a node but skips onArrive
+moveTo("nodeName", {delay: {seconds: 30}}) // move player to another node afer 30s delay
+moveTo("nodeName", {for: "all"}) // moves all players in this node to another node (currently not possible with delay)
+moveTo("nodeName", {execOnArrive: false}) // moves to a node but skips onArrive (currently not possible with delay)
+
+forward(input, "nodeName") // calls onReceive on a different node on this board to handle the input without doing a moveTo
 
 // variables
 player.set("health", 10) // set via setter
@@ -65,6 +73,7 @@ createOrUpdateItem({
       value: {
         lat: 52.493606, 
         lng: 13.438209,
+        revealOnProximity: 100, // option to show marker only when user is close and hide when far away
         description: "Hier wurde eine hohe Wahrscheinlichkeit für Lebensform B78-C# gemessen.",
         sound: "twitscher.mp3",
         buttons: [{label: "tap me", node: "boardName/nodeName"}]
@@ -91,6 +100,15 @@ function onArrive(from) {
 
 boards.list("boardName") // reveal unlisted board to player
 boards.unlist("boardName") // hide listed board
+
+
+interface("map", {arrowMode: true, arrowTarget: item}) // set map arrow to point to an item
+interface("map", {arrowMode: true, arrowDirection: 45}) // set map arrow to point to a specific direction
+interface("map", {arrowMode: false}) // turn off arrow
+
+interface("request-geoposition") // client responds with coordinates (use with caution)
+
+
 
 // deprecated
 

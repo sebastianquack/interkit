@@ -16,3 +16,6 @@ public/tmp
 
 # public directory
 public/
+
+# local migration status
+.migrate

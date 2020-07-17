@@ -24,9 +24,10 @@
       {#if item.value.sound} 
         <audio controls>
           <source src={fileServerURL + item.value.sound} type="audio/mpeg">
-        </audio> 
+        </audio>
       {/if}
       {#if item.value.buttons}
+        <br><br>
         {#each item.value.buttons as button}
           <button on:click={()=>{handleButton(button, item)}}>{button.label}</button>
         {/each}

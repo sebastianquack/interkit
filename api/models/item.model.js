@@ -20,6 +20,11 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       ref: "project"
     },
+    authored: {               // true means it's part of the project, false means it's a user upload
+      type: Types.Boolean,
+      unique: false,
+      required: false,
+    },        
   });
 
   const removeAssociatedData = async (itemId) => {
