@@ -32,4 +32,5 @@ Hapi server listening on http://localhost:9000, in development mode
 
 ```bash
 $ heroku addons:create mongolab
+$ heroku config:set NPM_CONFIG_PRODUCTION=false
 ```
