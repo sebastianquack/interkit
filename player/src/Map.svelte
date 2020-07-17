@@ -134,13 +134,22 @@ const updateMarkers = (markerItems) => {
   console.log("updateMarkers");
   
   markerItems.forEach((markerItem)=> {
-    // is this not already on the map -> add
-    if(!markers.filter((m)=>m.markerItemKey == markerItem.key).length) {
+    let m = markers.filter((m)=>m.markerItemKey == markerItem.key)
+
+    // if this not already on the map -> add
+    if(!m.length) {
       console.log("new marker found, adding", markerItem.key)
       let marker = createMarker(markerItem);
       //console.log(marker)
       markerCluster.addMarker(marker);
+    } else {
+
+      // check if position needs to be changed
+      if(m[0].position.lat != markerItem.value.lat || m[0].position.lng != markerItem.value.lng) {
+        m[0].setPosition({lat: markerItem.value.lat, lng: markerItem.value.lng})
+      }
     }
+
   })
 
   let i = markers.length
@@ -160,7 +169,7 @@ const updateMarkersPositionChange = () => {
 
   markers.forEach((m)=>{ 
 
-    console.log(m)
+    //console.log(m)
 
     if(!m) return
 
@@ -169,7 +178,7 @@ const updateMarkersPositionChange = () => {
       let distance = google.maps.geometry.spherical.computeDistanceBetween(
         new google.maps.LatLng(userPosition), m.position
       )
-      console.log(distance)
+      //console.log(distance)
 
       if(distance < m.revealOnProximity) {
         m.setVisible(true)  

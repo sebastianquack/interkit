@@ -20,7 +20,7 @@
 
   // special props for using in authoring app
   export let authoring = false;
-  export let setEditNodeId;
+  export let setEditNodeId = ()=>{}
   export let updatePlayerNodeId; // for tellig the authoring system when player has moved to new node
   export let googleReady;
   
@@ -214,6 +214,11 @@
           loadListedBoards();  
         }
 
+        if(message.params.interfaceCommand == "updateMap") {
+          console.log("updateMap command")
+          loadMarkers();
+        }
+
         if(message.params.interfaceCommand == "map") {
           console.log("map command", message.params.interfaceOptions)
           arrowMode = message.params.interfaceOptions.arrowMode;
@@ -227,7 +232,8 @@
         chatMessageHandler(message);
       } else {
         console.log("player container: msg received but no chat message handler registered")
-        if(!message.forceOpen) {
+        if(!message.params) message.params = {}
+        if(!message.forceOpen && !message.params.interfaceCommand) {
           if(status != "opening board") {
             setNotificationItem({...message, side: "left"});
             setLockScreen();

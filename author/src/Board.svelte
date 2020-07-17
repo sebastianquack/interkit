@@ -125,7 +125,7 @@
     <br>
 
     {#if !currentBoardData.new}
-      <VarList scope="board" ids={{board: currentBoardData._id}}/>
+      <VarList authoring scope="board" ids={{board: currentBoardData._id}}/>
     {/if}
 
     {#if currentBoardData && !currentBoardData.new}

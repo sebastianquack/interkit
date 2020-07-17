@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Docker Hub Login"
+echo "Username: interkit"
 docker login -u interkit
 docker build . -t interkit/interkit:latest
 docker push interkit/interkit:latest

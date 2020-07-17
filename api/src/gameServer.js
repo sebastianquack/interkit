@@ -9,8 +9,11 @@ Log.logLevel = 'WARNING';
 
 let io = null;
 
-// we store the sockets associated with players like so {playerId1: socket1, playerId2: socket2, ...}
+// we store the sockets associated with players like so {playerId1: [socket1], playerId2: [socket2]|, ...}
 let playerSockets = {}
+
+
+/* SEND MESSAGE TO PLAYER */
 
 // we send messages to individual sockets depending on recipients
 const sendMessage = async (data) => {
@@ -24,7 +27,7 @@ const sendMessage = async (data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
 
-  console.log("sendMessage '"+msgData.label+"' '"+msgData.message+"'");
+  console.log("sendMessage '"+msgData.label+"' '"+msgData.message+"' "+msgData.params.interfaceCommand);
   //console.log("playerSockets", playerSockets);
   
   // get an id for the message
@@ -38,11 +41,16 @@ const sendMessage = async (data) => {
   for(playerId of data.recipients) {
     if(playerSockets[playerId]) {
       console.log("emitting to", playerId);
-      io.to(playerSockets[playerId]).emit('message', {...msgData, _id: msgId});
+      playerSockets[playerId].forEach((socket)=>{
+        io.to(socket).emit('message', {...msgData, _id: msgId});  
+      });
     }
   }
   console.log("done emitting");
 }
+
+
+/* JOIN A NODE */
 
 // log a player to a node and run onArrive script if requested
 async function joinNode(data) {
@@ -82,6 +90,11 @@ exports.joinNode = joinNode;
 // step 1: move all players
 // step 2: run onArrive scripts for all players
 
+// being logged to a node means: 
+// - a single player is only always in a single node per board
+// - this node processes any incoming messages from the player
+// - and receives messages {to: "all"} from other players in this node
+
 async function joinNodeMulti(data) {
   if(!data) data = {};
   if(!data.arriveFrom) data.arriveFrom = {};
@@ -107,8 +120,10 @@ async function joinNodeMulti(data) {
   }
 }
 
+
+/* HANDLE INCOMING MESSAGE FROM PLAYER */
+
 // player input something (called via rest api)
-    
 async function handlePlayerMessage(data) {
   console.log("message received", data);
 
@@ -133,16 +148,21 @@ async function handlePlayerMessage(data) {
     board: currentNode.board,
     timestamp: Date.now()
   });
+
+  // reset moveCounter when player interacts with system
+  await db.setPlayerAttribute(data.sender, "moveCounter", 0);  
+
   await handleScript(currentNode, data.sender, "onReceive", data);  
   
   return true;
 }
-
-
 exports.handlePlayerMessage = handlePlayerMessage;
 
-// set up socket event handling on server (called once on start)
 
+
+/* INIT */
+
+// set up socket event handling on server (called once on start)
 exports.init = (listener) => {
 
   io = require("socket.io")(listener)
@@ -165,8 +185,16 @@ exports.init = (listener) => {
     
     socket.on('registerPlayer', async (data) => {
       console.log('registerPlayer');
-      playerSockets[data.playerId] = socket.id;
-      console.log(Object.keys(playerSockets))
+
+      if(!playerSockets[data.playerId]) {
+        playerSockets[data.playerId] = []
+      }
+
+      if(playerSockets[data.playerId].indexOf(socket.id) == -1) {
+        playerSockets[data.playerId].push(socket.id);  
+      }
+      
+      console.log(playerSockets)
     })
 
   });
@@ -176,22 +204,28 @@ exports.init = (listener) => {
   
   const scheduledTasksInterval = setInterval(async ()=>{
     
+    let start = Date.now()
+
     let messages = await db.deliverScheduledMessages(RestHapi.models.message, Log)  
     for(let m of messages) {
       await sendMessage(m);    
     }
 
-    db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
+    await db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
 
-  }, 10000);
+    console.log("completed scheduled task processinng in " + (Date.now() - start) + "ms")
+
+  }, 2000);
 
 } 
 
-// runs a node's script in the sandbox and updates socket connected clients
 
+/* HANDLE SCRIPTS */
+
+// runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
-  console.log("handleScript playerId", playerId)
+  console.log("handleScript", playerId, currentNode.name, hook)
 
   let node = currentNode._id;
   let board = currentNode.board;
@@ -211,18 +245,38 @@ async function handleScript(currentNode, playerId, hook, msgData) {
       });
     }
 
+    // limit amount of chained moves and forwards
+
+    let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
+    if(!moveCounter) {
+      await db.setPlayerAttribute(playerId, "moveCounter", 0);  
+      moveCounter = 0;
+    }
+    let moveLimit = 4;
+
     // proccess collected script outputs
     
     if(result.outputs && result.outputs.length > 0) {
 
       let recipients = {
-        "all": await db.getPlayersForNode(node),
         "sender": [playerId]
       }
-      recipients["others"] = recipients["all"].filter(r=>r!=playerId); 
-
+      
       for(let i = 0; i < result.outputs.length; i++) {
         let output = result.outputs[i];
+        
+        // call getPlayersForNode only when needed
+        if(output.to == "all" || output.to == "others") {
+          console.log("load other players in node if needed")
+          if(recipients["all"] == undefined && recipients["others"] == undefined) {
+            recipients.all = await db.getPlayersForNode(node);
+            recipients.others = recipients.all.filter(r=>r!=playerId); 
+          }
+        }
+
+        console.log("recipients", recipients)
+        console.log("output.to", output.to)
+
         let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
         console.log(msgObj);
 
@@ -235,8 +289,8 @@ async function handleScript(currentNode, playerId, hook, msgData) {
       }
     }
 
-    // send off interface commands
-
+    // send interface commands
+    
     if(result.interfaceCommand) {
       await sendMessage({params: {
             interfaceCommand: result.interfaceCommand,
@@ -245,86 +299,109 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           recipients: [playerId], node, board});  
     }
 
-    // handle moveTo requests
+    // handle forwards
 
-    if(result.moveTo) {
+    if(result.forwards.length) {
 
-      // limit amount of chained moves
-      let moveCounter = await db.getPlayerAttribute(playerId, "moveCounter");
-      if(!moveCounter) {
-        await db.setPlayerAttribute(playerId, "moveCounter", 0);  
-        moveCounter = 0;
-      }
+      result.forwards.forEach(async forward=>{
 
-      if(moveCounter < 4) {
-        
-        // find destination via name and board
-        let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
-          name: result.moveToOptions.destination,
-          board: currentNode.board
+        console.log("forward", forward)
+
+        let forwardNodes = await RestHapi.list(RestHapi.models.scriptNode, {
+          name: forward.node,
+          board: forward.input.board
         }, Log)
-        
-        if(destinations.docs.length == 1) {
-          let destination = destinations.docs[0];
-          console.log("processing move to node " + destination.name);
-          if(destination._id != currentNode._id) {
-            
-            await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
-            
-            // move player(s) immediately
-            if(!result.moveToOptions.delay) {
 
-              if(!result.moveToOptions.all) {
-                // move single player to different node
-                await joinNode({playerId, nodeId: destination._id, execOnArrive: result.moveToOptions.execOnArrive});
-  
-              } else {
-                // move multiple players at once
-                await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: result.moveToOptions.execOnArrive});
-              }
+        console.log(forwardNodes);
 
-            // schedule move of players for later
-            } else {
+        if(forwardNodes.docs.length > 0) {
 
-              console.log("scheduling move...")
-              
-              await db.scheduleMoveTo(playerId, destination, result.moveToOptions.delay);  
-              
-              if(result.moveToOptions.all) {
-                console.log("warninng - scheduled moveTo all not implemented yet")
-              }
+          let forwardNode = forwardNodes.docs[0]
 
-            }
+          if(moveCounter < moveLimit) {
 
+            console.log("forwarding input to node " + forwardNode.name)
+            await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1) // count towards moveTo limit
+            await handleScript(forwardNode, msgData.sender, "onReceive", msgData);
+          
           } else {
-            console.log("node " + result.moveToOptions.destination + " not found");
-            await sendMessage({
-              message: "node " + result.moveToOptions.destination + " not found", 
-              system: true, 
-              recipients: [playerId],
-              node, board
-            });
+            
+            await abortTooManyMoves(playerId, node, board)        
           }
         }
-
-      } else {
-
-        console.log("too many moves, aborting")
-          await sendMessage({
-            message: "too many chained moveTos in script, aborting", 
-            system: true, 
-            recipients: [playerId],
-            node, board
-          });
-          await db.setPlayerAttribute(playerId, "moveCounter", 0)
-        }
-
-    } else {
-      // reset move counter if no move requested
-      await db.setPlayerAttribute(playerId, "moveCounter", 0)
+      })
     }
-    
-    if(result.outputs.length == 0 && !result.interfaceCommand && !result.moveTo) {
+
+
+    // handle moveTo requests - limitation: we process a single moveTo per script result
+
+    if(result.moveTos.length) {
+
+        result.moveTos.forEach(async moveTo => {
+        
+          // find destination via name and board
+          let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
+            name: moveTo.destination,
+            board: currentNode.board
+          }, Log)
+          
+          if(destinations.docs.length == 1) {
+            let destination = destinations.docs[0];
+            console.log("processing move to node " + destination.name);
+            if(destination._id != currentNode._id) {
+              
+              // move player(s) immediately
+              if(!moveTo.delay) {
+
+                await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1)
+
+                if(moveCounter < moveLimit) {
+
+                  if(!moveTo.all) {
+                    // move single player to different node
+                    await joinNode({playerId, nodeId: destination._id, execOnArrive: moveTo.execOnArrive});
+
+                  } else {
+                    // move multiple players at once
+                    await joinNodeMulti({fromNode: currentNode, toNode: destination, execOnArrive: moveTo.execOnArrive});
+                  }
+                
+                } else {
+                  await abortTooManyMoves(playerId, node, board)        
+                }
+
+              // schedule move of players for later
+              } else {
+
+                console.log("scheduling move...")
+                
+                await db.scheduleMoveTo(playerId, destination, moveTo.delay);  
+                
+                if(moveTo.all) {
+                  console.log("warninng - scheduled moveTo all not implemented yet")
+                }
+
+              }
+
+            } else {
+              console.log("node " + moveTo.destination + " not found");
+              await sendMessage({
+                message: "node " + moveTo.destination + " not found", 
+                system: true, 
+                recipients: [playerId],
+                node, board
+              });
+            }
+          }
+
+        })
+
+    }
+
+    /*if(result.outputs.length == 0 
+    && !result.interfaceCommand 
+    && !result.moveTos.length 
+    && !result.forwards.length) {
 
       console.log("no outputs on hook ", hook);
 
@@ -336,10 +413,29 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           params: {interfaceCommand: "nodeInfo"}
         }) 
       }
-    
+
+    }*/
+
+    if(!result.moveTo && result.forwards.length == 0) {
+      // reset move counter if no move or forward requested
+      await db.setPlayerAttribute(playerId, "moveCounter", 0)
     }
  
   });
+
+}
+
+
+async function abortTooManyMoves(playerId, node, board) {
+
+  console.log("too many moves, aborting")
+  await sendMessage({
+    message: "too many chained moveTos in script, aborting", 
+    system: true, 
+    recipients: [playerId],
+    node, board
+  });
+  await db.setPlayerAttribute(playerId, "moveCounter", 0)
 
 }
 

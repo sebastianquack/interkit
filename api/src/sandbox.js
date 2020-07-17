@@ -21,7 +21,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
   let result = {
     outputs: [],
-    moveTo: null
+    moveTos: [],
+    forwards: [],
   };
 
   let project = await db.getProjectForNode(node);
@@ -42,6 +43,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
     //format input to be somewhat consistent with send api
     let type = "text";
+    if(!msgData.params) msgData.params = {};
     if(msgData.params && msgData.params.option) type = "option";
     if(msgData.attachment) type = msgData.attachment.mediatype; // image or audio
 
@@ -70,7 +72,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     sandbox: {
       input: input,
       from: msgData,
-
+      currentNode: node ? node.name : null,
       player: {
         ...varCache.player,
         id: playerId,
@@ -133,7 +135,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: true,
           to: params.to ? params.to : "sender",
           delay: params.delay ? params.delay : null,
-          forceOpen: params.forceOpen
+          forceOpen: params.forceOpen,
+          params: {...params}
         })}, 
 
         option: (message, params={}) => { result.outputs.push({
@@ -199,20 +202,27 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
       },
 
-      moveTo: (nodeId, params={}) => { result.moveTo = true; result.moveToOptions = {
-        destination: nodeId, 
-        delay: params.delay ? params.delay : undefined, 
-        all: params.for == "all",
-        execOnArrive: !params.hasOwnProperty('execOnArrive') ? true : params.execOnArrive
-      }},
+      moveTo: (nodeId, params={}) => { result.moveTos.push({
+          destination: nodeId, 
+          delay: params.delay ? params.delay : undefined, 
+          all: params.for == "all",
+          execOnArrive: !params.hasOwnProperty('execOnArrive') ? true : params.execOnArrive
+        }) 
+      },
 
       // this is mainly for forwarding the input object to others in the node
       echo: (input, params={}) => {
         result.outputs.push({
           ...input,
           label: params.label ? params.label : varCache.player.name,
+          system: params.system ? true : false,
           to: params.to ? params.to : "others",
+          delay: params.delay ? params.delay : null,
         })
+      },
+
+      forward: (input, node) => {
+        result.forwards.push({input, node});
       },
 
       alert: (alertMessage) => {
@@ -229,7 +239,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = options; await db.persistPlayerInterface(project._id, playerId, key, options); },
+      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = params; await db.persistPlayerInterface(project._id, playerId, key, params); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },

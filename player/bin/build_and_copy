@@ -2,6 +2,6 @@
 
 set -x
 npm run build
-trash -rf ../api/public/player
+rm -rf ../api/public/player
 mkdir ../api/public/player
 cp ./public/* ../api/public/player*

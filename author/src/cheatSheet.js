@@ -40,13 +40,15 @@ send.text("hello", {to: "sender"}) // specify that only the sender (or the playe
 send.text("hello", {to: "all"}) // specify that all players in this node should get it
 send.text("hello", {to: "others"}) // specify that only the other players should get it
 
-echo(input, {to: "others"}) // forward a received input to the other players in this node (useful for multiplayer)
+echo(input, {to: "others"}) // send a received input to the other players in this node (useful for multiplayer)
 echo(input) // short form, {to: "others"} is default 
 
 moveTo("nodeName") // moves this player to another node on the same board
 moveTo("nodeName", {delay: {seconds: 30}}) // move player to another node afer 30s delay
 moveTo("nodeName", {for: "all"}) // moves all players in this node to another node (currently not possible with delay)
 moveTo("nodeName", {execOnArrive: false}) // moves to a node but skips onArrive (currently not possible with delay)
+
+forward(input, "nodeName") // calls onReceive on a different node on this board to handle the input without doing a moveTo
 
 // variables
 player.set("health", 10) // set via setter
@@ -71,6 +73,7 @@ createOrUpdateItem({
       value: {
         lat: 52.493606, 
         lng: 13.438209,
+        revealOnProximity: 100, // option to show marker only when user is close and hide when far away
         description: "Hier wurde eine hohe Wahrscheinlichkeit für Lebensform B78-C# gemessen.",
         sound: "twitscher.mp3",
         buttons: [{label: "tap me", node: "boardName/nodeName"}]

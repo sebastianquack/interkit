@@ -207,7 +207,7 @@
         console.log("warning, message is from a different node")
         if(message.recipients.includes(playerId)) {
           await setCurrentNode(message.node);
-          setEditNodeId(message.node);    
+          //setEditNodeId(message.node);    
         } else {
           console.log("message wasn't for me, ignoring");
           return;
@@ -236,7 +236,7 @@
       console.log("geoposition requested, responding...")
       if(navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position)=>{
-          let item = {
+          let responseItem = {
             attachment: {
               mediatype: "GPS",
               lat: position.coords.latitude, 
@@ -246,9 +246,9 @@
             params: {
               interfaceCommand: "request-geoposition-response"
             },
-            node: currentNode._id, board: currentNode.board, project: projectId, sender: playerId        
+            node: item._id, board: item.board, project: projectId, sender: playerId        
           }
-          postPlayerMessage(item)
+          postPlayerMessage(responseItem)
         })
       }
       return; 
@@ -355,7 +355,8 @@
         board: board._id,
         recipients: playerId,
         timestamp: {$lt: showItemsSince},
-        scheduled: {$ne: true}
+        scheduled: {$ne: true},
+        'params.interfaceCommand': {$ne: "nodeInfo"} // ignore node infos
       }
       let limit = 10;
       let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));
@@ -697,6 +698,10 @@
   .authoring-tools button {
     margin-bottom: 0px;
     margin-top: 5px;
+  }
+
+  .chat-debug {
+    word-break: break-all; 
   }
 
 </style>
