@@ -20,9 +20,9 @@ COPY ./ /app
 
 # build 
 RUN mkdir api/public
-RUN cd player && npm run build && mv public ../api/public/player
-RUN cd author && npm run build && mv public ../api/public/author
-RUN cd admin  && npm run build && mv build  ../api/public/admin
+RUN cd player && bin/build_and_copy
+RUN cd author && bin/build_and_copy
+RUN cd admin  && bin/build_and_copy
 
 FROM node:12-alpine
 
