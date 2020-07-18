@@ -180,6 +180,7 @@
     let item = {...message};
     if(!item.attachment) item.attachment = {};
     if(!item.params) item.params = {};
+    if(!item.params.interfaceOptions) item.params.interfaceOptions = {};
 
     // message comes from a different board
     if(currentBoard._id != item.board) {
@@ -244,7 +245,8 @@
               accuracy: position.coords.accuracy
             },
             params: {
-              interfaceCommand: "request-geoposition-response"
+              interfaceCommand: "request-geoposition-response",
+              interfaceOptions: item.params.interfaceOptions
             },
             node: item._id, board: item.board, project: projectId, sender: playerId        
           }

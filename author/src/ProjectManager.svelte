@@ -115,6 +115,17 @@
     editProject = null;
   }
 
+  const deleteProject = async ()=>{
+    if(confirm("really?")) {
+      await fetch("/api/project/" + editProject._id, {
+        method: "DELETE",
+        headers: {'authorization': $token},
+      });
+      loadProjectList();
+      editProject = null;
+    }
+  }
+
   const exportProject = async event => {
     // trigger export and get download url and filename
     const res = await fetch("/api/export?projectId=" + editProject._id, {
@@ -282,6 +293,11 @@
       <h3>Export</h3>
       <button on:click={exportProject}>
         export "{editProject.name}"
+      </button>
+
+      <h3>Delete</h3>
+      <button on:click={deleteProject}>
+        delete "{editProject.name}"
       </button>
 
     {/if}

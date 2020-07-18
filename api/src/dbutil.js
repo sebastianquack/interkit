@@ -382,6 +382,8 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
         }, log)
         console.log(result);
         deliveredMesssages.push(result);
+
+        // not sure we should move on scheduled message!
         let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
         exports.logPlayerToNode(m.recipients[0], node);
       } else {
