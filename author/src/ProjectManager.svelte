@@ -115,6 +115,17 @@
     editProject = null;
   }
 
+  const deleteProject = async ()=>{
+    if(confirm("really?")) {
+      await fetch("/api/project/" + editProject._id, {
+        method: "DELETE",
+        headers: {'authorization': $token},
+      });
+      loadProjectList();
+      editProject = null;
+    }
+  }
+
   const duplicateProject = async event => {
     const res = await fetch("/api/project/?projectId=" + editProject._id, {
       method: "POST",
@@ -292,12 +303,18 @@
       
       <h3>Export</h3>
 
+      <h3>Duplicate</h3>
       <button on:click={duplicateProject}>
         duplicate "{editProject.name}"
       </button>
 
       <button on:click={exportProject}>
         export "{editProject.name}"
+      </button>
+
+      <h3>Delete</h3>
+      <button on:click={deleteProject}>
+        delete "{editProject.name}"
       </button>
 
     {/if}
