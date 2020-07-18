@@ -222,6 +222,15 @@ exports.init = (listener) => {
 
 /* HANDLE SCRIPTS */
 
+// helper to interpret a single number instead of delay object as seconds
+function formatDelay(delay) {
+  if(typeof delay == "number") {
+    return {seconds: delay}
+  } else {
+    return delay
+  }
+}
+
 // runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
@@ -291,7 +300,8 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         if(!output.delay) {
           await sendMessage(msgObj); // send now
         } else {
-          await db.scheduleMessage(output.delay, msgObj); // send later
+
+          await db.scheduleMessage(formatDelay(output.delay), msgObj); // send later
         }
       
       }
@@ -383,7 +393,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
                 console.log("scheduling move...")
                 
-                await db.scheduleMoveTo(playerId, destination, moveTo.delay);  
+                await db.scheduleMoveTo(playerId, destination, formatDelay(moveTo.delay));  
                 
                 if(moveTo.all) {
                   console.log("warninng - scheduled moveTo all not implemented yet")

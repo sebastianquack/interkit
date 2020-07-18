@@ -66,7 +66,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     }
     
   }
-  
+
   const vm = new VM({
     timeout: 1000, // timeout for script exeuction
     sandbox: {

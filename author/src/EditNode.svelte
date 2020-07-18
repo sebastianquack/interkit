@@ -25,6 +25,7 @@
   let startingNodeEdit;
   let editTitle = false;  
   let showHelp = false;
+  let scrollDiv;
 
   const loadNoad = async (id) => {
     if(!id) {
@@ -70,6 +71,12 @@
   $: {    
      console.log('editNodeId changed', editNodeId);
      saveAndLoad(editNodeId); // ask if user want to change befure switching
+    scrollUp();
+  }
+
+  const scrollUp = () => {
+     if(scrollDiv)
+      scrollDiv.scrollTop = 0;
   }
 
   // update starting node whenever currentBoardData changes - user selects a new board
@@ -228,7 +235,7 @@
 </div>
 {/if}
 
-<div class="scroll">
+<div class="scroll" bind:this={scrollDiv}>
 
 {#if !editTitle}
   <div class="edit-headline">

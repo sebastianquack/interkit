@@ -44,7 +44,9 @@ echo(input, {to: "others"}) // send a received input to the other players in thi
 echo(input) // short form, {to: "others"} is default 
 
 moveTo("nodeName") // moves this player to another node on the same board
-moveTo("nodeName", {delay: {seconds: 30}}) // move player to another node afer 30s delay
+moveTo("nodeName", {delay: {minutes: 1, seconds: 30}}) // move player to another node afer 1:30 delay
+moveTo("nodeName", {delay: 30}) // short version - 30 seconds
+
 moveTo("nodeName", {for: "all"}) // moves all players in this node to another node (currently not possible with delay)
 moveTo("nodeName", {execOnArrive: false}) // moves to a node but skips onArrive (currently not possible with delay)
 
