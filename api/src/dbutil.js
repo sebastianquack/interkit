@@ -31,9 +31,15 @@ const makeQuery = (scope, refs, key) => {
       varScope: scope,
       project: mongoose.Types.ObjectId(refs.project)
   };
-  if(refs.player) where.player = mongoose.Types.ObjectId(refs.player);
-  if(refs.board) where.board = mongoose.Types.ObjectId(refs.board);
-  if(refs.node) where.node = mongoose.Types.ObjectId(refs.node);
+  
+  if(refs.player && (scope == "player" || scope == "playerNode"))
+    where.player = mongoose.Types.ObjectId(refs.player);
+  
+  if(refs.node && (scope == "node" || scope == "playerNode")) 
+    where.node = mongoose.Types.ObjectId(refs.node);
+
+  if(refs.board && scope == "board") where.board = mongoose.Types.ObjectId(refs.board);
+  
   return where;
 }
 
