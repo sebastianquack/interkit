@@ -100,6 +100,7 @@ span {
   max-width: 100%;
   word-wrap: break-word;
   box-sizing: border-box;
+  /*white-space: pre-line; */
 }
 
 span img {
@@ -141,7 +142,7 @@ span img {
 .optionsArray span {
   background-color: yellow;
   border-radius: 1em 1em 1em 1em;
-  word-break: break-all;
+  /*word-break: break-all;*/
   box-shadow: 1px 3px lightgray;
 }
 

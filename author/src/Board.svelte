@@ -182,11 +182,6 @@
     z-index: 1;
   }
 
-  h2 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
-
   .edit-headline h2 {
     margin-bottom: 0;
   }

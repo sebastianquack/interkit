@@ -309,12 +309,11 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     // send interface commands
     
-    if(result.interfaceCommand) {
-      await sendMessage({params: {
-            interfaceCommand: result.interfaceCommand,
-            interfaceOptions: result.interfaceOptions
-          }, 
-          recipients: [playerId], node, board});  
+    if(result.interfaceCommands.length) {
+      result.interfaceCommands.forEach(async entry=> {
+        await sendMessage({params: entry, 
+          recipients: [playerId], node, board});    
+      });
     }
 
     // handle forwards
