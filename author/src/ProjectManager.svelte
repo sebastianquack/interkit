@@ -131,6 +131,10 @@
       method: "POST",
       headers: {'authorization': $token},
     });
+    const json = await res.json();
+    alert("duplicated as " + json.newProjectName)
+    await loadProjectList();
+    editProject = null
   }
 
   const exportProject = async event => {
@@ -298,14 +302,15 @@
       {/if}
       
       <h3>Export</h3>
-      <button on:click={exportProject}>
-        export "{editProject.name}"
-      </button>
 
       <h3>Duplicate</h3>
       <button on:click={duplicateProject}>
         duplicate "{editProject.name}"
-      </button>      
+      </button>
+
+      <button on:click={exportProject}>
+        export "{editProject.name}"
+      </button>
 
       <h3>Delete</h3>
       <button on:click={deleteProject}>

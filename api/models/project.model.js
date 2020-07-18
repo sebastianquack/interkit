@@ -60,10 +60,11 @@ function duplicate(server, model, options, logger) {
       }
       console.log("duplicating " + request.query.projectId)
       let result = await db.duplicateProject(request.query.projectId);
-      console.log("duplicated " + request.query.projectId + " as " + result)
       
       if (result) {
-        return h.response({status: "ok"}).code(200)
+        //return h.response({status: "ok"}).code(200)
+        console.log("duplicated " + request.query.projectId + " as " + result)
+        return({ newProjectName: result })
       }
       else {
         throw Boom.notFound("error handling message")
