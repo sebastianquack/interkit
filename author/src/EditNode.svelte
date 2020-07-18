@@ -246,7 +246,7 @@
 <!--label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/-->
 <label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit} on:change={updateStartingNodeChanged}/><br>
 
-{#if changed || startingNodeChanged} <button on:click={()=>save(false)}>save</button> <button on:click={()=>save(true)}>save & run</button><br>{/if}
+{#if changed || startingNodeChanged} <div class="floating-save-buttons"><button on:click={()=>save(false)}>save</button> <button on:click={()=>save(true)}>save & run</button></div>{/if}
 
 <button on:click={deleteNode}>delete</button><br>
 
@@ -289,6 +289,15 @@
     z-index: 9;
     padding: 10px;
     box-sizing: border-box;
+  }
+
+  .floating-save-buttons {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    z-index: 10;
+    text-align: right;
+    width: 100px;
   }
 </style>
 

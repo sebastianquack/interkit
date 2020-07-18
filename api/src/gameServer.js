@@ -274,6 +274,14 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           }
         }
 
+        // convert keyOrNames in filenames
+        if(output.attachment) {
+          if(output.attachment.keyOrName) {
+            output.attachment.filename = await db.getAttachmentFilename(output.attachment.keyOrName, board.project)
+          }
+        }
+
+
         console.log("recipients", recipients)
         console.log("output.to", output.to)
 

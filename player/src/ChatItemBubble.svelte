@@ -41,7 +41,7 @@
                 }} 
                 autoplay={item.params.autoplay ? !item.loaded : false}
               >
-              <source src={item.attachment.audioSrc} type="audio/mpeg">
+              <source src={item.attachment.audioSrc} type="audio/mp3">
             </audio> 
           {/if}
         </span>        

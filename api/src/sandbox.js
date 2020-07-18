@@ -166,7 +166,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             result.outputs.push({
             attachment: {
               mediatype: "image", 
-              filename: await db.getAttachmentFilename(keyOrName, project._id),
+              keyOrName,
+              //filename: await db.getAttachmentFilename(keyOrName, project._id),
               alt: params.alt ? params.alt : undefined,
             }, 
             label: params.label ? params.label : varCache.board.narrator,
@@ -175,10 +176,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             forceOpen: params.forceOpen
         })},
 
-        audio: async (keyOrName, params={}) => { result.outputs.push({
+        audio: (keyOrName, params={}) => { result.outputs.push({
           attachment: {
             mediatype: "audio", 
-            filename: await db.getAttachmentFilename(keyOrName, project._id),
+            keyOrName: keyOrName, // load filename in game server
+            //filename: await db.getAttachmentFilename(keyOrName, project._id),
           }, 
           params: params,
           label: params.label ? params.label : varCache.board.narrator,
