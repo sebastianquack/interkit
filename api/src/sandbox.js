@@ -77,46 +77,46 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       player: {
         ...varCache.player,
         id: playerId,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("player", {player: playerId, project: project._id}, key, value); 
+          await db.setVar("player", {player: playerId, project: project._id}, key, value); 
         },
       },
       here: {
         ...varCache.node,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("node", {node: node._id, project: project._id}, key, value); 
+          await db.setVar("node", {node: node._id, project: project._id}, key, value); 
         },
       },
       playerHere: {
         ...varCache.playerNode,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("playerNode", {player: playerId, node: node._id, project: project._id}, key, value); 
+          await db.setVar("playerNode", {player: playerId, node: node._id, project: project._id}, key, value); 
         },
       },
       board: {
         ...varCache.board,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("board", {board: node.board, project: project._id}, key, value); 
+          await db.setVar("board", {board: node.board, project: project._id}, key, value); 
         },
       },
       project: {
         ...varCache.project,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("project", {project: project._id}, key, value); 
+          await db.setVar("project", {project: project._id}, key, value); 
         },
       },
       boards: {
-        list: (boardKey) => {
-          db.listBoardForPlayer(playerId, boardKey, project._id, true);
+        list: async (boardKey) => {
+          await db.listBoardForPlayer(playerId, boardKey, project._id, true);
           result.interfaceCommands.push({interfaceCommand: "updateBoards"})
         },
-        unlist: (boardKey) => {
-          db.listBoardForPlayer(playerId, boardKey, project._id, false);
+        unlist: async (boardKey) => {
+          await db.listBoardForPlayer(playerId, boardKey, project._id, false);
           result.interfaceCommands.push({interfaceCommand: "updateBoards"})
         }
       },

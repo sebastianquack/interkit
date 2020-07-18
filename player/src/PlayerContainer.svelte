@@ -114,13 +114,12 @@
     //console.log(boards);
   }
 
-  const openMapTo = (chatItem) => {
+  const openMapTo = async (chatItem) => {
     console.log(chatItem);
     mainView = "map";
-    setTimeout(()=>{
-      map.panTo(chatItem.attachment);
-      map.setZoom(17);  
-    }, 1000) // this is a messy solution - when it interrups the marker clusterer it can lose markers!
+    await loadMarkers();
+    map.panTo(chatItem.attachment);
+    map.setZoom(17);  
   }
 
   // is called every time whe look at the map

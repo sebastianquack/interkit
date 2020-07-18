@@ -61,6 +61,8 @@ exports.setVar = async (scope, refs, key, value) => {
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
 
+    console.log("list vars", variable)
+
     if(typeof value == "string") where.varType = "string"
     if(typeof value == "number") where.varType = "number"
     if(typeof value == "object") where.varType = "object"
@@ -342,7 +344,7 @@ exports.executeScheduledMoves = async (nodeLogModel, log) => {
         // mark as done
         await RestHapi.update(nodeLogModel, nodeLog._id, {scheduled: false}, log)
       } else {
-        console.log("scheduled move found to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
+        console.log("scheduled move found for player " + nodeLog.player + " to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
       }
     };
   } else {
