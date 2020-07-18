@@ -43,6 +43,6 @@
         "migrate:list": "migrate list --store=./migrate.js",
         "migrate:up": "migrate up --store=./migrate.js",
         "migrate:down": "migrate down --store=./migrate.js",
-        "migrate": "migrate"
+        "migrate": "migrate --store=./migrate.js"
     }
 }

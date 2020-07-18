@@ -126,6 +126,13 @@
     }
   }
 
+  const duplicateProject = async event => {
+    const res = await fetch("/api/project/?projectId=" + editProject._id, {
+      method: "POST",
+      headers: {'authorization': $token},
+    });
+  }
+
   const exportProject = async event => {
     // trigger export and get download url and filename
     const res = await fetch("/api/export?projectId=" + editProject._id, {
@@ -294,6 +301,11 @@
       <button on:click={exportProject}>
         export "{editProject.name}"
       </button>
+
+      <h3>Duplicate</h3>
+      <button on:click={duplicateProject}>
+        duplicate "{editProject.name}"
+      </button>      
 
       <h3>Delete</h3>
       <button on:click={deleteProject}>

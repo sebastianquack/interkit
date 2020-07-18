@@ -547,7 +547,7 @@ exports.getAttachmentFilename = async (keyOrName, projectId) => {
 
 
 // get project and all it's associated documents
-exports.getAllOfProject = async function (projectId) {
+exports.getAllOfProject = async function (projectId, includeUserContent=false) {
   const Project = mongoose.model("project");
   const Board = mongoose.model("board");
   const ScriptNode = mongoose.model("scriptNode");
@@ -555,12 +555,13 @@ exports.getAllOfProject = async function (projectId) {
   const Page = mongoose.model("page");
   const Variable = mongoose.model("variable");
 
-  const project = await Project.findOne({_id: projectId})
-  const boards = await Board.find({project: projectId});
-  const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } });
-  const items = await Item.find({project: projectId});
-  const pages = await Page.find({project: projectId});
-  const variables = await Variable.find({project: projectId, varScope: "project"}); // for now get only project variables
+  // get data, use lean() to get a plain array rather than mongoose objects
+  const project = await Project.findOne({_id: projectId}).lean()
+  const boards = await Board.find({project: projectId}).lean()
+  const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } }).lean()
+  const items = await Item.find({project: projectId, authored: true}).lean()
+  const pages = await ( includeUserContent ? Page.find({project: projectId}).lean() : Page.find({project: projectId, authored: true}).lean() );
+  const variables = await Variable.find({project: projectId, varScope: "project"}).lean() // for now get only project variables
 
   return {
     project,
@@ -574,7 +575,7 @@ exports.getAllOfProject = async function (projectId) {
 }
 
 // rewrite all _ids, also in (internal) references. this methods relies on the uniqueness of mongoose objectIds
-const duplicateProjectData = async function (projectData, newProjectName) {
+const duplicateProjectData = function (projectData, newProjectName) {
   let {
     project,
     boards,
@@ -621,7 +622,7 @@ const duplicateProjectData = async function (projectData, newProjectName) {
   scriptNodes = translateKeys(scriptNodes, "board")
   scriptNodes = scriptNodes.map(s => ({
     ...s,
-    connectionIds: s.connectionIds.map(_id => _idMappings[_id])
+    connectionIds: (s.connectionIds || []).map(_id => _idMappings[_id])
   }))  
 
   // translate items
@@ -665,7 +666,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
     pages,
     variables,
     // TODO attachments
-  } = await duplicateProjectData(projectData, newProjectName)
+  } = duplicateProjectData(projectData, newProjectName)
 
   const Project = mongoose.model("project");
   const Board = mongoose.model("board");
@@ -676,8 +677,6 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
 
   const errorReport = function(error, docs) { console.log(error, docs)}
 
-  //console.log(project)
-
   await Project.insertMany([project], errorReport);
   await Board.insertMany(boards, errorReport, {ordered: false});
   await ScriptNode.insertMany(scriptNodes, errorReport);
@@ -685,10 +684,11 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   await Page.insertMany(pages, errorReport);
   await Variable.insertMany(variables, errorReport);
 
+  return project.name // new name
 }
 
 exports.duplicateProject = async function (projectId) {
-  const projectData = await getAllOfProject(projectId)
-  insertProjectAsDuplicate(projectData)
+  const projectData = await exports.getAllOfProject(projectId)
+  return await exports.insertProjectAsDuplicate(projectData)
 }
 
