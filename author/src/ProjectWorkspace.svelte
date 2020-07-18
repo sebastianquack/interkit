@@ -198,7 +198,7 @@ function onReceive(input) {
 
   </div>
 
-  <div slot="left-work-area">
+  <div slot="left-work-area" style="height: 100%; overflow-y: scroll">
 
     {#if tabNavigation == "boards"}    
       <Board
