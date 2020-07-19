@@ -2,7 +2,7 @@
 
   import { onMount } from 'svelte';
   
-  import { token } from './stores.js';  
+  import { token, boardCodeChanged } from './stores.js';  
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
   import VarList from './VarList.svelte';
@@ -94,6 +94,7 @@
 
     await loadBoardList();
     setCurrentBoardId(currentBoardData._id);
+    boardCodeChanged.set(false)
   }
 
   const addNode = async ()=>{
@@ -125,7 +126,7 @@
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
-    <CodeEditor bind:code={currentBoardData.library} on:change={()=>changed=true}></CodeEditor><br>
+    <CodeEditor bind:code={currentBoardData.library} on:change={()=>{changed=true; boardCodeChanged.set(true)}}></CodeEditor><br>
     <br>
 
     {#if !currentBoardData.new}

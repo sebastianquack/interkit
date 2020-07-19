@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy, tick, beforeUpdate } from 'svelte';
   import { joinNode } from '../../shared/socketClient.js';
-  import { token } from './stores.js';
+  import { token, boardCodeChanged } from './stores.js';
   import CodeMirror from 'codemirror';
   import 'codemirror/lib/codemirror.css';
   import 'codemirror/mode/javascript/javascript.js';
@@ -217,6 +217,10 @@
   }
 
   const doMoveTo = async (nodeId) => {
+    if($boardCodeChanged) {
+      alert("board code has unsaved changed, aborting")
+      return
+    }
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
     let resJSON = await res.json();
     //console.log(resJSON);

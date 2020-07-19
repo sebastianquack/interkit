@@ -112,11 +112,18 @@ const removeVar = async (v)=> {
 
 const types = ["number", "string", "object"]
 
-
+// mapping to easier names for authoring
+const scopeName = {
+  "player": "player",
+  "playerNode": "playerHere",
+  "node": "here",
+  "project": "project",
+  "board": "board"
+}
 
 </script>
 
-<h4>{scope} variables <button on:click={loadVars}>reload</button> {#if authoring}<button on:click={createVar}>create</button>{/if}</h4> 
+<h4>{scopeName[scope]} <button on:click={loadVars}>reload</button> {#if authoring}<button on:click={createVar}>create</button>{/if}</h4> 
 
 {#if editVar}
 
@@ -151,11 +158,13 @@ const types = ["number", "string", "object"]
 {/if}
 
 <style>
-  h4 button {
-    font-size: 16px;
+
+  button, h4 button {
+    font-size: 12px;
   }
 
   h4 {
+    margin-top: 20px;
     margin-bottom: 0px;
   }
 
