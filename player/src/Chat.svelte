@@ -559,6 +559,7 @@
     }
   }
   const onAudioEnded = (index) => {
+    console.log("onAudioEnded for index ", index)
     if(index + 1 < audioPlayers.length) {
       audioPlayers[index + 1].play()
     }

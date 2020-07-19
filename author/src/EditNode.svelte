@@ -95,8 +95,16 @@
   
   /* SAVING */
 
+  function boardChanged() {
+    if($boardCodeChanged) {
+        alert("board code has unsaved changes, aborting")
+        return true
+    }
+    return false
+  }  
 
   async function save(andRun=false) {
+    if(boardChanged()) return
 
     if(startingNodeChanged) {
       let response;
@@ -178,6 +186,8 @@
   }
 
   const saveAndCloseNode = async ()=> {
+    if(boardChanged()) return
+
     if(changed) {
       if(scriptNodeEdit._id) {
         if(confirm("save " + scriptNodeEdit.name + "?")) {
@@ -191,6 +201,8 @@
   }
 
   const saveAndLoad = async (nodeId)=>{
+    if(boardChanged()) return 
+
     if(changed) {
       if(scriptNodeEdit._id) {
         if(confirm("save " + scriptNodeEdit.name + "?")) {
@@ -206,6 +218,8 @@
   }
 
   const deleteNode = async ()=> {
+    if(boardChanged()) return
+
     if(confirm("really?")) {
       await fetch("/api/scriptNode/" + editNodeId, {
         method: "DELETE",
@@ -217,10 +231,8 @@
   }
 
   const doMoveTo = async (nodeId) => {
-    if($boardCodeChanged) {
-      alert("board code has unsaved changed, aborting")
-      return
-    }
+    if(boardChanged()) return
+
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
     let resJSON = await res.json();
     //console.log(resJSON);
