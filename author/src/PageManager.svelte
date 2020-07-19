@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { getConfig } from '../../shared/util.js';
-  import { token } from './stores.js';
+  import { token, boardCodeChanged } from './stores.js';
 
   import ResourceAdmin from './ResourceAdmin.svelte';
   import VarList from './VarList.svelte';
@@ -12,6 +12,46 @@
   export let close;
 
   const formats = ["markdown", "handlebars"]
+
+  let projectLibrary = null;
+  let projectLibraryInit = null;
+  let projectLibraryChanged = false
+  
+  const loadLibrary = async ()=>{
+    const res = await fetch("/api/project/" + projectId);
+    const json = await res.json();
+    if(json) {
+      projectLibrary = json.library
+      projectLibraryInit = projectLibrary
+    }
+  }
+
+  const saveLibrary = async ()=>{
+    const res = await fetch("/api/project/" + projectId, {
+      method: "PUT",
+      headers: {
+        'authorization': $token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({_id: projectId, library: projectLibrary})
+    });
+    projectLibraryInit = projectLibrary;
+    projectLibraryChanged = false;
+  }
+
+  const revertLibrary = ()=>{
+    loadLibrary();
+  }
+
+  onMount(async ()=>{
+    await loadLibrary();
+  });
+
+  $: {
+    projectLibraryChanged = projectLibraryInit != projectLibrary
+    boardCodeChanged.set(projectLibraryChanged)
+  }
+
   
 </script>
 
@@ -54,9 +94,20 @@
 
   </ResourceAdmin>
 
+
+  <h4>project library</h4>
+  <CodeEditor bind:code={projectLibrary}></CodeEditor>
+  
   <VarList scope="project" ids={{project: projectId}} authoring/>
 
 </div>
+
+{#if projectLibraryChanged} 
+  <div class="float-save">
+    <button on:click={saveLibrary}>save</button>
+    <button on:click={revertLibrary}>revert</button> 
+  </div>
+{/if}
 
 <style>
 
@@ -71,5 +122,12 @@
     width: 100%;
     background-color: #fff;
   }
+
+  .float-save {
+    position: absolute;
+    right: 10px;
+    top: 20px;
+  }
+
 
 </style>

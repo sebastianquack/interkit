@@ -11,8 +11,10 @@ module.exports = function (mongoose) {
       type: Types.String,
       required: true,
       unique: true
-    }
-
+    },
+    library: {
+      type: Types.String
+    },
   });
   
   Schema.statics = {

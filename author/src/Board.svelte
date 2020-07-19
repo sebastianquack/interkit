@@ -27,17 +27,46 @@
 
   let editMode;
 
-  let changed = true;
-
-  $: {
-    if(currentBoardId && currentBoardData && currentBoardData.expired)
-     loadBoardData();
-  }
-
   $: {
     if(currentBoardData)
       if(currentBoardData.new) 
-        editMode = true;
+        openEditMode();     
+  }
+
+  $: {
+    if(currentBoardId && currentBoardData && editMode) 
+      openEditMode();
+  }
+
+
+  let initialBoardLibrary = null;
+  let changed = false;
+  
+  const openEditMode = () => {
+    console.log("openEditMode")
+    editMode = true;
+    initialBoardLibrary = currentBoardData.library
+  }
+
+  const closeEdit = () => {
+    if(changed) {
+      if(confirm("lose changes?")) {
+        editMode = false;
+        changed = false;
+        boardCodeChanged.set(false);
+      }
+    } else {
+      editMode = false; 
+      if(currentBoardData.new) setCurrentBoardData(null);    
+    }
+  }
+
+  const changeBoardLibrary = () => {
+    console.log("board library changed through editor")
+    if(initialBoardLibrary != null) {
+      changed = initialBoardLibrary != currentBoardData.library;
+      boardCodeChanged.set(changed)
+    }
   }
 
   const saveBoard = async ()=>{
@@ -110,10 +139,10 @@
   {#if editMode}
 
   <div class="floating-buttons">
-  {#if changed}
+    {#if changed}
       <button on:click={saveBoard}>save</button>
     {/if}
-    <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button>
+    <button on:click={closeEdit}>close</button>
   </div>
 
     <div class="scroll">
@@ -126,7 +155,7 @@
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
-    <CodeEditor bind:code={currentBoardData.library} on:change={()=>{changed=true; boardCodeChanged.set(true)}}></CodeEditor><br>
+    <CodeEditor bind:code={currentBoardData.library} on:change={changeBoardLibrary}></CodeEditor><br>
     <br>
 
     {#if !currentBoardData.new}
@@ -152,7 +181,7 @@
         </h2>
         
         <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
-        <button on:click="{()=>{editMode=true}}">✎</button>
+        <button on:click={openEditMode}>✎</button>
       </div>
 
       <NodeGraph

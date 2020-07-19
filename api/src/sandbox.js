@@ -259,7 +259,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
   let board = await db.getBoard(node.board);
 
-  let runScript = board.library + " ; " + node.script;
+  let runScript = project.library + "\n; " + board.library + "\n; " + node.script;
   
   // expand script to execute appropriate hook
   switch(hook) {
