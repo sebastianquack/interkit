@@ -1,13 +1,16 @@
-let Auth = require("../plugins/auth.plugin.js");
 const Boom = require("@hapi/boom");
 const BSON = require('bson');
-var fs = require('fs');
-var archiver = require('archiver');
+const fs = require('fs');
+const archiver = require('archiver');
 const StreamZip = require('node-stream-zip');
 const slugify = require('slugify');
 const dateFormat = require('dateformat');
+const aws = require('aws-sdk'); 
 
+const Auth = require("../plugins/auth.plugin.js");
+const { s3config, S3_BUCKET } = require('../src/s3')
 const { getAllOfProject, insertProjectAsDuplicate } = require('../src/dbutil')
+const { generateFilename } = require('../../shared/common')
 
 var dir = './public/tmp'
 var downloadPath = '/tmp'
@@ -107,9 +110,18 @@ const exportData = async (request, mongoose, logger) => {
     // pipe archive data to the file
     archive.pipe(output);
 
-    // add data to zip archive
-    await archive.append(JSON.stringify(out), { name: 'project.json' });
-    await archive.append(BSON.serialize(out), { name: 'project.bson' });
+    // add json data to zip archive
+    archive.append(JSON.stringify(out), { name: 'project.json' });
+    archive.append(BSON.serialize(out), { name: 'project.bson' });
+    
+    // add files to zip archive
+    const s3 = new aws.S3();
+    for (const file of out.data.files) {
+      // TODO make this run sequentially !!
+      var s3Stream = s3.getObject({Bucket: S3_BUCKET, Key: file.path}).createReadStream();
+      archive.append(s3Stream, { name: "files/" + file.path })
+    }
+    
     await archive.finalize();
 
     //console.log(out)
@@ -136,42 +148,97 @@ const importData = async (request, mongoose, logger) => {
 
   //console.log(request.payload)
 
-  const zip = new StreamZip({
-      file: request.payload.path,
-      storeEntries: true
-  });
-  
-  // Handle errors
-  zip.on('error', err => { console.log(err) });
+  return new Promise( resolve => {
 
-  zip.on('ready', () => {
-    // list entries
-    console.log('Entries read: ' + zip.entriesCount);
-    for (const entry of Object.values(zip.entries())) {
-        const desc = entry.isDirectory ? 'directory' : `${entry.size} bytes`;
-        console.log(`Entry ${entry.name}: ${desc}`);
-    }
+    const errorMessages = []
 
-    // unzip
-    const bson = zip.entryDataSync('project.bson')//.toString();
-    const obj = BSON.deserialize(bson)
-    const data = obj.data
-  
-    console.log(`importing project "${obj.projectName}"`)
+    const zip = new StreamZip({
+        file: request.payload.path,
+        storeEntries: true
+    });
+    
+    // Handle errors
+    zip.on('error', err => { console.log(err) });
 
-    //const project = data.project
+    zip.on('ready', async () => {
+      // list entries
+      console.log('Entries read: ' + zip.entriesCount);
+      for (const entry of Object.values(zip.entries())) {
+          const desc = entry.isDirectory ? 'directory' : `${entry.size} bytes`;
+          console.log(`Entry ${entry.name}: ${desc}`);
+      }
 
-    const newProjectName = obj.filename ? 
-        `${obj.projectName} (imported from ${obj.filename})`
-      : `${obj.projectName} (imported ${dateFormat(new Date(), "yyyy-mm-dd-HH-MM-ss")})` 
+      // unzip
+      const bson = zip.entryDataSync('project.bson')//.toString();
+      const obj = BSON.deserialize(bson)
+      let data = obj.data
+    
+      console.log(`importing project "${obj.projectName}"`)
 
-    insertProjectAsDuplicate(data, newProjectName)
+      // upload files with new filename
 
-    //console.log(project)
+      if (data.files) {
+        // generate new filenames
+        filenameMappings = data.files.map(file => ({
+          old: file.filename,
+          new: generateFilename()
+        }))
+        
+        const s3 = new aws.S3();
 
-    // Do not forget to close the file once you're done
-    zip.close()
-  });
+        for (file of data.files) {
+
+          console.log(`uploading ${file.filename}`)
+
+          try {
+            const fileBuffer = zip.entryDataSync('files/' + file.path);
+            const newFilename = filenameMappings.find(n => n.old === file.path).new
+
+            var params = {
+              Body: fileBuffer, 
+              Bucket: S3_BUCKET, 
+              Key: newFilename, 
+              ContentType: file.mimetype
+            };
+            try {
+              const result = await s3.putObject(params).promise();
+              console.log("upload success", result)
+
+              console.log(`uploaded file ${file.filename} as ${newFilename}`)
+
+              file.filename = newFilename
+              file.path = newFilename
+
+            } catch(error) {
+              console.log("upload error", error)
+              errorMessages.push("upload error " + file.name)
+            }
+
+          } catch(error) {
+            console.log("unzip error", error)
+            errorMessages.push("unzip error " + file.name)
+          }
+    
+        }
+      }
+
+      //const project = data.project
+
+      const newProjectName = obj.filename ? 
+          `${obj.projectName} (imported from ${obj.filename} at ${dateFormat(new Date(), "yyyy-mm-dd-HH-MM-ss")})`
+        : `${obj.projectName} (imported ${dateFormat(new Date(), "yyyy-mm-dd-HH-MM-ss")})` 
+
+      insertProjectAsDuplicate(data, newProjectName)
+
+      //console.log(project)
+
+      // Do not forget to close the file once you're done
+      zip.close()
+
+      resolve({ errorMessages })
+    });
+
+  })
 
 
   //const payload = {
@@ -180,7 +247,7 @@ const importData = async (request, mongoose, logger) => {
   //}
   //console.log(payload)
   //insertProjectAsDuplicate(request.payload.data)
-  return {}
+  
 }
 
 module.exports = function (server, mongoose, logger) {
@@ -222,6 +289,7 @@ module.exports = function (server, mongoose, logger) {
           output: 'file',
           parse: false,
           allow: 'application/zip',
+          maxBytes: 1000000000, // 1G
         },        
         plugins: {
           'hapi-swagger': {}
