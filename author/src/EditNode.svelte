@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy, tick, beforeUpdate } from 'svelte';
   import { joinNode } from '../../shared/socketClient.js';
-  import { token } from './stores.js';
+  import { token, boardCodeChanged } from './stores.js';
   import CodeMirror from 'codemirror';
   import 'codemirror/lib/codemirror.css';
   import 'codemirror/mode/javascript/javascript.js';
@@ -25,6 +25,7 @@
   let startingNodeEdit;
   let editTitle = false;  
   let showHelp = false;
+  let scrollDiv;
 
   const loadNoad = async (id) => {
     if(!id) {
@@ -70,6 +71,12 @@
   $: {    
      console.log('editNodeId changed', editNodeId);
      saveAndLoad(editNodeId); // ask if user want to change befure switching
+    scrollUp();
+  }
+
+  const scrollUp = () => {
+     if(scrollDiv)
+      scrollDiv.scrollTop = 0;
   }
 
   // update starting node whenever currentBoardData changes - user selects a new board
@@ -88,8 +95,16 @@
   
   /* SAVING */
 
+  function boardChanged() {
+    if($boardCodeChanged) {
+        alert("board code has unsaved changes, aborting")
+        return true
+    }
+    return false
+  }  
 
   async function save(andRun=false) {
+    if(boardChanged()) return
 
     if(startingNodeChanged) {
       let response;
@@ -171,6 +186,8 @@
   }
 
   const saveAndCloseNode = async ()=> {
+    if(boardChanged()) return
+
     if(changed) {
       if(scriptNodeEdit._id) {
         if(confirm("save " + scriptNodeEdit.name + "?")) {
@@ -184,6 +201,8 @@
   }
 
   const saveAndLoad = async (nodeId)=>{
+    if(boardChanged()) return 
+
     if(changed) {
       if(scriptNodeEdit._id) {
         if(confirm("save " + scriptNodeEdit.name + "?")) {
@@ -199,6 +218,8 @@
   }
 
   const deleteNode = async ()=> {
+    if(boardChanged()) return
+
     if(confirm("really?")) {
       await fetch("/api/scriptNode/" + editNodeId, {
         method: "DELETE",
@@ -210,6 +231,8 @@
   }
 
   const doMoveTo = async (nodeId) => {
+    if(boardChanged()) return
+
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
     let resJSON = await res.json();
     //console.log(resJSON);
@@ -228,7 +251,7 @@
 </div>
 {/if}
 
-<div class="scroll">
+<div class="scroll" bind:this={scrollDiv}>
 
 {#if !editTitle}
   <div class="edit-headline">
@@ -246,7 +269,7 @@
 <!--label>multiplayer</label> <input type="checkbox" bind:checked={scriptNodeEdit.multiPlayer}/><br/-->
 <label>starting node for board</label> <input type="checkbox" bind:checked={startingNodeEdit} on:change={updateStartingNodeChanged}/><br>
 
-{#if changed || startingNodeChanged} <button on:click={()=>save(false)}>save</button> <button on:click={()=>save(true)}>save & run</button><br>{/if}
+{#if changed || startingNodeChanged} <div class="floating-save-buttons"><button on:click={()=>save(false)}>save</button> <button on:click={()=>save(true)}>save & run</button></div>{/if}
 
 <button on:click={deleteNode}>delete</button><br>
 
@@ -289,6 +312,15 @@
     z-index: 9;
     padding: 10px;
     box-sizing: border-box;
+  }
+
+  .floating-save-buttons {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    z-index: 10;
+    text-align: right;
+    width: 100px;
   }
 </style>
 

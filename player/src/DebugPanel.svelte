@@ -59,11 +59,11 @@ $: {
 
   <button class="close" on:click={close}>close</button>
 
+  <p>playerId: {playerId}</p>
+
   <p>project: {project.name}</p>
 
   <p>socket connected: {socketConnectionStatus}</p>
-
-  <h4>player {playerId}</h4>
 
   <VarList
     scope="player"
@@ -77,6 +77,7 @@ $: {
     {authoring}
   />
 
+  <h4>node history</h4>
   <ul> 
   {#each Object.keys(nodeLogs) as key}
     <li>{nodeLogs[key][0].board.name}:

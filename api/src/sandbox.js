@@ -23,6 +23,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     outputs: [],
     moveTos: [],
     forwards: [],
+    interfaceCommands: []
   };
 
   let project = await db.getProjectForNode(node);
@@ -66,7 +67,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     }
     
   }
-  
+
   const vm = new VM({
     timeout: 1000, // timeout for script exeuction
     sandbox: {
@@ -76,47 +77,47 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       player: {
         ...varCache.player,
         id: playerId,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("player", {player: playerId, project: project._id}, key, value); 
+          await db.setVar("player", {player: playerId, project: project._id}, key, value); 
         },
       },
       here: {
         ...varCache.node,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("node", {node: node._id, project: project._id}, key, value); 
+          await db.setVar("node", {node: node._id, project: project._id}, key, value); 
         },
       },
       playerHere: {
         ...varCache.playerNode,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("playerNode", {player: playerId, node: node._id, project: project._id}, key, value); 
+          await db.setVar("playerNode", {player: playerId, node: node._id, project: project._id}, key, value); 
         },
       },
       board: {
         ...varCache.board,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("board", {board: node.board, project: project._id}, key, value); 
+          await db.setVar("board", {board: node.board, project: project._id}, key, value); 
         },
       },
       project: {
         ...varCache.project,
-        set: function (key, value) { 
+        set: async function (key, value) { 
           this[key] = value;
-          db.setVar("project", {project: project._id}, key, value); 
+          await db.setVar("project", {project: project._id}, key, value); 
         },
       },
       boards: {
-        list: (boardKey) => {
-          db.listBoardForPlayer(playerId, boardKey, project._id, true);
-          result.interfaceCommand = "updateBoards"
+        list: async (boardKey) => {
+          await db.listBoardForPlayer(playerId, boardKey, project._id, true);
+          result.interfaceCommands.push({interfaceCommand: "updateBoards"})
         },
-        unlist: (boardKey) => {
-          db.listBoardForPlayer(playerId, boardKey, project._id, false);
-          result.interfaceCommand = "updateBoards"
+        unlist: async (boardKey) => {
+          await db.listBoardForPlayer(playerId, boardKey, project._id, false);
+          result.interfaceCommands.push({interfaceCommand: "updateBoards"})
         }
       },
       
@@ -166,7 +167,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             result.outputs.push({
             attachment: {
               mediatype: "image", 
-              filename: await db.getAttachmentFilename(keyOrName, project._id),
+              keyOrName,
+              //filename: await db.getAttachmentFilename(keyOrName, project._id),
               alt: params.alt ? params.alt : undefined,
             }, 
             label: params.label ? params.label : varCache.board.narrator,
@@ -175,10 +177,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             forceOpen: params.forceOpen
         })},
 
-        audio: async (keyOrName, params={}) => { result.outputs.push({
+        audio: (keyOrName, params={}) => { result.outputs.push({
           attachment: {
             mediatype: "audio", 
-            filename: await db.getAttachmentFilename(keyOrName, project._id),
+            keyOrName: keyOrName, // load filename in game server
+            //filename: await db.getAttachmentFilename(keyOrName, project._id),
           }, 
           params: params,
           label: params.label ? params.label : varCache.board.narrator,
@@ -226,8 +229,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       },
 
       alert: (alertMessage) => {
-        result.interfaceCommand = "alert";
-        result.interfaceOptions = {alertMessage};
+        result.interfaceCommands.push({
+          interfaceCommand: "alert",
+          interfaceOptions: {alertMessage}
+        })
       },
 
       createOrUpdateItem: async (payload) => { await db.createOrUpdateItem(payload, project._id) },
@@ -239,7 +244,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: async (key, params={}) => { result.interfaceCommand = key; result.interfaceOptions = params; await db.persistPlayerInterface(project._id, playerId, key, params); },
+      interface: async (key, params={}) => { result.interfaceCommands.push({interfaceCommand: key, interfaceOptions: params}); await db.persistPlayerInterface(project._id, playerId, key, params); },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
@@ -254,7 +259,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
 
   let board = await db.getBoard(node.board);
 
-  let runScript = board.library + " ; " + node.script;
+  let runScript = project.library + "\n; " + board.library + "\n; " + node.script;
   
   // expand script to execute appropriate hook
   switch(hook) {

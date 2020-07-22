@@ -9,3 +9,5 @@ function writablePersistent(name) {
   store.subscribe(val => localStorage.setItem(name, val || ""));
   return store
 }
+
+export const boardCodeChanged = writable(false);

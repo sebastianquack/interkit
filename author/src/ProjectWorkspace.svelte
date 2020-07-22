@@ -2,7 +2,7 @@
 
   import { onMount, onDestroy } from 'svelte';
 
-  import {token} from './stores.js';
+  import {token, boardCodeChanged } from './stores.js';
   //import { initSocket, registerPlayer } from '../../shared/socketClient.js';
   import { getConfig, /*findOrCreatePlayer, refreshPlayerId*/ } from '../../shared/util.js';
 
@@ -22,10 +22,13 @@
 
   let editNodeId = null;
   const setEditNodeId = async (nodeId)=>{
+    console.log("setEditNodeId", nodeId)
 
     if(nodeId) {
       const res = await fetch("/api/scriptNode/" + nodeId);
       const json = await res.json();
+
+      console.log("loaded node", json)
       
       if(!currentBoardData || currentBoardData._id != json.board) {
         currentBoardId = json.board;  
@@ -45,7 +48,12 @@
   }
 
   let currentBoardId = null;
-  const setCurrentBoardId = (boardId)=>{console.log("setCurrentBoardId"); currentBoardId = boardId;};
+  let currentBoardIdSelect = null;
+  const setCurrentBoardId = (boardId)=>{
+    console.log("setCurrentBoardId"); 
+    currentBoardId = boardId;
+    currentBoardIdSelect = currentBoardId;
+  };
 
   let currentBoardData = null;
   const setCurrentBoardData = (boardData)=>{
@@ -62,7 +70,15 @@
   let editMode = false;
   
   let tabNavigation = "boards";
-  const toggleTab = (tab) => {if(tabNavigation == tab) tabNavigation = "boards"; else tabNavigation = tab}
+  const toggleTab = (tab) => {
+    if($boardCodeChanged) {
+      alert("unsaved code changes")
+      return
+    }
+    if(tabNavigation == tab) 
+      tabNavigation = "boards"; 
+    else tabNavigation = tab
+  }
   const closeTab = ()=>{tabNavigation = "boards"}
 
   const loadBoardList = async ()=>{
@@ -72,9 +88,21 @@
     playerURL = await getConfig("playerURL");
   }
 
-  const loadBoardData = async ()=>{
-    //editNodeId = null; todo: close board editor when board changes but ask first if unsaved changes!
+  const checkBoardSelect = ()=> {
+    if($boardCodeChanged) {
+      currentBoardIdSelect = currentBoardId
+      alert("unsaved code changes")
+      return;
+    }
 
+    // get value from select element
+    currentBoardId = currentBoardIdSelect;
+
+    loadBoardData();
+  }
+
+  const loadBoardData = async ()=>{
+    
     if(currentBoardId == "new") {
       createBoard();
       return;
@@ -87,6 +115,7 @@
       const res = await fetch("/api/board/" + currentBoardId + "?$embed=scriptNodes");
       const json = await res.json();
       setCurrentBoardData(json);
+      currentBoardIdSelect = currentBoardId;
       if(!json.startingNode) {
         alert("warning: no starting node set");
       }
@@ -182,9 +211,9 @@ function onReceive(input) {
       <button id="toggle-player-monitoring" class:active={tabNavigation == "players"} on:click={()=>{toggleTab("players")}} title="players">👥</button>
       <button id="toggle-item-manager" class:active={tabNavigation == "items"} on:click={()=>{toggleTab("items")}} title="items">🧳</button>
       <button id="toggle-attachment-manager" class:active={tabNavigation == "attachments"} on:click={()=>{toggleTab("attachments")}} title="attachments">📎</button>
-      <button id="open-board" class:active={tabNavigation == "boards"} on:click={()=>{tabNavigation = "boards"}} title="boards">🗂</button>
+      <button id="open-board" class:active={tabNavigation == "boards"} on:click={()=>{toggleTab("boards")}} title="boards">🗂</button>
         
-      <select bind:value={currentBoardId} on:change={loadBoardData}>
+      <select bind:value={currentBoardIdSelect} on:change={checkBoardSelect}>
         <option value={null}>select a board</option>
         <option disabled>_________</option>
       {#each boards as board}
@@ -198,7 +227,7 @@ function onReceive(input) {
 
   </div>
 
-  <div slot="left-work-area">
+  <div slot="left-work-area" style="height: 100%; overflow-y: scroll">
 
     {#if tabNavigation == "boards"}    
       <Board

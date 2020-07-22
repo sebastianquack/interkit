@@ -148,6 +148,14 @@ const updateMarkers = (markerItems) => {
       if(m[0].position.lat != markerItem.value.lat || m[0].position.lng != markerItem.value.lng) {
         m[0].setPosition({lat: markerItem.value.lat, lng: markerItem.value.lng})
       }
+
+      // check if label needs to be changed
+      if(m[0].getLabel().text != markerItem.value.name) {
+        console.log("recreating marker")
+        markerCluster.removeMarker(m[0])
+        m[0] = createMarker(markerItem)
+        markerCluster.addMarker(m[0])
+      }      
     }
 
   })

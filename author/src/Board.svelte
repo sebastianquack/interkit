@@ -2,7 +2,7 @@
 
   import { onMount } from 'svelte';
   
-  import { token } from './stores.js';  
+  import { token, boardCodeChanged } from './stores.js';  
   import CodeEditor from './CodeEditor.svelte';
   import NodeGraph from './NodeGraph.svelte';
   import VarList from './VarList.svelte';
@@ -27,17 +27,46 @@
 
   let editMode;
 
-  let changed = true;
-
-  $: {
-    if(currentBoardId && currentBoardData && currentBoardData.expired)
-     loadBoardData();
-  }
-
   $: {
     if(currentBoardData)
       if(currentBoardData.new) 
-        editMode = true;
+        openEditMode();     
+  }
+
+  $: {
+    if(currentBoardId && currentBoardData && editMode) 
+      openEditMode();
+  }
+
+
+  let initialBoardLibrary = null;
+  let changed = false;
+  
+  const openEditMode = () => {
+    console.log("openEditMode")
+    editMode = true;
+    initialBoardLibrary = currentBoardData.library
+  }
+
+  const closeEdit = () => {
+    if(changed) {
+      if(confirm("lose changes?")) {
+        editMode = false;
+        changed = false;
+        boardCodeChanged.set(false);
+      }
+    } else {
+      editMode = false; 
+      if(currentBoardData.new) setCurrentBoardData(null);    
+    }
+  }
+
+  const changeBoardLibrary = () => {
+    console.log("board library changed through editor")
+    if(initialBoardLibrary != null) {
+      changed = initialBoardLibrary != currentBoardData.library;
+      boardCodeChanged.set(changed)
+    }
   }
 
   const saveBoard = async ()=>{
@@ -94,6 +123,7 @@
 
     await loadBoardList();
     setCurrentBoardId(currentBoardData._id);
+    boardCodeChanged.set(false)
   }
 
   const addNode = async ()=>{
@@ -108,9 +138,16 @@
 
   {#if editMode}
 
+  <div class="floating-buttons">
+    {#if changed}
+      <button on:click={saveBoard}>save</button>
+    {/if}
+    <button on:click={closeEdit}>close</button>
+  </div>
+
     <div class="scroll">
 
-    <h2>edit board <button on:click={()=>{editMode = false; if(currentBoardData.new) setCurrentBoardData(null);}}>close</button></h2>
+    <h2>edit board </h2>
     <label>key</label>
     <input bind:value={currentBoardData.key} type="text"/><br>
     <label>display name</label>
@@ -118,10 +155,7 @@
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
-    <CodeEditor bind:code={currentBoardData.library} on:change={()=>changed=true}></CodeEditor><br>
-    {#if changed}
-      <button on:click={saveBoard}>save</button>
-    {/if}
+    <CodeEditor bind:code={currentBoardData.library} on:change={changeBoardLibrary}></CodeEditor><br>
     <br>
 
     {#if !currentBoardData.new}
@@ -135,6 +169,9 @@
     
 
     </div>
+
+    
+
     
   {:else}
     
@@ -144,7 +181,7 @@
         </h2>
         
         <p>{currentBoardData.description ? currentBoardData.description : ""}</p>
-        <button on:click="{()=>{editMode=true}}">✎</button>
+        <button on:click={openEditMode}>✎</button>
       </div>
 
       <NodeGraph
@@ -175,11 +212,6 @@
     z-index: 1;
   }
 
-  h2 button {
-    margin-left: 5px;
-    font-size: 16px;
-  }
-
   .edit-headline h2 {
     margin-bottom: 0;
   }
@@ -206,6 +238,13 @@
     width: 100%;
     height: 100%;
     overflow-y: auto;
+  }
+
+  .floating-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
   }
 
 

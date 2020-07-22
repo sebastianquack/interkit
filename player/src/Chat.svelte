@@ -394,7 +394,7 @@
         } else {
 
           // ignore optionsArrays with no selection, these are replaced with selected items
-          if(item.params.optionsArray && item.params.index == undefined) continue
+          if(!allowOptions && item.params.optionsArray && item.params.index == undefined) continue
 
           if(!item.params.option // non-options are always allowed
             || (item.params.option && allowOptions) // options if still allowed
@@ -559,6 +559,7 @@
     }
   }
   const onAudioEnded = (index) => {
+    console.log("onAudioEnded for index ", index)
     if(index + 1 < audioPlayers.length) {
       audioPlayers[index + 1].play()
     }

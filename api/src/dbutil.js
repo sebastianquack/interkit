@@ -33,9 +33,15 @@ const makeQuery = (scope, refs, key) => {
       varScope: scope,
       project: mongoose.Types.ObjectId(refs.project)
   };
-  if(refs.player) where.player = mongoose.Types.ObjectId(refs.player);
-  if(refs.board) where.board = mongoose.Types.ObjectId(refs.board);
-  if(refs.node) where.node = mongoose.Types.ObjectId(refs.node);
+  
+  if(refs.player && (scope == "player" || scope == "playerNode"))
+    where.player = mongoose.Types.ObjectId(refs.player);
+  
+  if(refs.node && (scope == "node" || scope == "playerNode")) 
+    where.node = mongoose.Types.ObjectId(refs.node);
+
+  if(refs.board && scope == "board") where.board = mongoose.Types.ObjectId(refs.board);
+  
   return where;
 }
 
@@ -56,6 +62,8 @@ exports.setVar = async (scope, refs, key, value) => {
 
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
+
+    console.log("list vars", variable)
 
     if(typeof value == "string") where.varType = "string"
     if(typeof value == "number") where.varType = "number"
@@ -338,7 +346,7 @@ exports.executeScheduledMoves = async (nodeLogModel, log) => {
         // mark as done
         await RestHapi.update(nodeLogModel, nodeLog._id, {scheduled: false}, log)
       } else {
-        console.log("scheduled move found to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
+        console.log("scheduled move found for player " + nodeLog.player + " to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
       }
     };
   } else {
@@ -422,6 +430,7 @@ exports.createLocationThumbnail = async (coords) => {
 
 // creates or update an item
 exports.createOrUpdateItem = async (payload, projectId) => {
+  payload.authored = false;
   let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
   delete payload._id; // remove key to prevent collisions when copying items
   if(items.docs.length == 0) {

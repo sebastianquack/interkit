@@ -222,6 +222,15 @@ exports.init = (listener) => {
 
 /* HANDLE SCRIPTS */
 
+// helper to interpret a single number instead of delay object as seconds
+function formatDelay(delay) {
+  if(typeof delay == "number") {
+    return {seconds: delay}
+  } else {
+    return delay
+  }
+}
+
 // runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
@@ -274,6 +283,14 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           }
         }
 
+        // convert keyOrNames in filenames
+        if(output.attachment) {
+          if(output.attachment.keyOrName) {
+            output.attachment.filename = await db.getAttachmentFilename(output.attachment.keyOrName, board.project)
+          }
+        }
+
+
         console.log("recipients", recipients)
         console.log("output.to", output.to)
 
@@ -283,7 +300,8 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         if(!output.delay) {
           await sendMessage(msgObj); // send now
         } else {
-          await db.scheduleMessage(output.delay, msgObj); // send later
+
+          await db.scheduleMessage(formatDelay(output.delay), msgObj); // send later
         }
       
       }
@@ -291,12 +309,11 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     // send interface commands
     
-    if(result.interfaceCommand) {
-      await sendMessage({params: {
-            interfaceCommand: result.interfaceCommand,
-            interfaceOptions: result.interfaceOptions
-          }, 
-          recipients: [playerId], node, board});  
+    if(result.interfaceCommands.length) {
+      result.interfaceCommands.forEach(async entry=> {
+        await sendMessage({params: entry, 
+          recipients: [playerId], node, board});    
+      });
     }
 
     // handle forwards
@@ -375,7 +392,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
                 console.log("scheduling move...")
                 
-                await db.scheduleMoveTo(playerId, destination, moveTo.delay);  
+                await db.scheduleMoveTo(playerId, destination, formatDelay(moveTo.delay));  
                 
                 if(moveTo.all) {
                   console.log("warninng - scheduled moveTo all not implemented yet")
