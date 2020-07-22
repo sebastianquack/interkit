@@ -301,18 +301,19 @@
         <button on:click={addEditor}>add editor</button>
       {/if}
       
-      <h3>Export</h3>
+      <h3>Project Actions</h3>
 
-      <h3>Duplicate</h3>
-      <button on:click={duplicateProject}>
-        duplicate "{editProject.name}"
-      </button>
-
+      <h4>Export</h4>
       <button on:click={exportProject}>
         export "{editProject.name}"
       </button>
 
-      <h3>Delete</h3>
+      <h4>Duplicate</h4>
+      <button on:click={duplicateProject}>
+        duplicate "{editProject.name}"
+      </button>
+
+      <h4>Delete</h4>
       <button on:click={deleteProject}>
         delete "{editProject.name}"
       </button>
