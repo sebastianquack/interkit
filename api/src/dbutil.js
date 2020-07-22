@@ -5,6 +5,8 @@ const dateFormat = require('dateformat');
 const Log = RestHapi.getLogger('socket');
 
 const gameServer = require('./gameServer.js');
+const {s3copy} = require('./s3')
+const {generateFilename} = require('../../shared/common')
 
 Log.logLevel = 'WARNING';
 
@@ -699,7 +701,15 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
 }
 
 exports.duplicateProject = async function (projectId) {
-  const projectData = await exports.getAllOfProject(projectId)
+  let projectData = await exports.getAllOfProject(projectId)
+
+  for (file of projectData.files) {
+    const newFilename = generateFilename()
+    await s3copy(file.filename, newFilename)
+    file.filename = newFilename
+    file.path = newFilename
+  }
+
   return await exports.insertProjectAsDuplicate(projectData)
 }
 

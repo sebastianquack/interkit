@@ -21,7 +21,25 @@ const s3config = {
 
 aws.config.update(s3config)
 
+const s3copy = async (source, destination) => {
+  var params = {
+    Bucket: S3_BUCKET, 
+    CopySource: S3_BUCKET + "/" + source, 
+    Key: destination
+  };
+
+  const s3 = new aws.S3();
+
+  try {
+    const result = await s3.copyObject(params).promise();
+    console.log(`copied file ${source} to ${destination}`)
+  } catch(error) {
+    console.warn(`could not copy file ${source} as ${destination}`, error)
+  }
+}
+
 module.exports = {
   s3config,
-  S3_BUCKET
+  S3_BUCKET,
+  s3copy
 }
