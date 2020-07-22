@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { generateFilename, generateFileKey } from './common.js'
 
 /* CONFIGS */
 
@@ -165,7 +166,7 @@ export const upload = async (file, progress, projectId = null, authored = false)
 
   console.log("UTIL", file);
   let fileType = file.type;
-  let fileName = generateId()
+  let fileName = generateFilename()
   
   let response = await axios.post("/api/s3_sign", {
       fileName,
@@ -198,7 +199,7 @@ export const upload = async (file, progress, projectId = null, authored = false)
   }
 
   const entry = {
-    key: generateId(24),
+    key: generateFileKey(),
     name: file.name,
     uploadedFilename: file.name,
     filename: fileName,
@@ -234,18 +235,4 @@ export const deleteFile = async (file, token) => {
       fileName : file.filename
   }, {headers: {authorization: `${token}`}})
   console.log(response);
-}
-
-// https://stackoverflow.com/questions/9407892/how-to-generate-random-sha1-hash-to-use-as-id-in-node-js
-// str byteToHex(uint8 byte)
-//   converts a single byte to a hex string 
-function byteToHex(byte) {
-  return ('0' + byte.toString(16)).slice(-2);
-}
-// str generateId(int len);
-//   len - must be an even number (default: 40)
-function generateId(len = 40) {
-  var arr = new Uint8Array(len / 2);
-  window.crypto.getRandomValues(arr);
-  return Array.from(arr, byteToHex).join("");
 }
