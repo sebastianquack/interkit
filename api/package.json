@@ -44,5 +44,13 @@
         "migrate:up": "migrate up --store=./migrate.js",
         "migrate:down": "migrate down --store=./migrate.js",
         "migrate": "migrate --store=./migrate.js"
-    }
+    },
+    "nodemonConfig": {
+        "ignore": ["public/*"],
+        "watch": [
+            "*.*",
+            "../shared/"
+        ],
+        "ext": "js,json"
+      }
 }

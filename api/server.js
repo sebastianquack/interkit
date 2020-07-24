@@ -160,6 +160,12 @@ async function api() {
       await boardCollection.dropIndex( "name_1" );
     } catch(e) {}
 
+    // remove leftover "key" index on files, because it throws when inserting duplicated file with different _id but same key
+    const fileCollection = mongoose.model("file").collection
+    try {
+      await fileCollection.dropIndex( "key_1" );
+    } catch(e) {}    
+
     // seed config entries
     db.seedConfig("fileServerURL", process.env.AWSEndpoint + "/" + process.env.Bucket + "/");
     db.seedConfig("playerURL", "http://localhost:8081");

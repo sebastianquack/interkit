@@ -4,7 +4,7 @@ module.exports = function (mongoose) {
   let Schema = new mongoose.Schema({
     key: {                    // a unique key that remains unchanged, even if project is duplicated
       type: Types.String,
-      unique: true,
+      unique: false,          // must (only) be unique per project
       required: true,
     },
     name: {                   // a human readable name

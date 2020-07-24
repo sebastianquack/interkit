@@ -5,6 +5,8 @@ const dateFormat = require('dateformat');
 const Log = RestHapi.getLogger('socket');
 
 const gameServer = require('./gameServer.js');
+const {s3copy} = require('./s3')
+const {generateFilename} = require('../../shared/common')
 
 Log.logLevel = 'WARNING';
 
@@ -563,6 +565,7 @@ exports.getAllOfProject = async function (projectId, includeUserContent=false) {
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
   const Variable = mongoose.model("variable");
+  const File = mongoose.model("file");  
 
   // get data, use lean() to get a plain array rather than mongoose objects
   const project = await Project.findOne({_id: projectId}).lean()
@@ -570,6 +573,7 @@ exports.getAllOfProject = async function (projectId, includeUserContent=false) {
   const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } }).lean()
   const items = await Item.find({project: projectId, authored: true}).lean()
   const pages = await ( includeUserContent ? Page.find({project: projectId}).lean() : Page.find({project: projectId, authored: true}).lean() );
+  const files = await ( includeUserContent ? File.find({project: projectId}).lean() : File.find({project: projectId, authored: true}).lean() );  
   const variables = await Variable.find({project: projectId, varScope: "project"}).lean() // for now get only project variables
 
   return {
@@ -579,7 +583,7 @@ exports.getAllOfProject = async function (projectId, includeUserContent=false) {
     items,
     pages,
     variables,
-    // TODO attachments
+    files
   }  
 }
 
@@ -592,7 +596,7 @@ const duplicateProjectData = function (projectData, newProjectName) {
     items,
     pages,
     variables,
-    // TODO attachments
+    files
   } = projectData
 
   // helper function [ { _id: 1 }, { _id: 2 } ] => { '1': 3, '2': 4 }
@@ -608,6 +612,7 @@ const duplicateProjectData = function (projectData, newProjectName) {
     ...generateIdMappings(items),
     ...generateIdMappings(pages),
     ...generateIdMappings(variables),
+    ...generateIdMappings(files),    
   }
   
   // function to translate a key according to mappings
@@ -642,8 +647,13 @@ const duplicateProjectData = function (projectData, newProjectName) {
   pages = translateKeys(pages, "_id")
   pages = translateKeys(pages, "project")
 
+  // translate variables
   variables = translateKeys(variables, "_id")
   variables = translateKeys(variables, "project")
+
+  // translate files
+  files = translateKeys(files, "_id")
+  files = translateKeys(files, "project")  
 
   // END translations -> mutation complete
 
@@ -654,6 +664,7 @@ const duplicateProjectData = function (projectData, newProjectName) {
     items,
     pages,
     variables,
+    files
   }
 
   //console.log("result", result)
@@ -674,7 +685,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
     items,
     pages,
     variables,
-    // TODO attachments
+    files
   } = duplicateProjectData(projectData, newProjectName)
 
   const Project = mongoose.model("project");
@@ -683,6 +694,7 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   const Item = mongoose.model("item");
   const Page = mongoose.model("page");
   const Variable = mongoose.model("variable");
+  const File = mongoose.model("file");
 
   const errorReport = function(error, docs) { console.log(error, docs)}
 
@@ -692,12 +704,21 @@ exports.insertProjectAsDuplicate = async (projectData, newProjectName) => {
   await Item.insertMany(items, errorReport);
   await Page.insertMany(pages, errorReport);
   await Variable.insertMany(variables, errorReport);
+  await File.insertMany(files, errorReport);
 
   return project.name // new name
 }
 
 exports.duplicateProject = async function (projectId) {
-  const projectData = await exports.getAllOfProject(projectId)
+  let projectData = await exports.getAllOfProject(projectId)
+
+  for (file of projectData.files) {
+    const newFilename = generateFilename()
+    await s3copy(file.filename, newFilename)
+    file.filename = newFilename
+    file.path = newFilename
+  }
+
   return await exports.insertProjectAsDuplicate(projectData)
 }
 
