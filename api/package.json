@@ -14,6 +14,7 @@
         "aws-sdk": "^2.693.0",
         "bcryptjs": "^2.4.3",
         "bson": "^4.0.4",
+        "crypto-random-string": "^3.2.0",
         "dateformat": "^3.0.3",
         "dotenv-safe": "^6.0.0",
         "geolib": "^3.3.1",
@@ -46,11 +47,13 @@
         "migrate": "migrate --store=./migrate.js"
     },
     "nodemonConfig": {
-        "ignore": ["public/*"],
+        "ignore": [
+            "public/*"
+        ],
         "watch": [
             "*.*",
             "../shared/"
         ],
         "ext": "js,json"
-      }
+    }
 }
