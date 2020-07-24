@@ -221,6 +221,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: params.system ? true : false,
           to: params.to ? params.to : "others",
           delay: params.delay ? params.delay : null,
+          attachment: input.filename ? {
+            mediatype: input.type,
+            keyOrName: input.attachment.key
+          } : undefined
         })
       },
 
@@ -244,7 +248,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
-      interface: async (key, params={}) => { result.interfaceCommands.push({interfaceCommand: key, interfaceOptions: params}); await db.persistPlayerInterface(project._id, playerId, key, params); },
+      interface: async (key, params={}) => { 
+        result.interfaceCommands.push({interfaceCommand: key, interfaceOptions: params}); 
+        await db.persistPlayerInterface(project._id, playerId, key, params); 
+      },
 
       // deprecated / broken - take out soon
       // moveTo: (nodeId, delay = 0, all = undefined) => { result.moveTo = true; result.moveToOptions = {destination: nodeId, delay, all} },
