@@ -10,8 +10,10 @@ import EncoderWav from './encoder-wav-worker.js'
 export let onClose;
 export let projectId;
 export let onUpload;
+export let singleTool = false;
 
-let status = "inactive"; 
+let status = "idle";
+let doUpload = true; // upload is planned 
 let uploadProgress = 0;
 let counterInterval;
 let timeDisplay = "";
@@ -69,7 +71,7 @@ const createWorker = (fn) => {
   }
 
 const startRecording = (timeslice) => {
-  if (status !== 'inactive') {
+  if (status !== 'idle') {
     return
   }
 
@@ -290,6 +292,7 @@ const _onAudioProcess = (e) => {
   }
 
 const stopRecording = () => {
+  console.log("stopRecording")
   if (status === 'inactive') {
     return
   }
@@ -379,8 +382,13 @@ const _onDataAvailable = (evt) => {
   }
 
   //em.dispatchEvent(new CustomEvent('recording', { detail: { recording: recording } }))
-  send(blob);
-
+  console.log("doUpload", doUpload)
+  if(doUpload) {
+    send(blob);
+  } else {
+    doUpload = true; // upload next time
+    status = "idle"
+  }
 }
 
 const send = async (blob)=> {
@@ -391,6 +399,7 @@ const send = async (blob)=> {
   const files = await upload(file, progressEvent => {console.log(progressEvent); uploadProgress = progressEvent}, projectId) 
   // TODO fail better if file is not an array (if possible)
   await onUpload(files[0]);
+  status = "idle"
 }
 
 const startRecordingCounter = () => {
@@ -411,8 +420,8 @@ onDestroy(()=>{
 });
 
 const cancel = ()=>{
-  status = "idle";
-  onClose();
+  doUpload = false;
+  stopRecording();
 }
 
 
@@ -420,13 +429,14 @@ const cancel = ()=>{
 
 <div id="container">
 
-    <button on:click={onClose}>cancel</button>
+    {#if !singleTool}<button on:click={onClose}>cancel</button>{/if}
 
-    {#if status == "inactive"}
+    {#if status == "idle"}
       <button on:click={startRecording}>start recording</button>
     {/if}
 
     {#if status == "recording"}
+      {#if singleTool}<button on:click={cancel}>cancel</button>{/if}
       <button on:click={stopRecording}>finish recording</button>
       {timeDisplay}
     {/if}

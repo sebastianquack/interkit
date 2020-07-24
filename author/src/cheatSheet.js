@@ -110,6 +110,16 @@ interface("map", {arrowMode: false}) // turn off arrow
 
 interface("request-geoposition") // client responds with coordinates (use with caution)
 
+// turn on or off input elements in the interface - this is persisted per board
+interface("inputs", {
+    text: true,
+    attachments: true,
+    gps: true,
+    image: true,
+    audio: true,
+    qr: true
+  }
+)       
 
 
 // deprecated

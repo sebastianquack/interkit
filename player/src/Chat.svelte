@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { getConfig, postPlayerMessage, getCurrentNodeId } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage, getCurrentNodeId, getPlayerVar } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -44,7 +44,16 @@
 
   let messageQueue = []; // queue messages for sequencial processing if many come in fast via socket
   let status = "idle";
-  
+  const defaultInputs = {
+      text: true,
+      attachments: true,
+      gps: true,
+      image: true,
+      audio: true,
+      qr: true
+  }
+  let inputInterface = defaultInputs;
+    
   // reactive & lifecycle methods
 
   onMount(async ()=>{
@@ -139,7 +148,10 @@
     // load history - and process any unseen messages in it
     await loadMoreItems(currentBoard); 
     scrollUp();
+
+    await updateInputInterface();
   }
+  
 
   // takes in a new message
   const receiveMessage = async (message) => {
@@ -232,39 +244,43 @@
       openChatView();
     }
 
-    // request for geoposition
-    if(item.params.interfaceCommand == "request-geoposition") {
-      console.log("geoposition requested, responding...")
-      if(navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position)=>{
-          let responseItem = {
-            attachment: {
-              mediatype: "GPS",
-              lat: position.coords.latitude, 
-              lng: position.coords.longitude,
-              accuracy: position.coords.accuracy
-            },
-            params: {
-              interfaceCommand: "request-geoposition-response",
-              interfaceOptions: item.params.interfaceOptions
-            },
-            node: item._id, board: item.board, project: projectId, sender: playerId        
-          }
-          postPlayerMessage(responseItem)
-        })
-      }
-      return; 
-    }
-
-    
     if(item.params.interfaceCommand) {
+
+      if(item.params.interfaceCommand == "inputs") {
+        inputInterface = item.params.interfaceOptions;
+      }
+
+      // request for geoposition
+      if(item.params.interfaceCommand == "request-geoposition") {
+        console.log("geoposition requested, responding...")
+        if(navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position)=>{
+            let responseItem = {
+              attachment: {
+                mediatype: "GPS",
+                lat: position.coords.latitude, 
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy
+              },
+              params: {
+                interfaceCommand: "request-geoposition-response",
+                interfaceOptions: item.params.interfaceOptions
+              },
+              node: item._id, board: item.board, project: projectId, sender: playerId        
+            }
+            postPlayerMessage(responseItem)
+          })
+        }
+        return; 
+      }
+
       if(item.params.interfaceCommand == "alert") {
         displayAlert(item.params.interfaceOptions);
       }
 
       if(item.params.interfaceCommand == "lock") {
         setLockScreen();
-      }
+      }      
     }
 
     /* message processing */
@@ -454,6 +470,24 @@
   }
 
 
+  // loads and updates interface state for this board
+  const updateInputInterface = async ()=> {
+
+    let interfaceState = await getPlayerVar({playerId, projectId}, "interfaceState")
+    console.log("interfaceState", interfaceState);
+
+    if(interfaceState.inputs) {
+      if(interfaceState.inputs[currentBoard._id]) {
+        inputInterface = interfaceState.inputs[currentBoard._id]
+      }
+      else {
+        inputInterface = defaultInputs;  
+      }
+    } else {
+      inputInterface = defaultInputs;
+    }
+  }
+
   const scrollUp = ()=> {
     setTimeout(()=>{
       if(div)
@@ -569,7 +603,7 @@
 
 <div class="chat">
 
-    <div class="scrollable {authoring? 'narrow' : ''}" bind:this={div}>
+    <div class="scrollable {authoring? 'narrow' : ''}" class:no-inputs={!inputInterface.attachments && !inputInterface.text} bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each chatItems as item}
@@ -591,18 +625,23 @@
       {/each}
     </div>
 
-    {#if !attachmentMenuOpen}
+    {#if !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
       <div class="input-container">      
-        <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}>📎</button>
-        <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
+        {#if inputInterface.attachments}
+          <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}>📎</button>
+        {/if}
+        {#if inputInterface.text}
+          <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
+        {/if}
       </div>
     {/if}
-    
+
     <AttachmentToolbelt
       {playerId}
       {projectId}
       {currentNode}
       {attachmentMenuOpen}
+      {inputInterface}
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}
       {googleMapsAPIKey}
@@ -648,6 +687,10 @@
     padding: 5px;
     padding-top: 10px;
     padding-bottom: 10px;
+  }
+
+  .no-inputs {
+    bottom: 0px;
   }
 
   .narrow {

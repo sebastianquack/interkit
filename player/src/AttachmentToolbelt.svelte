@@ -15,6 +15,7 @@
   export let projectId;
   export let currentNode;
   export let playerId;
+  export let inputInterface;
 
   let toolOpen = null;
   const openTool = (tool) => {
@@ -99,16 +100,29 @@
   }
 
 
+  let singleTool = null;
+
+  $: {
+    if(!inputInterface.text && inputInterface.attachments 
+      && !inputInterface.image 
+      && inputInterface.audio 
+      && !inputInterface.qr 
+      && !inputInterface.gps) 
+      singleTool = "audio"
+    else 
+      singleTool = null;
+  }
+
 </script>
 
 
-{#if attachmentMenuOpen}
+{#if (inputInterface.attachments && attachmentMenuOpen) || (inputInterface.attachments && !inputInterface.text && !singleTool)}
   <div class="input-container">      
-      <button on:click={()=>{openTool("camera")}}>Photo</button>
-      <button on:click={()=>{openTool("audio")}}>Audio</button>
-      <button on:click={()=>{openTool("qr-code")}}>QR</button>
-      <button on:click={getGPSLocation}>GPS</button>
-      <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>
+      {#if inputInterface.image}<button on:click={()=>{openTool("camera")}}>Photo</button>{/if}
+      {#if inputInterface.audio}<button on:click={()=>{openTool("audio")}}>Audio</button>{/if}
+      {#if inputInterface.qr}<button on:click={()=>{openTool("qr-code")}}>QR</button>{/if}
+      {#if inputInterface.gps}<button on:click={getGPSLocation}>GPS</button>{/if}
+      {#if inputInterface.text}<button class="close-attachment" on:click={closeAttachmentMenu}>close</button>{/if}
   </div>  
 {/if}
   
@@ -137,7 +151,7 @@
   </div>
 {/if}
 
-{#if toolOpen == "audio"}
+{#if toolOpen == "audio" || singleTool == "audio"}
   <div class="input-container">
     <AudioRecorder
       {projectId}
@@ -146,6 +160,7 @@
         await sendAttachment(audioURL, "audio");
       }}
       onClose={closeTool}
+      singleTool={singleTool == "audio"}
     />
   </div>
 {/if}

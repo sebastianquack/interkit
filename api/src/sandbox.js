@@ -249,8 +249,17 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
       
       interface: async (key, params={}) => { 
+        let defaultInputs = {
+          text: true,
+          attachments: true,
+          gps: true,
+          image: true,
+          audio: true,
+          qr: true
+        }
+        if(key == "inputs") params = {...defaultInputs, ...params}
         result.interfaceCommands.push({interfaceCommand: key, interfaceOptions: params}); 
-        await db.persistPlayerInterface(project._id, playerId, key, params); 
+        await db.persistPlayerInterface(project._id, playerId, key, params, node.board); 
       },
 
       // deprecated / broken - take out soon

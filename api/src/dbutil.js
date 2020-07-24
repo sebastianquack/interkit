@@ -147,12 +147,21 @@ exports.embedVars = async (content, projectId, playerId=null) => {
 }
 
 // updates the persistent player interface variable that is loaded on player reload
-exports.persistPlayerInterface = async (projectId, playerId, key, options) => {
+exports.persistPlayerInterface = async (projectId, playerId, key, options, boardId) => {
 
   let playerInterface = await exports.getVar("player", {project: projectId, player: playerId}, "interfaceState");
 
   if(!playerInterface) {
     playerInterface = {}  
+  }
+
+  if(key == "inputs") {
+    // initialise inputs if not set yet
+    if(!playerInterface.inputs) {
+      playerInterface.inputs = {}
+    }  
+    playerInterface.inputs[boardId] = {...options}
+    options = {};
   }
 
   playerInterface = {...playerInterface, ...options};
@@ -571,8 +580,8 @@ exports.getAllOfProject = async function (projectId, includeUserContent=false) {
   const project = await Project.findOne({_id: projectId}).lean()
   const boards = await Board.find({project: projectId}).lean()
   const scriptNodes = await ScriptNode.find({board: { $in: boards.map(b=>b._id) } }).lean()
-  const items = await Item.find({project: projectId, authored: true}).lean()
-  const pages = await ( includeUserContent ? Page.find({project: projectId}).lean() : Page.find({project: projectId, authored: true}).lean() );
+  const items = await ( includeUserContent ? Item.find({project: projectId}).lean() : Item.find({project: projectId, authored: true}).lean() );
+  const pages = await Page.find({project: projectId}).lean()
   const files = await ( includeUserContent ? File.find({project: projectId}).lean() : File.find({project: projectId, authored: true}).lean() );  
   const variables = await Variable.find({project: projectId, varScope: "project"}).lean() // for now get only project variables
 
