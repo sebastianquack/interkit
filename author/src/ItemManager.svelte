@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, upload, deleteFile } from '../../shared/util.js';
+  import { getConfig, upload, deleteFile, getProjectVar } from '../../shared/util.js';
 
   import { token } from './stores.js';
 
@@ -33,7 +33,9 @@
 
   onMount(async ()=>{
     loadItems();
-    defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
+    defaultPos = await getProjectVar({projectId: projectId}, "defaultAuthoringItemLocation")
+    if(!defaultPos)
+      defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     console.log(defaultPos);
     defaultValue = {
       name: "name",

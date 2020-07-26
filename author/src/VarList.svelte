@@ -47,7 +47,8 @@ const parseValue = () => {
     try {
       valueObj = JSON.parse(editVar.value);
     } catch(e) {
-      console.log(e)
+      alert(e)
+      return null;
     }
     return valueObj;
   }
@@ -63,6 +64,8 @@ const updateVar = async () => {
   }
   if(saveItem.varType == "object") {
     saveItem.value = parseValue()
+    if(!saveItem.value) return
+    console.log("converted from json to js object", saveItem.value)
   }
 
   console.log(typeof saveItem.value)

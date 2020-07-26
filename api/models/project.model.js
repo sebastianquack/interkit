@@ -3,6 +3,8 @@ let Joi = require('@hapi/joi')
 let Auth = require("../plugins/auth.plugin.js");
 const db = require("../src/dbutil")
 
+const beautify = require('js-beautify');
+
 module.exports = function (mongoose) {
   let modelName = "project";
   let Types = mongoose.Schema.Types;
@@ -36,6 +38,15 @@ module.exports = function (mongoose) {
           foreignField: "project",
           model: "file"
         },
+      },
+      update: {
+        pre: async (_id, payload, request, Log) => {
+          if(typeof payload.library !== "undefined") {
+            // beautify
+            payload.library = beautify(payload.library, { indent_size: 2 });
+          }
+          return payload;
+        }
       },
       extraEndpoints: [
         duplicate

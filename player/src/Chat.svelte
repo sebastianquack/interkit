@@ -533,6 +533,7 @@
       // for optionsArray save index of chosen option in array
       if(item.params.optionsArray) {
         item.params.index = index 
+        item.params.optionKey = item.params.optionsArray[index].key;
         item.message = item.params.optionsArray[index]
       }
     }
@@ -613,11 +614,7 @@
           {onAudioEnded}
           onClick={(index = undefined)=>{
             if(item.params.option || item.params.optionsArray) {
-              //if(!item.params.key) {
-              //  autoType(item)
-              //} else {
                 submitInput(item, index);
-              //}
             }
             if(item.attachment.mediatype == "GPS") mapClick(item)
           }}

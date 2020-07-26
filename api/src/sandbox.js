@@ -59,6 +59,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       text: msgData.message ? msgData.message.trim().toLowerCase() : null,
       raw: msgData.message,
       key: msgData.params ? msgData.params.key : undefined,
+      optionKey: msgData.params ? msgData.params.optionKey : undefined,
       filename: msgData.attachment ? msgData.attachment.key : null, // it's actually the "key", not the filename. 
       index: msgData.params ? (msgData.params.index + 1) : undefined,
       coords: type == "GPS" ? {lat: msgData.attachment.lat, lng: msgData.attachment.lng} : null,

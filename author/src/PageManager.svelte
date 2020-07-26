@@ -35,8 +35,12 @@
       },
       body: JSON.stringify({_id: projectId, library: projectLibrary})
     });
-    projectLibraryInit = projectLibrary;
-    projectLibraryChanged = false;
+    if(res.ok) {
+        let json = await res.json();
+        projectLibrary = json.library;
+        projectLibraryInit = json.library;
+        projectLibraryChanged = false;
+    }
   }
 
   const revertLibrary = ()=>{
@@ -127,6 +131,7 @@
     position: absolute;
     right: 10px;
     top: 20px;
+    z-index: 10;
   }
 
 

@@ -51,7 +51,11 @@
 
       {#each item.params.optionsArray as option, index}
         <article class="optionsArray" on:click={()=>{if(item.params.index == undefined) onClick(index)}}>
+          {#if typeof option == "object"}
+          <span class={index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "")}>{option.option}</span>
+          {:else}
           <span class={index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "")}>{option}</span>
+          {/if}
         </article>
       {/each}
 

@@ -39,6 +39,23 @@ export const getPlayerVar = async (ids, key) => {
     return null;
 }
 
+export const getProjectVar = async (ids, key) => {
+  const res = await fetch("/api/variable?varScope=project&key=" + key + "&project=" + ids.projectId);
+  if(!res.ok) {
+    console.log("error fetching var ", key);
+    return null;
+  }
+  const json = await res.json();
+  //console.log(json);
+
+  if(json.docs.length) {
+    return json.docs[0].value
+  }
+  else 
+    return null;
+}
+
+
 
 /* PLAYERS */
 
