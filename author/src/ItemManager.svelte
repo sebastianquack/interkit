@@ -23,7 +23,7 @@
 
   
   const loadItems = async () => {
-    let result = await fetch("/api/item?project=" + projectId + "&$embed=players");
+    let result = await fetch("/api/item?project=" + projectId + "&$embed=players&$sort=key");
     let json = await result.json();
     if(json.docs) {
       items = json.docs;
@@ -130,6 +130,29 @@
     }
   }
 
+  const duplicateItem = async (item) => {
+    let newItem = {...item}
+    newItem.key = item.key + "-copy";
+    newItem._id = undefined;
+    newItem.players = undefined;
+    newItem.updatedAt = undefined;
+    newItem.createdAt = undefined;
+
+    let response = await fetch("/api/item", {
+        method: "POST",
+        headers: {
+          'authorization': $token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([newItem])
+    });
+    if(response.ok) {
+      loadItems();
+    } else {
+      alert("error duplicating item")
+    }
+  }
+
   const deleteItem = async (id) => {
     if(confirm("permanently remove item?")) {
       const res = await fetch("/api/item/" + id, {
@@ -216,10 +239,11 @@
   <h4>Project Items</h4>
   <ul>
     {#each items.filter(i => i.authored) as item}
-      <li>{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
+      <li class="item-actions">{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
         <button on:click={()=>award(item._id)}>award</button> 
         <button on:click={()=>revoke(item._id)}>revoke</button> 
         <button on:click={()=>setEditItem(item)}>edit</button> 
+        <button on:click={()=>duplicateItem(item)}>dup</button> 
         <button on:click={()=>deleteItem(item._id)}>delete</button>
       </li>
     {/each}
@@ -229,10 +253,11 @@
   <h4>User generated Items</h4>
   <ul>
     {#each items.filter(i => !i.authored) as item}
-      <li>{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
+      <li class="item-actions">{item.key} ({item.type}) {awarded(item) ? "(awarded to active)" : ""}
         <button on:click={()=>award(item._id)}>award</button> 
         <button on:click={()=>revoke(item._id)}>revoke</button> 
         <button on:click={()=>setEditItem(item)}>edit</button> 
+        <button on:click={()=>duplicateItem(item)}>dup</button> 
         <button on:click={()=>deleteItem(item._id)}>delete</button>
       </li>
     {/each}
@@ -264,6 +289,10 @@
     overflow: scroll;
     width: 100%;
     background-color: #fff;
+  }
+
+  .item-actions button {
+    font-size: 12px;
   }
 
 
