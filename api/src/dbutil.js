@@ -439,7 +439,9 @@ exports.createLocationThumbnail = async (coords) => {
 
 // creates or update an item
 exports.createOrUpdateItem = async (payload, projectId) => {
-  payload.authored = false;
+  if(!payload.authored) {
+    payload.authored = false;
+  }
   let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
   delete payload._id; // remove key to prevent collisions when copying items
   if(items.docs.length == 0) {

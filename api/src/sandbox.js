@@ -259,7 +259,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           qr: true
         }
         if(key == "inputs") params = {...defaultInputs, ...params}
-        result.interfaceCommands.push({interfaceCommand: key, interfaceOptions: params}); 
+        result.interfaceCommands.push({
+          interfaceCommand: key, 
+          interfaceOptions: params,
+          delay: params.delay ? params.delay : null,
+        }); 
         await db.persistPlayerInterface(project._id, playerId, key, params, node.board); 
       },
 

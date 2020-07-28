@@ -310,10 +310,20 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     // send interface commands
     
     if(result.interfaceCommands.length) {
-      result.interfaceCommands.forEach(async entry=> {
-        await sendMessage({params: entry, 
-          recipients: [playerId], node, board});    
-      });
+
+        result.interfaceCommands.forEach(async entry=> {
+
+          let msgObj = {
+            params: entry, 
+            recipients: [playerId], node, board}
+          console.log(msgObj);
+
+          if(!entry.delay) {
+            await sendMessage(msgObj); // send now
+          } else {
+            await db.scheduleMessage(formatDelay(entry.delay), msgObj); // send later
+          }
+        })
     }
 
     // handle forwards
