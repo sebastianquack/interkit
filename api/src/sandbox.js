@@ -47,6 +47,11 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
     if(!msgData.params) msgData.params = {};
     if(msgData.params && msgData.params.option) type = "option";
     if(msgData.attachment) type = msgData.attachment.mediatype; // image or audio
+    if(msgData.attachment) {
+      if(msgData.attachment.QRCode) {
+        type = "qr"
+      }
+    }
 
     input = {
       // deprecated
@@ -120,6 +125,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           await db.listBoardForPlayer(playerId, boardKey, project._id, false);
           result.interfaceCommands.push({interfaceCommand: "updateBoards"})
         }
+      },
+      vars: {
+        get: async (scope, ids, key) => { return await db.getVar(scope, {project: project._id, ...ids}, key) },
+        set: async (scope, ids, key, value) => {await db.setVar(scope, {project: project._id, ...ids}, key, value) }
       },
       
       send: {
@@ -204,6 +213,17 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             label: params.label ? params.label : varCache.board.narrator
         })},
 
+        qr: (data, params={}) => { result.outputs.push({
+          attachment: {
+            mediatype: "qr", 
+            data: data
+          }, 
+          params: params,
+          label: params.label ? params.label : varCache.board.narrator,
+          to: params.to ? params.to : "sender",
+          delay: params.delay ? params.delay : null,
+          forceOpen: params.forceOpen,
+        })}
       },
 
       moveTo: (nodeId, params={}) => { result.moveTos.push({

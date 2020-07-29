@@ -36,6 +36,8 @@ send.audio("audio.mp3") // sends an audio file
 send.audio("audio.mp3", {autoplay: true}) // automatically start playing 
 send.audio("audio.mp3", {stopAfterEnded: true}) // stop after ended (default is to coninute to next loaded file)
 
+send.qr("bla") // display qr code on client
+
 send.text("hello", {to: "sender"}) // specify that only the sender (or the player that just arrived) should receive the message
 send.text("hello", {to: "all"}) // specify that all players in this node should get it
 send.text("hello", {to: "others"}) // specify that only the other players should get it
@@ -56,6 +58,10 @@ forward(input, "nodeName") // calls onReceive on a different node on this board 
 player.set("health", 10) // set via setter
 player.health // access as object
 
+// player variables on other players
+await vars.get("player", {player: id}, "health")
+await vars.set("player", {player: id}, "health", 10)
+
 // variable scopes
 player.set("varname", value) // for this player everywhere
 here.set("varname", value) // for all players in this node
@@ -65,6 +71,8 @@ board.set("varname", value) // for all players in all nodes
 // special variables
 player.name // used as label in multiplayer
 board.narrator // used as default label for messages sent to player
+
+
 
 
 // items

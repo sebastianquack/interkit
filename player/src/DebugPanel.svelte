@@ -67,13 +67,13 @@ $: {
 
   <VarList
     scope="player"
-    ids={{player: playerId}}
+    ids={{player: playerId, project: projectId}}
     {authoring}
   />
 
   <VarList
     scope="playerNode"
-    ids={{player: playerId}}
+    ids={{player: playerId, project: projectId}}
     {authoring}
   />
 

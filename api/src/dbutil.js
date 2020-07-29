@@ -108,6 +108,8 @@ exports.getVar = async (scope, refs, key) => {
 
     let where = makeQuery(scope, refs, key);
 
+    console.log(where)
+
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
 
@@ -403,8 +405,12 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
         deliveredMesssages.push(result);
 
         // not sure we should move on scheduled message!
-        let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
-        exports.logPlayerToNode(m.recipients[0], node);
+        if(m.params) {
+          if(m.params.moveOnReceive) {
+            let node = await RestHapi.find(RestHapi.models.scriptNode, m.node, null, Log);
+            exports.logPlayerToNode(m.recipients[0], node);
+          }
+        }
       } else {
         console.log("found a scheduled message but not yet time to deliver");
       }

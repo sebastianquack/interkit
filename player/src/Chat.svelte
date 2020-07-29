@@ -475,6 +475,7 @@
 
     let interfaceState = await getPlayerVar({playerId, projectId}, "interfaceState")
     console.log("interfaceState", interfaceState);
+    if(!interfaceState) interfaceState = {};
 
     if(interfaceState.inputs) {
       if(interfaceState.inputs[currentBoard._id]) {

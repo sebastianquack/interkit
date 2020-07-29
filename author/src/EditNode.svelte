@@ -275,9 +275,9 @@
 
 
 {#if editNodeId}
-  <VarList scope="node" ids={{node: editNodeId}} authoring/>
-  <VarList scope="playerNode" ids={{node: editNodeId, player: playerId}} authoring/>
-  <VarList scope="player" ids={{player: playerId}} authoring/>
+  <VarList scope="node" ids={{node: editNodeId, project: projectId}} authoring/>
+  <VarList scope="playerNode" ids={{node: editNodeId, player: playerId, project: projectId}} authoring/>
+  <VarList scope="player" ids={{player: playerId, project: projectId}} authoring/>
   <VarList scope="project" ids={{project: projectId}} authoring/>
 
 {/if}

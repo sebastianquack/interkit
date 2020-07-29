@@ -1,5 +1,7 @@
 <script>
 
+  const QRCode = require('easyqrcodejs');
+
   import { onMount } from 'svelte';
 
   export let item = {};
@@ -7,12 +9,25 @@
 
   export let registerAudioPlayer;
   export let onAudioEnded;
-  
+
   let audioPlayer;
   let audioIndex;
   onMount(()=>{
     if(registerAudioPlayer)
       audioIndex = registerAudioPlayer(audioPlayer)
+
+    // init qr code if needed
+    if(item.attachment.mediatype == "qr") {
+      console.log(item.attachment.data)
+      let qrOptions = {
+        text: item.attachment.data,
+        width: 150,
+        height: 150,
+      };
+      let qrElem = document.getElementById("qr-" + item._id)
+      if(qrElem)
+        new QRCode(qrElem, qrOptions);
+    }
   })
 
 </script>
@@ -44,6 +59,9 @@
               <source src={item.attachment.audioSrc} type="audio/mp3">
             </audio> 
           {/if}
+          {#if item.attachment.mediatype == "qr"}
+            <div class="qr-code" id={"qr-" + item._id}></div>
+          {/if}
         </span>        
     </article>
 
@@ -62,6 +80,7 @@
   {/if}
 
 {/if}
+
 
 
 <style>
@@ -159,6 +178,10 @@ span img {
 .optionsArray span.inactive {
   background-color: #eee;
   box-shadow: none; 
+}
+
+.qr-code {
+  padding: 5px;
 }
 
 
