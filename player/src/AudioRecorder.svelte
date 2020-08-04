@@ -50,7 +50,7 @@ let config = {
       micGain: 0.75,
       processorBufferSize: 2048,
       stopTracksAndCloseCtxWhenFinished: true,
-      usingMediaRecorder: typeof window.MediaRecorder !== 'undefined',
+      usingMediaRecorder: false, //typeof window.MediaRecorder !== 'undefined',
       enableEchoCancellation: true
     }
 
@@ -115,6 +115,7 @@ const startRecording = (timeslice) => {
       // This also works and avoids weirdness imports with workers
       // encoderWorker = new Worker(BASE_URL + '/workers/encoder-ogg-worker.js')
       encoderWorker = createWorker(EncoderMp3)
+      console.log("EncoderMp3 worker: ", encoderWorker)
       encoderWorker.postMessage(['init', { baseUrl: BASE_URL, sampleRate: audioCtx.sampleRate }])
       encoderMimeType = 'audio/mpeg'
     }
