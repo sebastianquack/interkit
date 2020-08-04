@@ -45,10 +45,10 @@ async function api() {
 
     server.route({
         method: 'GET',
-        path: '/shared_static/{param*}',
+        path: '/shared_public/{param*}',
         handler: {
             directory: {
-                path: './shared_static',
+                path: './shared_public',
                 redirectToSlash: true
             }
         },
