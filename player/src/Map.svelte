@@ -121,7 +121,8 @@ const initMarkers = ()=>{
 
     markerCluster = new MarkerClusterer(map, markers, {
         imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-        minimumClusterSize: 2,  
+        minimumClusterSize: 3, 
+        maxZoom: 16, 
     });
 
     //console.log(markers);
