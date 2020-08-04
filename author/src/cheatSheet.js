@@ -127,7 +127,8 @@ interface("inputs", {
     gps: true,
     image: true,
     audio: true,
-    qr: true
+    qr: true,
+    hideOwnInput: false // set this to true if player's own input should not be displayed
   }
 )       
 

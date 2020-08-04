@@ -50,7 +50,8 @@
       gps: true,
       image: true,
       audio: true,
-      qr: true
+      qr: true,
+      hideOwnInput: false
   }
   let inputInterface = defaultInputs;
     
@@ -511,14 +512,17 @@
 
     // if this is not an optionsArray, add an extra item to the chat
     if(!optionsArray) {
-      chatItems = chatItems.concat({
-        side: 'right',
-        message,
-        attachment: {},
-        params: {}
-      });
-      chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
-      scrollUp();
+
+      if(!inputInterface.hideOwnInput) {
+        chatItems = chatItems.concat({
+          side: 'right',
+          message,
+          attachment: {},
+          params: {}
+        });
+        chatItems = chatItems.filter((i)=>!(i.params && i.params.option));
+        scrollUp();
+      }
     
     } else {
       // for optionsArrays just mark selected item

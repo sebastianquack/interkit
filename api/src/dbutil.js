@@ -63,7 +63,7 @@ exports.setVar = async (scope, refs, key, value) => {
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
 
-    console.log("list vars", variable)
+    //console.log("list vars", variable)
 
     if(typeof value == "string") where.varType = "string"
     if(typeof value == "number") where.varType = "number"
