@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -x
+mkdir ./public/shared_public
+cp ../shared/shared_public/* ./public/shared_public
