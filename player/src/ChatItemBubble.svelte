@@ -14,7 +14,7 @@
   let audioIndex;
   onMount(()=>{
     if(registerAudioPlayer)
-      audioIndex = registerAudioPlayer(audioPlayer)
+      audioIndex = registerAudioPlayer(audioPlayer, item.params ? item.params.autoplayTrigger : null)
 
     // init qr code if needed
     if(item.attachment.mediatype == "qr") {
@@ -54,7 +54,6 @@
                   if(!item.params.stopAfterEnded)
                     onAudioEnded(audioIndex)
                 }} 
-                autoplay={item.params.autoplay ? !item.loaded : false}
               >
               <source src={item.attachment.audioSrc} type="audio/mp3">
             </audio> 

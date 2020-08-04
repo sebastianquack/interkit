@@ -50,6 +50,7 @@ let config = {
       micGain: 0.75,
       processorBufferSize: 2048,
       stopTracksAndCloseCtxWhenFinished: true,
+      // disabling media recorder, as somehow ios couldn't play they files created on android using medarecorder
       usingMediaRecorder: false, //typeof window.MediaRecorder !== 'undefined',
       enableEchoCancellation: true
     }

@@ -587,9 +587,11 @@
 
   // audio player management - play the next player after one is finished
   let audioPlayers = [];
-  const registerAudioPlayer = (audio) => {
+  const registerAudioPlayer = (audio, autoplayTrigger = null) => {
     if(audio) {
-      audioPlayers.push(audio)
+      audioPlayers.push({
+        audio, autoplayTrigger
+        })
       console.log("added audioPlayer", audioPlayers)  
       return audioPlayers.length - 1;
     }
@@ -597,8 +599,23 @@
   const onAudioEnded = (index) => {
     console.log("onAudioEnded for index ", index)
     if(index + 1 < audioPlayers.length) {
-      audioPlayers[index + 1].play()
+      audioPlayers[index + 1].audio.play()
     }
+  }
+
+  const setupAutoplay = (item) => {
+    console.log("autoplay trigger setTimeout");
+    setTimeout(()=>{
+      console.log("check if autoplay appeared");
+      let playersWithTrigger = audioPlayers.filter(a=>(a.autoplayTrigger == item.params.autoplayTrigger) && item.params.autoplayTrigger)
+      console.log("found", playersWithTrigger);
+      playersWithTrigger.forEach(p=>{
+        if(!p.audio.playing || p.audio.currentTime == 0) {
+          p.audio.play()
+        }
+      })
+      
+    }, 400)
   }
 
 </script>
@@ -614,10 +631,17 @@
           {registerAudioPlayer}
           {onAudioEnded}
           onClick={(index = undefined)=>{
-            if(item.params.option || item.params.optionsArray) {
-                submitInput(item, index);
-            }
             if(item.attachment.mediatype == "GPS") mapClick(item)
+
+            if(item.params.option || item.params.optionsArray) {
+              
+              if(item.params.autoplayTrigger) {
+                setupAutoplay(item);
+              }
+
+              submitInput(item, index);
+            
+            }
           }}
         />
       {/each}
