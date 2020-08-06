@@ -133,9 +133,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       
       send: {
         text: (message, params={}) => { result.outputs.push({
-          message, 
+          message,
           label: params.label ? params.label : varCache.board.narrator, 
           to: params.to ? params.to : "sender",
+          players: params.players ? params.players : undefined,
           system: params.system ? true : false,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen
@@ -145,6 +146,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           message, 
           system: true,
           to: params.to ? params.to : "sender",
+          players: params.players ? params.players : undefined,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen,
           params: {...params}

@@ -283,6 +283,11 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           }
         }
 
+        // specify custom group of players as recipients if requested
+        if(output.to == "custom" && output.players) {
+          recipients["custom"] = output.players
+        }
+
         // convert keyOrNames in filenames
         if(output.attachment) {
           if(output.attachment.keyOrName) {

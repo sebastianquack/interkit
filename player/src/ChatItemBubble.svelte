@@ -16,19 +16,30 @@
     if(registerAudioPlayer)
       audioIndex = registerAudioPlayer(audioPlayer, item.params ? item.params.autoplayTrigger : null)
 
+    //console.log("onMount", item)
+
     // init qr code if needed
+    if(item.attachment)
     if(item.attachment.mediatype == "qr") {
-      console.log(item.attachment.data)
+      console.log("setting up qr code with data: ", item.attachment.data)
       let qrOptions = {
         text: item.attachment.data,
         width: 150,
         height: 150,
       };
       let qrElem = document.getElementById("qr-" + item._id)
-      if(qrElem)
-        new QRCode(qrElem, qrOptions);
+      //console.log("qrElem", qrElem)
+      if(qrElem) {
+        setTimeout(()=>{
+          let qr = new QRCode(qrElem, qrOptions);
+          //console.log(qr)
+        }, 200)
+      }
     }
   })
+  
+    
+  
 
 </script>
 

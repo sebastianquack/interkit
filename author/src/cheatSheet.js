@@ -9,14 +9,14 @@ function onArrive() {
 function onReceive(input) { 
   /* do stuff here... */
 
-  input.type // "text" or "option" or "image" or "audio" or "QR" or "GPS"
+  input.type // "text" or "option" or "image" or "audio" or "qr" or "GPS"
   input.text // the text lowercase and trimmed
   input.raw  // the raw input without processing
   input.key  // the option key if player tapped option
   input.index // the index of option sent via send.options
   input.filename // the image or audio file
   input.coords   // the GPS coordinates {lat: 10, lng: 10}
-  input.QRCode   // the decoded QR code
+  input.attachment.QRCode   // the decoded QR code
 }
 
 send.text("hello") // sends message with default narrator 
@@ -43,6 +43,7 @@ send.qr("bla") // display qr code on client
 send.text("hello", {to: "sender"}) // specify that only the sender (or the player that just arrived) should receive the message
 send.text("hello", {to: "all"}) // specify that all players in this node should get it
 send.text("hello", {to: "others"}) // specify that only the other players should get it
+send.text("hello", {to: "custom", players: ["id1", "id2"]}) // send to custom list of players identified by id
 
 echo(input, {to: "others"}) // send a received input to the other players in this node (useful for multiplayer)
 echo(input) // short form, {to: "others"} is default 

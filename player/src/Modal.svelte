@@ -10,6 +10,16 @@
   //export let playerId;
   export let handleButton;
 
+  let ready = true
+
+  const buttonPress = (button) => {
+    if(ready) {
+      ready = false;
+      handleButton(button, item);
+      setTimeout(()=>{ready = true}, 200)
+    }
+  }
+
 </script>
 
 <div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
@@ -29,7 +39,7 @@
       {#if item.value.buttons}
         <br><br>
         {#each item.value.buttons as button}
-          <button on:click={()=>{handleButton(button, item)}}>{button.label}</button>
+          <button class:disabled="{!ready}" on:click={()=>buttonPress(button)}>{button.label}</button>
         {/each}
       {/if} 
     {/if}
@@ -75,6 +85,10 @@
   top: 10px;
   right: 10px;
   box-shadow: 2px 2px #ddd;
+}
+
+button.disabled {
+  color: #aaa;
 }
 
 </style>

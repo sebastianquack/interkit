@@ -240,7 +240,7 @@
 
     /* interface commands */
 
-    // switch player to chat view of foreOpen is set
+    // switch player to chat view if forceOpen is set
     if(item.forceOpen && mainView != "chat") {
       openChatView();
     }
@@ -462,11 +462,11 @@
   }
 
   const sortItems = () => {
+    // sorts items array in place -> produces render!
     chatItems.sort((a,b)=> {
       let x = a.timestamp - b.timestamp;
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
-    chatItems = chatItems;
     console.log("sorted items", chatItems);
   }
 

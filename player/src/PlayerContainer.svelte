@@ -149,6 +149,7 @@
   }
 
   const openBoardFromNodeId = async (nodeId)=>{
+    console.log("openBoardFromNodeId", nodeId)
     showLockScreen = false; // hide lock screen when openening new board
     itemModal = null;
     mainView = "chat";
@@ -228,7 +229,11 @@
 
       if(chatMessageHandler) {
         //console.log("handing off to chatMessageHandler");
-        chatMessageHandler(message);
+        if(status != "opening board") {
+          chatMessageHandler(message);
+        } else {
+          console.log("ignoring socket message while board is opening")
+        }
       } else {
         console.log("player container: msg received but no chat message handler registered")
         if(!message.params) message.params = {}
@@ -239,8 +244,10 @@
             await checkForUnseenMessages();
           }
         } else {
-          status = "opening board"
-          openBoardFromNodeId(message.node);
+          if(status != "opening board") {
+            status = "opening board"
+            openBoardFromNodeId(message.node);
+          }
         }
       }
     });
@@ -278,7 +285,6 @@
 
     console.log("node found", nodeJSON);
     
-    //joinNode(playerId, nodeJSON.docs[0]._id, true, true, {item, button});
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
       method: "POST", 
       body: JSON.stringify({item, button})
@@ -291,14 +297,23 @@
   
   }
 
-  // proces clicks from menu pages and archive
+  let readyForClick = true
+
+  // process clicks from menu pages and archive
   const handleHtmlClicks = (event, from) => {
+    if(!readyForClick) {
+      console.log("multiple button click, aborting")
+      return;
+    } else {
+      readyForClick = false;
+    }
     console.log(event.target);
     let node = event.target.getAttribute('data-node');
     if(node) {
       console.log("handling button press at node " + node)
       handleButton({node}, from)
     }
+    setTimeout(()=>readyForClick = true, 500);
   }
 
   // reactive & lifecycle calls
