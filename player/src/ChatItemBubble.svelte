@@ -2,7 +2,7 @@
 
   const QRCode = require('easyqrcodejs');
 
-  import { onMount } from 'svelte';
+  import { onMount, afterUpdate } from 'svelte';
 
   export let item = {};
   export let onClick;
@@ -15,8 +15,12 @@
   onMount(()=>{
     if(registerAudioPlayer)
       audioIndex = registerAudioPlayer(audioPlayer, item.params ? item.params.autoplayTrigger : null)
+  })
 
-    //console.log("onMount", item)
+  let qrCode = null
+
+  afterUpdate(()=>{
+    console.log("afterUpdate", item)
 
     // init qr code if needed
     if(item.attachment)
@@ -30,10 +34,8 @@
       let qrElem = document.getElementById("qr-" + item._id)
       //console.log("qrElem", qrElem)
       if(qrElem) {
-        setTimeout(()=>{
-          let qr = new QRCode(qrElem, qrOptions);
-          //console.log(qr)
-        }, 200)
+        if(!qrCode)
+          qrCode = new QRCode(qrElem, qrOptions);
       }
     }
   })

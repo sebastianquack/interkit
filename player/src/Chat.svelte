@@ -462,11 +462,11 @@
   }
 
   const sortItems = () => {
-    // sorts items array in place -> produces render!
     chatItems.sort((a,b)=> {
       let x = a.timestamp - b.timestamp;
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
+    chatItems = chatItems;
     console.log("sorted items", chatItems);
   }
 
