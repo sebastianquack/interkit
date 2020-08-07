@@ -7,6 +7,7 @@
   import Map from './Map.svelte';
   import Archive from './Archive.svelte';
   import Modal from './Modal.svelte';
+  import DynamicModal from './DynamicModal.svelte';
   import LockScreen from './LockScreen.svelte';
   import Menu from './Menu.svelte';
   import Alert from './Alert.svelte';
@@ -40,6 +41,10 @@
   
   let mainView = "chat";
   let itemModal = null;
+  
+  let dynamicModalPage = null;
+  let dynamicModalParameter = null;
+
   let showLockScreen = false;
   let notificationItem = null;
   
@@ -161,6 +166,7 @@
     console.log("openBoardFromNodeId", nodeId)
     showLockScreen = false; // hide lock screen when openening new board
     itemModal = null;
+    dynamicModalPage = null;
     mainView = "chat";
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
@@ -314,18 +320,32 @@
 
   // process clicks from menu pages and archive
   const handleHtmlClicks = (event, from) => {
+    
+    // prevent multiple fast clicks
     if(!readyForClick) {
       console.log("multiple button click, aborting")
       return;
     } else {
       readyForClick = false;
     }
+
+    // do the things
     console.log(event.target);
+
+    dynamicModalParameter = event.target.getAttribute('data-parameter');
+    
     let node = event.target.getAttribute('data-node');
     if(node) {
       console.log("handling button press at node " + node)
-      handleButton({node}, from)
+      handleButton({node, parameter: dynamicModalParameter}, from)
     }
+    
+    let modalPage = event.target.getAttribute('data-modal-page');
+    if(modalPage) {
+      dynamicModalPage = modalPage
+    }
+
+    // reset clickreadyness
     setTimeout(()=>readyForClick = true, 500);
   }
 
@@ -432,7 +452,7 @@
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
-          openChatView={()=>{openChat(); itemModal = null}}
+          openChatView={()=>{openChat(); itemModal = null; dynamicModalPage = null;}}
         />
       {/if}
   </div>
@@ -463,6 +483,17 @@
       {fileServerURL}
       onClose={() => itemModal = null}
       {handleButton}
+    />
+  {/if}
+
+  {#if dynamicModalPage}
+    <DynamicModal
+      {dynamicModalPage}
+      {dynamicModalParameter}
+      {handleHtmlClicks}
+      {projectId}
+      {playerId}
+      onClose={() => dynamicModalPage = null}
     />
   {/if}
 

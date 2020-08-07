@@ -72,6 +72,7 @@
       format: "markdown",
       content: ""
     }}
+    sortAttribute={"menuOrder"}
   >
     
     <div slot="editForm" let:editEntry={entry} let:update={update}>

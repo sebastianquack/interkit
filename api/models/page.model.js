@@ -3,9 +3,16 @@ let RestHapi = require('rest-hapi')
 let Auth = require("../plugins/auth.plugin.js");
 const db = require('../src/dbutil.js');
 
-
 const marked = require("marked")
 const Handlebars = require("handlebars");
+
+Handlebars.registerHelper('ifCond', function(v1, v2, options) {
+  if (v1 == v2) {
+    return options.fn(this);
+  } else {
+    return options.inverse(this);
+  }
+});
 
 async function listWithVars(server, model, options, logger) {
     const Log = logger.bind("getHistory")
@@ -16,7 +23,8 @@ async function listWithVars(server, model, options, logger) {
     console.log("key", request.query.key)
 
     let query = {
-      project: request.query.project
+      project: request.query.project,
+      $sort: "menuOrder"
     }
     if(request.query.key) query.key = request.query.key
   
@@ -34,7 +42,8 @@ async function listWithVars(server, model, options, logger) {
         let context = {
           player: await db.getVars("player", {player: request.query.player, project: request.query.project}),
           project: await db.getVars("project", {project: request.query.project}),
-          items: await db.getItemsForPlayer(request.query.player)
+          items: await db.getItemsForPlayer(request.query.player),
+          parameter: request.query.parameter
         }
         console.log("context for handlebars", context)
         try {
@@ -70,6 +79,7 @@ async function listWithVars(server, model, options, logger) {
           project: Joi.string().required(),
           player: Joi.string(),
           key: Joi.string(),
+          parameter: Joi.string(),
         },
       },
       plugins: {

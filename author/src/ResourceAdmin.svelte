@@ -5,6 +5,7 @@
   export let projectId;
   export let resourceName;
   export let defaultValue;
+  export let sortAttribute;
   
   let loading = true;
   let entries = [];
@@ -13,7 +14,9 @@
   let changed = false;
   
   const loadEntries = async () => {
-    let result = await fetch(`/api/${resourceName}?project=` + projectId);
+    let result = await fetch(`/api/${resourceName}?project=` + projectId 
+      + (sortAttribute ? ("&$sort=" + sortAttribute) : "")
+    );
     let json = await result.json();
     if(json.docs) {       
       entries = json.docs;
