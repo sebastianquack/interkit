@@ -48,6 +48,7 @@
 
 
 <div class="app-container">
+<b>test</b>
 
 {#if projectId}   
 
@@ -66,10 +67,12 @@
 </div>
 
 
-<style>
+<style type="text/scss">
 
+$test: blue;
 
 .app-container {
+
     position: absolute;
     top: 0;
     width: 100%;
@@ -79,6 +82,10 @@
     left: 50%;
     transform: translate(-50%, 0);
     box-sizing: border-box;
+
+          b {
+      color: $test !important;
+      }
   }
 
 </style>
