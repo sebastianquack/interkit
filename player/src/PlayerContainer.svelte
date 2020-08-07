@@ -122,7 +122,7 @@
         if(m.params) 
           return !m.params.interfaceCommand 
         else
-          return false
+          return true
       });
       //console.log("unseen", boards[i].name, messages);
       numUnseen += messages.length
