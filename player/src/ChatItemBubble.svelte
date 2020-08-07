@@ -20,7 +20,7 @@
   let qrCode = null
 
   afterUpdate(()=>{
-    console.log("afterUpdate", item)
+    //console.log("afterUpdate", item)
 
     // init qr code if needed
     if(item.attachment)

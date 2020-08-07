@@ -27,6 +27,8 @@
   let boards = [];
   let currentBoard = null; // if this is set, the chat is open
   
+  let numUnseenMessages = 0;
+
   let map;
   let markerItems;
   let documentItems;
@@ -93,25 +95,32 @@
       console.log("project has only 1 listed board, using that", boards[0].name);
       currentBoard = boards[0];
     } 
+
+    await checkForUnseenMessages();    
   }
 
   const checkForUnseenMessages = async () => {
+    console.log("checkForUnseenMessages")
+    let numUnseen = 0;
     for(let i = 0; i < boards.length; i++) {
       let board = boards[i];
       const query = {
         board: board._id, 
         recipients: playerId,
-        scheduled: false,
+        scheduled: {"$ne": true},
         seen: {"$nin": [playerId]}
       };
+      //console.log(query)
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));
       const mjson = await res.json();
-      const messages = mjson.docs;
-      //console.log("unseen", messages.length);
+      const messages = mjson.docs.filter(m=>!m.params.interfaceCommand);
+      //console.log("unseen", boards[i].name, messages);
+      numUnseen += messages.length
       boards[i] = {...board, unSeenMessages: messages.length}
     }
     boards = boards;
-    //console.log(boards);
+    numUnseenMessages = numUnseen;
+    console.log("unseen:" + numUnseen);
   }
 
   const openMapTo = async (chatItem) => {
@@ -155,7 +164,11 @@
     mainView = "chat";
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
+    console.log("currentBoard is", currentBoard)
+    currentBoard = null;
     currentBoard = nodeJson.board;
+    console.log("loading", loading)
+    console.log("set currentBoard to", currentBoard);
     status = "board open"
   }
 
@@ -237,10 +250,10 @@
       } else {
         console.log("player container: msg received but no chat message handler registered")
         if(!message.params) message.params = {}
-        if(!message.forceOpen && !message.params.interfaceCommand) {
+        if(!message.forceOpen) {
           if(status != "opening board") {
-            setNotificationItem({...message, side: "left"});
-            setLockScreen();
+            //setNotificationItem({...message, side: "left"});
+            //setLockScreen();
             await checkForUnseenMessages();
           }
         } else {
@@ -320,7 +333,7 @@
 
 
   onMount(async () => {
-    
+
     fileServerURL = await getConfig("fileServerURL");
     
     playerId = await findOrCreatePlayer();
@@ -341,6 +354,11 @@
     loading = false;
   });
 
+  const initProject = async () => {
+    loadInterfaceState();
+    await loadListedBoards();        
+  }
+
   // this happens when player is switched or deleted in authoring
   $: {
     console.log("playerContainer: playerId or projectId changed", playerId, projectId);
@@ -348,9 +366,7 @@
       loadMarkers();
 
       if(projectId) {
-        loadInterfaceState();
-        loadListedBoards();        
-        checkForUnseenMessages();    
+        initProject();
       } 
     } else {
       resetPlayerContainer();
@@ -384,9 +400,7 @@
     {/if}
 
     <div class="menu-buttons-right">
-      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>
-        <span>chat</span>
-      </button>
+      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>chat {#if numUnseenMessages > 0}({numUnseenMessages}){/if}</button>
       {#if archiveButtonLabel}
         <button class="button-archive" disabled={mainView == "archive"} on:click={openArchive}>
           <span>{archiveButtonLabel}</span>

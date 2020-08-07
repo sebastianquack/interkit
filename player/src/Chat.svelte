@@ -15,7 +15,7 @@
   export let mainView;
   export let updateUnseenMessages;
   export let mapClick;
-  export let setNotificationItem = ()=>{}; 
+  //export let setNotificationItem = ()=>{}; 
   export let showLockScreen; 
   export let setLockScreen = ()=>{};
   export let displayAlert;
@@ -60,6 +60,23 @@
   onMount(async ()=>{
     googleMapsAPIKey = await getConfig("googleMapsAPIKey");
     fileServerURL = await getConfig("fileServerURL");
+  })
+
+  let mainViewOld = mainView;
+  beforeUpdate(async ()=>{
+    if(mainViewOld != mainView) {
+      //console.log("mainView changed to ", mainView)
+      mainViewOld = mainView
+      if(mainView == "chat") {
+        let updated = false
+        for(let item of chatItems) {
+          let marked = await markAsSeen(item);
+          //console.log(item, marked)
+          if(marked) updated = true;
+        }
+        if(updated) updateUnseenMessages()
+      }
+    }
   })
 
   $: {
@@ -205,15 +222,18 @@
           messageQueue = []; // remove all itmes from queue, board reloads them anyway
           status = "resetting"
           return;
+        } else {
+          updateUnseenMessages();
         }
 
         // notification
+        /*
         if(!item.params.interfaceCommand && !item.forceOpen) {
           console.log("displaying as notification")
           setNotificationItem(item);
           setLockScreen();
           return;
-        }
+        }*/
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
@@ -229,13 +249,8 @@
     }
 
     // mark as seen
-    if(!item.seen || item.seen.indexOf(playerId) == -1) {
-      await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
-        method: "PUT",
-        headers: {
-          'Content-Type': 'application/json'
-        },            
-      });
+    if(mainView == "chat") {
+      markAsSeen(item)
     }
 
     /* interface commands */
@@ -343,8 +358,9 @@
     // show additional notification if chat is not open because we're on the map
     if(mainView=="map" || mainView == "archive" || showLockScreen) {
       if(!item.params.interfaceCommand && !item.params.option && !item.forceOpen) {
-        setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
-        setLockScreen();  
+        //setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
+        //setLockScreen();  
+        updateUnseenMessages();
       }
     }
 
@@ -364,6 +380,22 @@
     if(updatePlayerNodeId) updatePlayerNodeId(nodeId); // this is just to keep authoring interface up to date with player
   }
 
+  const markAsSeen = async (item) => {
+    if(!item.seen) item.seen = [];
+    if(item.seen.indexOf(playerId) == -1) {
+      console.log(item)
+      item.seen = [playerId];
+      await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json'
+          },            
+        });
+      return true;
+    }
+    return false;
+  }
+
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
@@ -375,7 +407,13 @@
         recipients: playerId,
         timestamp: {$lt: showItemsSince},
         scheduled: {$ne: true},
-        'params.interfaceCommand': {$ne: "nodeInfo"} // ignore node infos
+        // do not reload interface commands that we have seen
+        $or: [{'params.interfaceCommand': {$exists: false}},
+          {$and: [
+            {'params.interfaceCommand': {$exists: true}},
+            {seen: {$nin: [playerId]}}
+          ]}
+        ]
       }
       let limit = 10;
       let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));
@@ -434,7 +472,11 @@
       // process the unseen messages
       unseenMessages.forEach(async (m)=>await receiveMessage(m));
 
-      updateUnseenMessages();
+      await updateUnseenMessages();
+
+      if(!beginningHistory && historyItems.docs.filter(i=>!i.params.interfaceCommand).length == 0) {
+        loadMoreItems();
+      }
   } 
 
   const parseItem = (rawItem) => {

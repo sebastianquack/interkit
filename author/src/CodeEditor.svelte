@@ -18,7 +18,7 @@
 
   onMount(()=>{
     //console.log("mount");
-    console.log(language);
+    //console.log(language);
     editor = CodeMirror.fromTextArea(textArea, {
       lineNumbers: true,
       mode: language,
