@@ -118,7 +118,12 @@
       //console.log(query)
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));
       const mjson = await res.json();
-      const messages = mjson.docs.filter(m=>!m.params.interfaceCommand);
+      const messages = mjson.docs.filter(m=>{
+        if(m.params) 
+          return !m.params.interfaceCommand 
+        else
+          return false
+      });
       //console.log("unseen", boards[i].name, messages);
       numUnseen += messages.length
       boards[i] = {...board, unSeenMessages: messages.length}
@@ -254,18 +259,16 @@
           console.log("ignoring socket message while board is opening")
         }
       } else {
-        console.log("player container: msg received but no chat message handler registered")
+        console.log("player container: msg received but no chat message handler registered", message)
         if(!message.params) message.params = {}
-        if(!message.forceOpen) {
-          if(status != "opening board") {
-            //setNotificationItem({...message, side: "left"});
-            //setLockScreen();
-            await checkForUnseenMessages();
-          }
-        } else {
+        if(message.forceOpen || message.params.interfaceCommand == "request-geoposition") {
           if(status != "opening board") {
             status = "opening board"
             openBoardFromNodeId(message.node);
+          }
+        } else {
+          if(status != "opening board") {
+            await checkForUnseenMessages();
           }
         }
       }
