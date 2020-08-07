@@ -15,7 +15,7 @@
       "build-admin"    : "cd admin  && bin/build_and_copy",
       "build:prepare"  : "mkdir -p api/public",
       "copy-shared-public": "cd api && bin/copy_shared_public",
-      "build:all": "npm run build-author && npm run build-player && npm run build-admin && npm run copy-shared-public",
+      "build:all": "npm run build:prepare && npm run build-author && npm run build-player && npm run build-admin && npm run copy-shared-public",
       "build": "npm run install:all && npm run build:prepare && npm run build:all",
       "start": "cd api && npm run migrate+start"
   }
