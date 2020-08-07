@@ -407,7 +407,13 @@
         recipients: playerId,
         timestamp: {$lt: showItemsSince},
         scheduled: {$ne: true},
-        'params.interfaceCommand': {$ne: "nodeInfo"} // ignore node infos
+        // do not reload interface commands that we have seen
+        $or: [{'params.interfaceCommand': {$exists: false}},
+          {$and: [
+            {'params.interfaceCommand': {$exists: true}},
+            {seen: {$nin: [playerId]}}
+          ]}
+        ]
       }
       let limit = 10;
       let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));
@@ -466,7 +472,11 @@
       // process the unseen messages
       unseenMessages.forEach(async (m)=>await receiveMessage(m));
 
-      updateUnseenMessages();
+      await updateUnseenMessages();
+
+      if(!beginningHistory && historyItems.docs.filter(i=>!i.params.interfaceCommand).length == 0) {
+        loadMoreItems();
+      }
   } 
 
   const parseItem = (rawItem) => {

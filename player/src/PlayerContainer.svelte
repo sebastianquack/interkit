@@ -113,7 +113,7 @@
       //console.log(query)
       const res = await fetch("/api/message?$where=" + JSON.stringify(query));
       const mjson = await res.json();
-      const messages = mjson.docs;
+      const messages = mjson.docs.filter(m=>!m.params.interfaceCommand);
       //console.log("unseen", boards[i].name, messages);
       numUnseen += messages.length
       boards[i] = {...board, unSeenMessages: messages.length}
