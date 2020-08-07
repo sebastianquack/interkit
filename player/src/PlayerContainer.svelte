@@ -400,26 +400,35 @@
 {#if !loading}
 
   <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
-    <button class="menu-button" on:click={toggleMenu}>{"menu"}</button>
-    {#if currentBoard && mainView == "chat"}
-        {#if boards.length > 1}
-          <button style="width: 2em" on:click={()=>{currentBoard = null; loadListedBoards()}}>{"<"}</button>
-        {/if}
-        {#if currentBoard && boards.length > 1}
-        &nbsp;<span
+  
+    {#if currentBoard && mainView == "chat" && boards.length > 1}
+      <div class="breadcrumbs">
+        <button class="button-back" style="width: 2em" on:click={()=>{currentBoard = null; loadListedBoards()}}>
+          {"<"}
+        </button>
+        <span
           class="breadcrumb"
-          on:click={()=>{
-            if(mainView!="chat") mainView="chat";
-          }}
-        >{currentBoard.name}</span>
-        {/if}
+          on:click={ () => { if (mainView!="chat") mainView="chat"; }}
+        >
+          {currentBoard.name}
+        </span>
+      </div>
+    {:else}
+      <button class="menu-button" on:click={toggleMenu}>
+        <span>{"menu"}</span>
+      </button>
     {/if}
+
     <div class="menu-buttons-right">
-      <button disabled={mainView == "chat"} on:click={openChat}>chat {#if numUnseenMessages > 0}({numUnseenMessages}){/if}</button>
+      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>chat {#if numUnseenMessages > 0}({numUnseenMessages}){/if}</button>
       {#if archiveButtonLabel}
-        <button disabled={mainView == "archive"} on:click={openArchive}>{archiveButtonLabel}</button>
+        <button class="button-archive" disabled={mainView == "archive"} on:click={openArchive}>
+          <span>{archiveButtonLabel}</span>
+        </button>
       {/if}
-      <button disabled={mainView == "map"} on:click={openMap}>map</button>
+      <button class="button-map" disabled={mainView == "map"} on:click={openMap}>
+        <span>map</span>
+      </button>
     </div>
   </div>
 
@@ -546,15 +555,14 @@
 
 
 
-<style>
+<style type="text/scss">
 
   button {
-    color: #999;
   }
 
   button:disabled,
   button[disabled] {
-    color: #000;
+
   }
 
   .main-container {
@@ -564,12 +572,8 @@
     box-sizing: border-box;
   }
 
-  li:hover {
-    cursor: pointer;
-  }
-
   .top-menu {
-    height: 55px;
+    height: 70px;
     position: absolute;
     top: 0;
     left: 0;
@@ -577,35 +581,120 @@
     width: 100%;
     box-sizing: border-box;
     z-index: 10;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
   }
 
   .highlight {
-    background-color: lightgreen;
-    border-bottom: 1px solid gray;
-  }
-
-  span.breadcrumb:hover {
-    cursor: pointer;
+    border-bottom: 1px solid;
   }
 
   .menu-buttons-right {
-    position: absolute;
-    right: 10px;
-    top: 10px;
+  
+    display: flex;
+  
+    [class^=button] {
+      border: none;
+      background-color: transparent;
+      background-image: url("/assets/Menu-bg-Normal.svg");
+      &:hover, &[disabled] {
+        background-image: url("/assets/Menu-bg-Active.svg");
+      }
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position-x: 50%;
+
+      border: solid 1px var(--color-dark);
+      border-width: 0 1px 0 1px;
+      border-radius: 0;
+
+      &:first-child {
+        background-position-x: 0%;
+        border:none;
+      }
+      &:last-child {
+        background-position-x: 100%;
+        border:none;
+      }
+
+      width: 61px;
+      height: 48px;
+      
+      span {
+        color: transparent;
+        display: inline-block;
+        background-repeat: no-repeat;
+        background-size: contain;    
+        line-height: 20px;
+        position: relative;
+      }
+    }
+
+    .button-chat {
+      span {
+        background-image: url("/assets/icons/Chat.svg"); 
+        top: 0.05em;
+        left: 0.4em;
+      }
+      &:hover span, &[disabled] span {
+        background-image: url("/assets/icons/Chat-white.svg");
+      }   
+    }
   }
 
-  .top-menu button {
-    box-shadow: 2px 2px #ddd;
+  .button-archive {span 
+    {
+      background-image: url("/assets/icons/Boat.svg");    
+      top: 0em;
+      left: 0.4em;    
+    }
+    &:hover span, &[disabled] span {
+      background-image: url("/assets/icons/Boat-white.svg");
+    }    
+  }
+
+  .button-map {
+    span {
+      background-image: url("/assets/icons/Map.svg");     
+      top: 0;
+      left: 0.2em;
+    }
+    &:hover span, &[disabled] span {
+      background-image: url("/assets/icons/Map-white.svg");
+    }   
+  }
+
+  .menu-button, .breadcrumbs {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-bold);
+    font-size:14px;
   }
 
   .menu-button {
-    margin-right: 2px;
-    color: #000;
+    border: none;
+    background: transparent url("/assets/icons/Menu.svg") no-repeat 0 50%;
+    padding-left: 30px;
+    margin-left: 25px;
+    cursor: pointer;
+  }
+
+  .breadcrumbs {
+    .button-back {
+      height: 100%;
+      padding-right: 2em;
+      background: transparent  url("/assets/icons/Arrow _-.svg") no-repeat  0 50%;      
+      color: transparent;
+      border: none;
+      margin: 0;
+      cursor: pointer;
+    }
   }
 
   .content-container {
     position: absolute;
-    top: 55px;
+    top: 70px;
     bottom: 0;
     left: 0;
     right: 0;
@@ -618,14 +707,22 @@
   ul.board-select {
     padding: 0;
     margin: 0;
+    font-weight: bold;
+    letter-spacing: var(--letter-spacing-bold);
+    text-transform: uppercase;
   }
 
   ul.board-select li {
     list-style: none;
     padding: 15px;
-    border-top: 1px solid lightgray;
     height: 2em;
     line-height: 2em;
+    font-size: 18px;
+    background: transparent url("/assets/icons/Arrow -_.svg") no-repeat 100% 50%;
+    cursor: pointer;
+    +li {
+      border-top: 1px solid lightgray;
+    }
   }
 
   ul.board-select li:last-child {

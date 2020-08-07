@@ -7,6 +7,7 @@
   import { onMount } from 'svelte';
   import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
+  import "./base.css";
 
   let projectId;
 
@@ -75,7 +76,7 @@
     width: 100%;
     height: 100%;
     max-width: 600px;
-    background-color: white;
+    background-color: var(--color-bright);
     left: 50%;
     transform: translate(-50%, 0);
     box-sizing: border-box;

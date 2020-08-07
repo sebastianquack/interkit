@@ -69,7 +69,6 @@
   position: absolute;
   right: 10px;
   top: 10px;
-  box-shadow: 2px 2px #ddd;
 }
 
 .menu-container {

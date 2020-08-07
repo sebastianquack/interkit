@@ -3,5 +3,11 @@
 set -x
 npm run build
 rm -rf ../api/public/player
-mkdir ../api/public/player
-cp ./public/* ../api/public/player*
+mkdir -p ../api/public/player
+cp -r ./public/* ../api/public/player/
+
+# attention: copying assets folder to author too
+mkdir -p ../api/public/author
+cp -r ./public/assets ../api/public/author/
+
+

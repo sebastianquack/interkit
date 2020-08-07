@@ -29,6 +29,11 @@ module.exports = {
 					options: {
 						emitCss: true,
 						hotReload: true,
+						preprocess: require('svelte-preprocess')({
+						  postcss: {
+					    	plugins: [require('autoprefixer')()]
+					  	}
+          	}),						
 						dev: prod ? false : true
 					}
 				}
@@ -57,6 +62,7 @@ module.exports = {
     proxy: {
 			'/api': 'http://localhost:9000',
 			'/tmp': 'http://localhost:9000',
+			'/assets': 'http://localhost:8081',
     },
   },
 };
