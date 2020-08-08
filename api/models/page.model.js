@@ -41,9 +41,12 @@ async function listWithVars(server, model, options, logger) {
         const template = Handlebars.compile(entry.content);
         let context = {
           player: await db.getVars("player", {player: request.query.player, project: request.query.project}),
+          playerId: request.query.player,
           project: await db.getVars("project", {project: request.query.project}),
+          projectId: request.query.project,
           items: await db.getItemsForPlayer(request.query.player),
-          parameter: request.query.parameter
+          parameter: request.query.parameter,
+          playerURL: await db.getConfig("playerURL")
         }
         //console.log("context for handlebars", context)
         try {

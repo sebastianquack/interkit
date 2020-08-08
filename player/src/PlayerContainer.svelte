@@ -192,7 +192,7 @@
     currentBoard = json;
     mainView = "chat";
   }
-  
+
   const openChat = async () => {
     mainView = "chat"
   }
@@ -322,7 +322,7 @@
   let readyForClick = true
 
   // process clicks from menu pages and archive
-  const handleHtmlClicks = (event, from) => {
+  const handleHtmlClicks = async (event, from) => {
     
     // prevent multiple fast clicks
     if(!readyForClick) {
@@ -337,16 +337,45 @@
 
     dynamicModalParameter = event.target.getAttribute('data-parameter');
     
+    // button with moveTo effect
     let node = event.target.getAttribute('data-node');
     if(node) {
       console.log("handling button press at node " + node)
       handleButton({node, parameter: dynamicModalParameter}, from)
       menuOpen = false;
     }
+
+    // button to open board
+    let boardKey = event.target.getAttribute('data-board');
+    if(boardKey) {
+      console.log("opening board " + boardKey)
+      
+      let boardRes = await fetch("/api/board?key=" + boardKey + "&project=" + projectId);
+      let boardJSON = await boardRes.json();
+
+      if(boardJSON.docs.length != 1) {
+        console.log("board not found", parts[0])
+        return;
+      }
+      currentBoard = boardJSON.docs[0];
+      menuOpen = false;
+      dynamicModalPage = null;
+    }
     
+    // button to open dynamicModal
     let modalPage = event.target.getAttribute('data-modal-page');
     if(modalPage) {
       dynamicModalPage = modalPage
+    }
+
+    // button to reset player
+    if(event.target.getAttribute('data-special') == "resetPlayer") {
+      if(confirm("really?")) resetPlayerContainer()
+    }
+
+    // button to open debug panel
+    if(event.target.getAttribute('data-special') == "debugPanel") {
+      debugPanelOpen = true;
     }
 
     // reset clickreadyness
@@ -538,9 +567,7 @@
   <Menu
     {projectId}
     {playerId}
-    {resetPlayerContainer}
     onClose={()=>menuOpen=false}
-    toggelDebugPanel={()=>debugPanelOpen = true}
     {handleHtmlClicks}
   />
   {/if}

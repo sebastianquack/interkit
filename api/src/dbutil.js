@@ -24,6 +24,15 @@ exports.seedConfig = async (key, value, type="text") => {
   }
 }
 
+exports.getConfig = async(key) => {
+  let config = await RestHapi.list(RestHapi.models.config, {key: key}, Log);  
+  if(config.docs.length == 1) {
+    return config.docs[0].value;
+  } else {
+    console.log("config not found", key)
+    return null
+  } 
+}
 
 /* VARIABLES */
 

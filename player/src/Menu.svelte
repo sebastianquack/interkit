@@ -6,8 +6,6 @@
   export let onClose;
   export let projectId;
   export let playerId;
-  export let resetPlayerContainer;
-  export let toggelDebugPanel;
   export let handleHtmlClicks;
 
   let pages = [];
@@ -37,9 +35,6 @@
         {/if}
       {/each}
       </div>
-      <button on:click={()=>{if(confirm("really?")) resetPlayerContainer()}}>reset player</button>
-      <button on:click={toggelDebugPanel}>debug panel</button>
-      <a target="_blank" href={playerURL + "?project=" + projectId + "&player=" + playerId}>persönlicher Link</a>
     </div>
 
   {:else}
