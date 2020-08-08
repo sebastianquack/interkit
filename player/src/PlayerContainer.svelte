@@ -341,6 +341,7 @@
     if(node) {
       console.log("handling button press at node " + node)
       handleButton({node, parameter: dynamicModalParameter}, from)
+      menuOpen = false;
     }
     
     let modalPage = event.target.getAttribute('data-modal-page');
