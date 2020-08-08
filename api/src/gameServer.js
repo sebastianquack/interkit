@@ -159,6 +159,23 @@ async function handlePlayerMessage(data) {
 exports.handlePlayerMessage = handlePlayerMessage;
 
 
+/* HANDLE DIRECT MESSAGE FROM ADMIN TO PLAYER */
+
+async function handleAdminMessage(data) {
+  console.log("admin message received", data);
+
+  let msgData = {
+    ...data, 
+    sender: undefined,
+    recipients: [data.sender], 
+  }
+
+  // just log and send to player
+  await sendMessage(msgData); // send now
+  return true;
+}
+exports.handleAdminMessage = handleAdminMessage;
+
 
 /* INIT */
 
@@ -213,7 +230,7 @@ exports.init = (listener) => {
 
     await db.executeScheduledMoves(RestHapi.models.nodeLog, Log);
 
-    console.log("completed scheduled task processinng in " + (Date.now() - start) + "ms")
+    //console.log("completed scheduled task processinng in " + (Date.now() - start) + "ms")
 
   }, 2000);
 

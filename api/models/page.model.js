@@ -45,7 +45,7 @@ async function listWithVars(server, model, options, logger) {
           items: await db.getItemsForPlayer(request.query.player),
           parameter: request.query.parameter
         }
-        console.log("context for handlebars", context)
+        //console.log("context for handlebars", context)
         try {
           entry.contentWithVars = template(context);
         } catch(e) {

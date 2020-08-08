@@ -172,6 +172,20 @@ export const postPlayerMessage = async (msgData) => {
   return responseJSON.status == "ok";
 }
 
+export const postAdminMessage = async (msgData) => {
+  console.log("postAdminMessage", msgData);
+  let response = await fetch("/api/player/adminMessage", {
+    method: "POST",
+    body: JSON.stringify(msgData)
+  })
+  let responseJSON = {};
+  if(response.ok)
+    responseJSON = await response.json();
+  if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: admin message was not received and processed correctly on the server");
+  return responseJSON.status == "ok";  
+} 
+
+
 
 
 /* FILES */

@@ -1,6 +1,6 @@
 <script>
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { getConfig, postPlayerMessage, getCurrentNodeId, getPlayerVar } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage, postAdminMessage, getCurrentNodeId, getPlayerVar } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -54,6 +54,9 @@
       hideOwnInput: false
   }
   let inputInterface = defaultInputs;
+
+  let inputAsAdmin = false;
+  let inputAsAdminLabel = "ADMIN"
     
   // reactive & lifecycle methods
 
@@ -555,7 +558,7 @@
     // if this is not an optionsArray, add an extra item to the chat
     if(!optionsArray) {
 
-      if(!inputInterface.hideOwnInput) {
+      if(!inputInterface.hideOwnInput && !inputAsAdmin) {
         chatItems = chatItems.concat({
           side: 'right',
           message,
@@ -586,15 +589,30 @@
     }
 
     // submission
-    let res = postPlayerMessage({
-      sender: playerId, 
-      message, 
-      node: currentNode._id, 
-      board: currentBoard._id, 
-      project: projectId,
-      params: item ? item.params : undefined,
-    });
-    // todo handle submission errors!
+    if(!inputAsAdmin) {
+      
+      postPlayerMessage({
+        sender: playerId, 
+        message, 
+        node: currentNode._id, 
+        board: currentBoard._id, 
+        project: projectId,
+        params: item ? item.params : undefined,
+      });
+      // todo handle submission errors!
+
+    } else {
+
+      postAdminMessage({
+        sender: playerId, 
+        message, 
+        node: currentNode._id, 
+        board: currentBoard._id, 
+        project: projectId,
+        label: inputAsAdminLabel
+      });
+
+    }
 
 
     // clear input field at bottom of chat
@@ -719,9 +737,12 @@
 
     {#if authoring}
       <div class="authoring-tools">
-        <div class="chat-debug">{currentNode ? currentNode.name : ""}</div>
+        <div class="chat-debug">node: {currentNode ? currentNode.name : ""}</div>
         <div class="author-buttons">
           <!--button on:click={reEnter}>clear & re-enter</button-->
+          <label>adminInput</label>
+          <input type=checkbox bind:checked={inputAsAdmin}>
+          <input type=text bind:value={inputAsAdminLabel}>
           <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
           <button on:click={collapseMessages}>hide msgs</button>
         </div>
@@ -762,7 +783,7 @@
   }
 
   .narrow {
-    right: 65px;
+    right: 85px;
   }
 
 
@@ -802,16 +823,24 @@
 
   .authoring-tools {
     position: absolute;
-    width: 50px;
+    width: 75px;
     right: 5px;
     bottom: 60px;
     padding: 5px;
     font-size: 75%;
   }
 
+  .authoring-tools input[type=text] {
+    width: 50px;
+  }
+
   .authoring-tools button {
     margin-bottom: 0px;
     margin-top: 5px;
+  }
+
+  .author-buttons {
+    margin-top: 10px;
   }
 
   .chat-debug {

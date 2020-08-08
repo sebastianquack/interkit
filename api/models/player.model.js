@@ -54,7 +54,58 @@ function message(server, model, options, logger) {
       }
     }
   })
-} 
+}
+
+// endpoint to for admin to send direct message to player
+function adminMessage(server, model, options, logger) {
+  const Log = logger.bind("logPlayerToNode")
+  let Boom = require('@hapi/boom')
+
+  let handler = async function (request, h) {
+    try {
+      let msgData = JSON.parse(request.payload);
+      
+      let result = await gameServer.handleAdminMessage(msgData);
+      
+      if (result) {
+        return h.response({status: "ok"}).code(200)
+      }
+      else {
+        throw Boom.notFound("error handling message")
+      }
+    } catch(err) {
+      if (!err.isBoom) {
+        Log.error(err)
+        throw Boom.badImplementation(err)
+      } else {
+        throw err
+      }
+    }
+  }
+
+  server.route({
+    method: 'POST',
+    path: '/player/adminMessage',
+    config: {
+      handler: handler,
+      auth: false,
+      description: 'send a message',
+      tags: ['api'],
+      validate: {
+      },
+      plugins: {
+        'hapi-swagger': {
+          responseMessages: [
+            {code: 200, message: 'Success'},
+            {code: 400, message: 'Bad Request'},
+            {code: 404, message: 'Not Found'},
+            {code: 500, message: 'Internal Server Error'}
+          ]
+        }
+      }
+    }
+  })
+}  
 
 module.exports = function (mongoose) {
   let modelName = "player";
@@ -137,7 +188,8 @@ module.exports = function (mongoose) {
         }
       },
       extraEndpoints: [
-        message
+        message,
+        adminMessage
       ]
     },
   };
