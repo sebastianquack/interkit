@@ -101,9 +101,13 @@ export const findOrCreatePlayer = async () => {
   }
 
   if(player && player._id) {
-    localStorage.setItem('playerId', player._id);
+    persistPlayerId(player._id)    
     return player._id;
   }
+}
+
+export const persistPlayerId = (id) => {
+  localStorage.setItem('playerId', id);
 }
 
 export const refreshPlayerId = async () => {

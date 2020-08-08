@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar, persistPlayerId } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -359,7 +359,12 @@
 
     fileServerURL = await getConfig("fileServerURL");
     
-    playerId = await findOrCreatePlayer();
+    if(!playerId) {
+      playerId = await findOrCreatePlayer();
+    } else {
+      persistPlayerId(playerId)
+    }
+    
     await initSocket(playerId, updateConnectionStatus);
     //setPlayerId(playerId);
     

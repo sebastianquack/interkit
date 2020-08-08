@@ -1,6 +1,7 @@
 <script>
 
   import { onMount } from 'svelte';
+  import { getConfig } from '../../shared/util.js'
   
   export let onClose;
   export let projectId;
@@ -11,11 +12,14 @@
 
   let pages = [];
   let currentPage = null;
+  let playerURL;
 
   onMount(async ()=>{
     let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId)
     let json = await res.json();
     if(json.docs) pages = json.docs;  
+
+    playerURL = await getConfig("playerURL");
   })
 
 </script>
@@ -35,6 +39,7 @@
       </div>
       <button on:click={()=>{if(confirm("really?")) resetPlayerContainer()}}>reset player</button>
       <button on:click={toggelDebugPanel}>debug panel</button>
+      <a target="_blank" href={playerURL + "?project=" + projectId + "&player=" + playerId}>persönlicher Link</a>
     </div>
 
   {:else}

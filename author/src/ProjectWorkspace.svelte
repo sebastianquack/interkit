@@ -267,7 +267,7 @@ function onReceive(input) {
         projectId={project._id}
         dropConnectedPlayerId={()=>playerId = null}
         {playerId}
-        close={closeTab}
+        setPlayerId = {(id)=>playerId = id}
       />
     {/if}
 

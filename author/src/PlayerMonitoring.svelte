@@ -1,29 +1,42 @@
 <script>
 
 import { token } from './stores.js';  
+import { getPlayerVar } from '../../shared/util.js'
 
 export let projectId;
 export let playerId;
 export let dropConnectedPlayerId;
+export let setPlayerId;
 
 let nodeLogs = [];
 let projectLogs = [];
+let playerInfo = {}
 
 const loadPlayers = async ()=>{
     console.log("loading players for project", projectId);
     
-    const res = await fetch("/api/projectLog?project=" + projectId);
+    const res = await fetch("/api/projectLog?project=" + projectId + "&$sort=-updatedAt");
     const json = await res.json();
-    if(json.docs) projectLogs = json.docs;
+    if(json.docs) {
+      projectLogs = json.docs;
+    }
 
-    /*const res = await fetch("/api/nodeLog?project=" + projectId + "&$embed=node&$embed=board");
-    const json = await res.json();
-    console.log(json);
-    if(json.docs) nodeLogs = json.docs;*/
+    projectLogs.forEach(async pl=>{
+      playerInfo[pl.player] = await loadPlayerInfo(pl.player)
+    })
 }  
+
+const loadPlayerInfo = async (id)=>{
+  let name = await getPlayerVar({playerId: id, projectId}, "name")
+  return name
+}
 
 $: {
   if(projectId && playerId) loadPlayers();
+}
+
+const attachPlayer = (id) => {
+  setPlayerId(id);
 }
 
 const deletePlayer = async(id)=>{
@@ -48,7 +61,7 @@ const deletePlayer = async(id)=>{
 
 <ul>
   {#each projectLogs as pl}
-  <li>{pl.player} {pl.player == playerId ? "(active)" : ""} <button on:click={()=>deletePlayer(pl.player)}>delete player</button></li>
+  <li><b>{playerInfo[pl.player]}</b> {pl.player} {pl.player == playerId ? "(attached)" : ""} <button on:click={()=>attachPlayer(pl.player)}>attach</button>&nbsp;<button on:click={()=>deletePlayer(pl.player)}>delete</button></li>
   {/each}
 </ul>
 

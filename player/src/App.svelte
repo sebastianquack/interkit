@@ -10,6 +10,7 @@
   import "./base.css";
 
   let projectId;
+  let playerId = null;
 
   let googleReady = false;
   let loading = true;
@@ -42,6 +43,9 @@
     if(projectId)
       localStorage.setItem("projectId", projectId);
 
+    // try to get player id form url param
+    playerId = searchParams.get("player");
+
     loading = false;
   });
 
@@ -52,7 +56,7 @@
 
 {#if projectId}   
 
-    <PlayerContainer {projectId} {googleReady}/>
+    <PlayerContainer {projectId} {playerId} {googleReady}/>
     
 {:else}
 
