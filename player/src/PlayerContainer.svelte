@@ -391,6 +391,7 @@
   $: {
     console.log("playerContainer: playerId or projectId changed", playerId, projectId);
     if(playerId) {
+      currentBoard = null;
       loadMarkers();
 
       if(projectId) {
