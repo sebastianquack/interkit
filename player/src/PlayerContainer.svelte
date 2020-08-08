@@ -175,11 +175,11 @@
     mainView = "chat";
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
     let nodeJson = await res.json();      
-    console.log("currentBoard is", currentBoard)
+    console.log("currentBoard is", currentBoard ? currentBoard.key : null)
     currentBoard = null;
     currentBoard = nodeJson.board;
     console.log("loading", loading)
-    console.log("set currentBoard to", currentBoard);
+    console.log("set currentBoard to", currentBoard.key);
     status = "board open"
   }
 
@@ -461,7 +461,6 @@
           {openBoardFromNodeId}
           updateUnseenMessages={checkForUnseenMessages}
           mapClick={openMapTo}
-          {setNotificationItem}
           {showLockScreen}
           {setLockScreen}
           {mainView}

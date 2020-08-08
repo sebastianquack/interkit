@@ -173,28 +173,28 @@
 
   // takes in a new message
   const receiveMessage = async (message) => {
-    console.log("chat message received, putting in queue");
+    //console.log("chat message received, putting in queue");
       messageQueue.push(message);
-      console.log("messageQueue.length", messageQueue.length);
+      //console.log("messageQueue.length", messageQueue.length);
 
       if(messageQueue.length == 1) {
-        console.log("start processing queue");
+        //console.log("start processing queue");
         processQueue();
       } else {
-        console.log("message handler busy, waiting...");
+        //console.log("message handler busy, waiting...");
       }
   }
 
   const processQueue = async () => {
     await handleMessage(messageQueue[0])
 
-    console.log("messageHandler done, shifting...")
+    //console.log("messageHandler done, shifting...")
     messageQueue.shift() // remove the message at position 0
-    console.log("messageQueue.length", messageQueue.length)
+    //console.log("messageQueue.length", messageQueue.length)
     if(messageQueue.length >= 1) {
       processQueue();
     } else {
-      console.log("reached end of message queue");
+      //console.log("reached end of message queue");
     }
   }
 
@@ -383,7 +383,7 @@
   const markAsSeen = async (item) => {
     if(!item.seen) item.seen = [];
     if(item.seen.indexOf(playerId) == -1) {
-      console.log(item)
+      //console.log(item)
       item.seen = [playerId];
       await fetch("/api/message/"+item._id+"/markAsSeen/" + playerId, {
           method: "PUT",
