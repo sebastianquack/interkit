@@ -21,6 +21,7 @@ RUN npm run build:all
 FROM node:12-alpine
 
 COPY --from=builder /app/api /app/api
+COPY --from=builder /app/shared /app/shared
 WORKDIR /app/api
 
 RUN ls -l public/*
