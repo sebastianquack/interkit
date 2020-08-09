@@ -469,7 +469,16 @@
     {/if}
 
     <div class="menu-buttons-right">
-      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>chat {#if numUnseenMessages > 0}({numUnseenMessages}){/if}</button>
+      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>
+        <span>
+          chat 
+        </span>
+        {#if numUnseenMessages > 0}
+          <mark class="unseen">
+            {numUnseenMessages}
+          </mark>
+        {/if}        
+      </button>
       {#if archiveButtonLabel}
         <button class="button-archive" disabled={mainView == "archive"} on:click={openArchive}>
           <span>{archiveButtonLabel}</span>
@@ -486,9 +495,22 @@
         <ul class="board-select">
           {#each boards as board}
             {#if board}
-            <li on:click={()=>{launch(board)}}>
-              {board.name} {#if board.description} - {board.description} {/if}
-              {#if board.unSeenMessages } <small>(unread messages: {board.unSeenMessages})</small> {/if} 
+            <li class="board" on:click={()=>{launch(board)}}>
+              <h3 class="board-name">
+                {board.name} 
+              </h3>
+              {#if board.description}
+                <p class="board-description">
+                  {board.description} 
+                </p>
+              {/if}
+              <small class="board-unseen {board.unSeenMessages || "no-messages"}">
+                {#if board.unSeenMessages } 
+                  {board.unSeenMessages} neue Nachrichten
+                {:else}
+                  Keine neuen Nachrichten
+                {/if} 
+              </small> 
             </li>
             {/if}
           {/each}
@@ -666,6 +688,7 @@
 
       width: 61px;
       height: 48px;
+      position: relative;
       
       span {
         color: transparent;
@@ -675,6 +698,16 @@
         line-height: 20px;
         position: relative;
       }
+
+      .unseen {
+        position: absolute;
+        top:1px;
+        right:0;
+        color: var(--color-dark);
+        background-color: var(--color-orange);
+        padding: 0 4px;
+        font-size: 12px;
+      }
     }
 
     .button-chat {
@@ -683,14 +716,14 @@
         top: 0.05em;
         left: 0.4em;
       }
-      &:hover span, &[disabled] span {
+      &:hover span, &:active span,  &[disabled] span {
         background-image: url("/assets/icons/Chat-white.svg");
       }   
     }
   }
 
-  .button-archive {span 
-    {
+  .button-archive {
+    span {
       background-image: url("/assets/icons/Boat.svg");    
       top: 0em;
       left: 0.4em;    
@@ -747,27 +780,39 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    overflow: scroll;
+    overflow-y: scroll;
   }
 
   ul.board-select {
     padding: 0;
     margin: 0;
-    font-weight: bold;
-    letter-spacing: var(--letter-spacing-bold);
-    text-transform: uppercase;
   }
 
-  ul.board-select li {
+  .board-select .board {
     list-style: none;
-    padding: 15px;
-    height: 2em;
-    line-height: 2em;
-    font-size: 18px;
+    padding: 24px;
     background: transparent url("/assets/icons/Arrow -_.svg") no-repeat 100% 50%;
     cursor: pointer;
     +li {
       border-top: 1px solid lightgray;
+    }
+
+    .board-name {
+      font-weight: bold;
+      letter-spacing: var(--letter-spacing-bold);
+      text-transform: uppercase;
+      font-size: 18px;
+      line-height: 21px;
+      margin: 0 0 3px 0;
+    }
+
+    .board-unseen {
+      display: block;
+      font-size: 15px;
+      line-height: 18px;
+      &:not(.no-messages) {
+        color: var(--color-orange);
+      }
     }
   }
 

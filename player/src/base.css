@@ -24,6 +24,7 @@
  *  Variables
  */
 
+
 :root {
   --color-bright: #FFFCF6;
   --color-blue: #EAFEFF;
@@ -43,7 +44,7 @@
 html, body {
 	position: relative;
 	width: 100%;
-	height: 100%;
+  height: 100%;
 }
 
 body {
