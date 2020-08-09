@@ -118,11 +118,11 @@
 
 {#if (inputInterface.attachments && attachmentMenuOpen) || (inputInterface.attachments && !inputInterface.text && !singleTool)}
   <div class="input-container">      
-      {#if inputInterface.image}<button on:click={()=>{openTool("camera")}}>Photo</button>{/if}
-      {#if inputInterface.audio}<button on:click={()=>{openTool("audio")}}>Audio</button>{/if}
-      {#if inputInterface.qr}<button on:click={()=>{openTool("qr-code")}}>QR</button>{/if}
-      {#if inputInterface.gps}<button on:click={getGPSLocation}>GPS</button>{/if}
-      {#if inputInterface.text}<button class="close-attachment" on:click={closeAttachmentMenu}>close</button>{/if}
+      {#if inputInterface.text} <button class="close-attachment" on:click={closeAttachmentMenu}>close</button>{/if}  
+      {#if inputInterface.image}<button class="button-photo" on:click={()=>{openTool("camera")}}>Photo</button>{/if}
+      {#if inputInterface.audio}<button class="button-audio" on:click={()=>{openTool("audio")}}>Audio</button>{/if}
+      {#if inputInterface.qr}   <button class="button-qr" on:click={()=>{openTool("qr-code")}}>QR</button>{/if}
+      {#if inputInterface.gps}  <button class="button-gps" on:click={getGPSLocation}>GPS</button>{/if}
   </div>  
 {/if}
   
@@ -184,11 +184,42 @@
   }
 
   .input-container button {
-    margin-right: 10px;
+    color: transparent;
+    border: none;
+    outline: none;
+    background-repeat: no-repeat;
+    background-position: 0 50%;
+    background-color: transparent;
+    width: 25px;
+    height: 25px;
+    position: relative;
+    top: 5px;
+    margin-right: 15px;
+  }
+
+  .button-photo {
+    background-image: url("/assets/icons/Camera.svg");
+  }
+
+  .button-audio {
+    background-image: url("/assets/icons/Voice.svg");
+  }
+
+  .button-qr {
+    background-image: url("/assets/icons/QRScan.svg");
+  }
+
+  .button-gps {
+    background-image: url("/assets/icons/Location.svg");
+  }
+
+  .close-attachment {
+    background-image: url("/assets/icons/Arrow _-.svg");
+    padding-right: 33px;
   }
 
   button {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   button:hover {

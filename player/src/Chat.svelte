@@ -714,7 +714,7 @@
     {#if !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
       <div class="input-container">      
         {#if inputInterface.attachments}
-          <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}>📎</button>
+          <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}></button>
         {/if}
         {#if inputInterface.text}
           <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
@@ -800,11 +800,25 @@
     display: flex;
     border-top: 1px solid gray;
     height: 55px;
-
   }
 
   .input-container button {
     margin-right: 10px;
+  }
+
+  .open-attachment {
+    background-image: url("/assets/icons/Arrow -_.svg");
+    padding-right: 33px;
+    border: none;
+    outline: none;
+    background-repeat: no-repeat;
+    background-position: 0 50%;
+    background-color: transparent;
+    width: 25px;
+    height: 25px;
+    position: relative;
+    top: 5px;
+    margin-right: 5px;    
   }
 
   input {
