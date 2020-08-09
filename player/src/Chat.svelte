@@ -854,6 +854,8 @@
 
   .authoring-tools input[type=text] {
     width: 50px;
+    font-size: 11px;
+    padding: 0px;
   }
 
   .authoring-tools button {
