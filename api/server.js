@@ -17,88 +17,118 @@ if(process.env.NODE_ENV != "production") {
 async function api() {
   try {
 
-    let server = Hapi.Server({ 
-      port: process.env.PORT,
-      routes: {
-        files: {
-          relativeTo: Path.join(__dirname, 'public')
-        }
-      }
-    })
-
-    await server.register(Inert);
-
-    if(process.env.NODE_ENV == "production") {
-      server.ext('onRequest', function (request, h) {
-        if(request.headers['x-forwarded-proto'] != 'https') {
-          let newUrl = 'https://' + request.headers.host + (request.url.path || request.url.pathname + request.url.search);
-          console.log(newUrl);
-          return h
-            .redirect(newUrl)
-            .takeover()
-            .code(301)
-        }
-        else 
-          return h.continue; 
-      });
-    }
-
-    server.route({
-        method: 'GET',
-        path: '/shared_public/{param*}',
-        handler: {
-            directory: {
-                path: './shared_public',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/admin/{param*}',
-        handler: {
-            directory: {
-                path: './admin',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/author/{param*}',
-        handler: {
-            directory: {
-                path: './author',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-    server.route({
-      method: 'GET',
-      path: '/tmp/{param*}',
-      handler: {
-          directory: {
-              path: './tmp',
-              redirectToSlash: true
+      let server = Hapi.Server({ 
+        port: process.env.PORT,
+        routes: {
+          files: {
+            relativeTo: Path.join(__dirname, 'public')
           }
-      },
-      options: {
-        auth: false
-      }
-  });
+        }
+      })
 
+      await server.register(Inert);
+
+      if(process.env.NODE_ENV == "production") {
+        server.ext('onRequest', function (request, h) {
+          if(request.headers['x-forwarded-proto'] != 'https') {
+            let newUrl = 'https://' + request.headers.host + (request.url.path || request.url.pathname + request.url.search);
+            console.log(newUrl);
+            return h
+              .redirect(newUrl)
+              .takeover()
+              .code(301)
+          }
+          else 
+            return h.continue; 
+        });
+      }
+
+      server.route({
+          method: 'GET',
+          path: '/shared_public/{param*}',
+          handler: {
+              directory: {
+                  path: './shared_public',
+                  redirectToSlash: true
+              }
+          },
+          options: {
+            auth: false
+          }
+      });
+
+      server.route({
+          method: 'GET',
+          path: '/admin/{param*}',
+          handler: {
+              directory: {
+                  path: './admin',
+                  redirectToSlash: true
+              }
+          },
+          options: {
+            auth: false
+          }
+      });
+
+      server.route({
+          method: 'GET',
+          path: '/author/{param*}',
+          handler: {
+              directory: {
+                  path: './author',
+                  redirectToSlash: true
+              }
+          },
+          options: {
+            auth: false
+          }
+      });
+
+      server.route({
+        method: 'GET',
+        path: '/tmp/{param*}',
+        handler: {
+            directory: {
+                path: './tmp',
+                redirectToSlash: true
+            }
+        },
+        options: {
+          auth: false
+        }
+    });
+
+  
+    // for ios PWA, we need to save projectId and playerId in the url
+    server.route({
+        method: 'GET',
+        path: '/project/{project}/player/{player}/{param*}',
+        handler: {
+            directory: {
+                path: './player',
+                redirectToSlash: true
+            }
+        },
+        options: {
+          auth: false
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/project/{project}/{param*}',
+        handler: {
+            directory: {
+                path: './player',
+                redirectToSlash: true
+            }
+        },
+        options: {
+          auth: false
+        }
+    });
+  
     server.route({
         method: 'GET',
         path: '/{param*}',

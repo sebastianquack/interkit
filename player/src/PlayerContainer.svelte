@@ -389,8 +389,18 @@
 
     fileServerURL = await getConfig("fileServerURL");
     
+    //alert(location.search)
     if(!playerId) {
-      playerId = await findOrCreatePlayer();
+      playerId = await findOrCreatePlayer();  
+
+      // reload page with playerId in url, so that ios keeps it when saving as PWA
+      if(!authoring) {
+        if(!location.pathname.includes("player")) {
+          if(location.port != 8081) {
+            location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
+          }
+        } 
+      }
     } else {
       persistPlayerId(playerId)
     }
