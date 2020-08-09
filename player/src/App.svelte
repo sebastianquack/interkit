@@ -1,6 +1,5 @@
 <svelte:head>
   <script src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=AIzaSyDQLtgFdKIsghQkoiYN-ojaa2wX7K4d630&callback=googleReady"></script>
-  <script src="/markerclusterer.min.js"></script>
 </svelte:head>
 
 <script>
@@ -45,6 +44,17 @@
 
     // try to get player id form url param
     playerId = searchParams.get("player");
+
+    // try to get player id from path
+    if(location.pathname.includes("project") && location.pathname.includes("player")) {
+      let parts = location.pathname.split("/")
+      if(parts.length == 6) {
+        projectId = parts[2]
+        playerId = parts[4]
+        console.log("project: " + projectId + " player: " + playerId)
+      }
+    }
+
 
     loading = false;
   });
