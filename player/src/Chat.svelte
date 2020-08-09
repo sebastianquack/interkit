@@ -800,6 +800,7 @@
     display: flex;
     border-top: 1px solid gray;
     height: 55px;
+
   }
 
   .input-container button {
@@ -809,6 +810,13 @@
   input {
     flex: auto;
     margin-bottom: 10px;
+    border: 1px solid var(--color-dark);
+    border-radius: 12px;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 22px;
+    padding-left: 12px;
+    outline: none;
   }
 
   button {

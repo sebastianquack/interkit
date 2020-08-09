@@ -33,7 +33,8 @@ module.exports = {
 						  postcss: {
 					    	plugins: [require('autoprefixer')()]
 					  	}
-          	})					
+						}),
+						dev: prod ? false : true			
 					}
 				}
 			},
