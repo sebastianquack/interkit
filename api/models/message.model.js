@@ -1,6 +1,100 @@
 let Joi = require('@hapi/joi')
 let RestHapi = require('rest-hapi')
 
+// endpoint to for chat to load messages
+function selectForChat(server, model, options, logger) {
+  const Log = logger.bind("logPlayerToNode")
+  let Boom = require('@hapi/boom')
+
+  let handler = async function (request, h) {
+    try {
+
+      let query = { 
+        board: request.query.boardId, // from this board
+        $or: [
+          {sender: request.query.playerId}, // can be sent by player
+          {recipients: request.query.playerId} // or received by player
+        ],
+        timestamp: {$lt: request.query.showItemsSince}, // in the right timespan
+        scheduled: {$ne: true}, // not scheduled
+        $and: [
+          {
+            $or: [
+              {'params.hideOwnInput': {$ne: true}}, // hideOwnInput can be false
+              {
+                $and: [                              
+                    {'params.hideOwnInput': true}, // if its true
+                    {recipients: {$not: {$size: 0}}} // recipients should't be empty
+                ]
+              }
+            ]
+          },
+          {
+            $or: [{'params.interfaceCommand': {$exists: false}}, // can have interfaceCommand not set
+              {$and: [                                             
+                {'params.interfaceCommand': {$exists: true}},     // or if its set
+                {seen: {$nin: [request.query.boardId]}}           // we shouldn't have seen it yet
+              ]}
+            ]
+          }
+        ]
+      }
+
+      console.log(query)
+
+      let result = await model.find(query).sort({timestamp: -1}).limit(request.query.limit)
+      //console.log("selectForChat", result)
+      
+      if (result) {
+        return h.response({docs: result}).code(200)
+      }
+      else {
+        throw Boom.notFound("error handling message")
+      }
+    } catch(err) {
+      if (!err.isBoom) {
+        Log.error(err)
+        throw Boom.badImplementation(err)
+      } else {
+        throw err
+      }
+    }
+  }
+
+  server.route({
+    method: 'GET',
+    path: '/message/selectForChat',
+    config: {
+      handler: handler,
+      auth: false,
+      description: 'get messages for chat',
+      tags: ['api'],
+      validate: {
+        query: {
+          boardId: Joi.string(),
+          playerId: Joi.string(),
+          showItemsSince: Joi.number(),
+          limit: Joi.number(),
+        }
+      },
+      plugins: {
+        'hapi-swagger': {
+          responseMessages: [
+            {code: 200, message: 'Success'},
+            {code: 400, message: 'Bad Request'},
+            {code: 404, message: 'Not Found'},
+            {code: 500, message: 'Internal Server Error'}
+          ]
+        }
+      }
+    }
+  })
+}
+
+
+
+
+
 module.exports = function (mongoose) {
   let modelName = "message";
   let Types = mongoose.Schema.Types;
@@ -60,6 +154,7 @@ module.exports = function (mongoose) {
       readAuth: false,
       extraEndpoints: [
         // mark as seen endpooint
+        selectForChat,
         function (server, model, options, logger) {
           let collectionName = model.collectionDisplayName || model.modelName
           const Log = logger.bind("mark as seen")

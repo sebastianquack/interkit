@@ -143,7 +143,7 @@ async function handlePlayerMessage(data) {
   
   // save incoming message
   await db.logMessage({...data, 
-    recipients: [data.sender], 
+    //recipients: [data.sender], 
     node: currentNode._id, 
     board: currentNode.board,
     timestamp: Date.now()
