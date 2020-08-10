@@ -576,7 +576,7 @@
         item.message = item.params.optionsArray[index]
       }
 
-      if(inputInterface.hideOwnInput) iteem.params.hideOwnInput = true;
+      //if(inputInterface.hideOwnInput) item.params.hideOwnInput = true;
     }
 
     let params = undefined
