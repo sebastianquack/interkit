@@ -224,19 +224,10 @@
           openBoardFromNodeId(item.node)          
           messageQueue = []; // remove all itmes from queue, board reloads them anyway
           status = "resetting"
-          return;
         } else {
           updateUnseenMessages();
         }
-
-        // notification
-        /*
-        if(!item.params.interfaceCommand && !item.forceOpen) {
-          console.log("displaying as notification")
-          setNotificationItem(item);
-          setLockScreen();
-          return;
-        }*/
+        return;
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
