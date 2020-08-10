@@ -711,12 +711,12 @@
       {/each}
     </div>
 
-    {#if !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
+    {#if inputAsAdmin || !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
       <div class="input-container">      
         {#if inputInterface.attachments}
           <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}></button>
         {/if}
-        {#if inputInterface.text}
+        {#if inputInterface.text || inputAsAdmin}
           <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
         {/if}
       </div>
@@ -728,10 +728,11 @@
       {currentNode}
       {attachmentMenuOpen}
       {inputInterface}
+      {inputAsAdmin}
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}
       {googleMapsAPIKey}
-      addItem={(i)=>chatItems = chatItems.concat({...i})}
+      addItem={(i)=>{if(!inputInterface.hideOwnInput) chatItems = chatItems.concat({...i})}}
       clearInput={()=>inputValue = ""}
     />
 

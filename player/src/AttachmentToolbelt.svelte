@@ -16,6 +16,7 @@
   export let currentNode;
   export let playerId;
   export let inputInterface;
+  export let inputAsAdmin;
 
   let toolOpen = null;
   const openTool = (tool) => {
@@ -151,7 +152,7 @@
   </div>
 {/if}
 
-{#if toolOpen == "audio" || singleTool == "audio"}
+{#if toolOpen == "audio" || (singleTool == "audio" && !inputAsAdmin)}
   <div class="input-container">
     <AudioRecorder
       {projectId}
