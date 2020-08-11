@@ -749,6 +749,10 @@
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-bold);
     font-size:14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-right: 10px;
   }
 
   .menu-button {
@@ -781,6 +785,7 @@
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
+    background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;
   }
 
   ul.board-select {
@@ -791,11 +796,26 @@
   .board-select .board {
     list-style: none;
     padding: 24px;
-    background: transparent url("/assets/icons/Arrow -_.svg") no-repeat 100% 50%;
+    background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;
+    image-rendering: pixelated;
     cursor: pointer;
-    +li {
+
+    +.board {
       border-top: 1px solid lightgray;
     }
+
+    position: relative;
+    &:after {
+      content: "";
+      background: url("/assets/icons/Arrow -_.svg") calc(100% - 1em) 84px no-repeat;
+      position: absolute;
+      left:0;right:0;top:0;bottom:0;
+    }
+
+    &:nth-child(1) { background-position: 54% 12%; }
+    &:nth-child(2) { background-position: 83% 70%; }
+    &:nth-child(3) { background-position: 31% 77%; }
+    &:nth-child(4) { background-position: 40% 40%; }
 
     .board-name {
       font-weight: bold;
@@ -804,7 +824,16 @@
       font-size: 18px;
       line-height: 21px;
       margin: 0 0 3px 0;
+      padding-top: 65px;
+      background-position: 0% 0%;
+      background-repeat: no-repeat;
+      background-image: url("/assets/picto/Botboot.svg");
     }
+
+    &:nth-child(1) .board-name { background-image: url("/assets/picto/Botboot.svg") }
+    &:nth-child(2) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
+    &:nth-child(3) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
+    &:nth-child(4) .board-name { background-image: url("/assets/picto/Piraten.svg") }
 
     .board-unseen {
       display: block;
