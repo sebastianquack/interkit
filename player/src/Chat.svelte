@@ -224,19 +224,10 @@
           openBoardFromNodeId(item.node)          
           messageQueue = []; // remove all itmes from queue, board reloads them anyway
           status = "resetting"
-          return;
         } else {
-          updateUnseenMessages();
+          await updateUnseenMessages();
         }
-
-        // notification
-        /*
-        if(!item.params.interfaceCommand && !item.forceOpen) {
-          console.log("displaying as notification")
-          setNotificationItem(item);
-          setLockScreen();
-          return;
-        }*/
+        return;
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
@@ -363,7 +354,7 @@
       if(!item.params.interfaceCommand && !item.params.option && !item.forceOpen) {
         //setNotificationItem({...item, side: isSystemMessage ? "system" : "left"});
         //setLockScreen();  
-        updateUnseenMessages();
+        await updateUnseenMessages();
       }
     }
 
@@ -403,23 +394,17 @@
       console.log("loadMoreItems");
       console.log("loading items earlier than", showItemsSince);  
 
+      let limit = 10;
+
       if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
 
-      let query = {
-        board: board._id,
-        recipients: playerId,
-        timestamp: {$lt: showItemsSince},
-        scheduled: {$ne: true},
-        // do not reload interface commands that we have seen
-        $or: [{'params.interfaceCommand': {$exists: false}},
-          {$and: [
-            {'params.interfaceCommand': {$exists: true}},
-            {seen: {$nin: [playerId]}}
-          ]}
-        ]
-      }
-      let limit = 10;
-      let response = await fetch("/api/message?$sort=-timestamp&$sort=-outputOrder&$limit="+limit+"&$where=" +  JSON.stringify(query));
+      let response = await fetch("/api/message/selectForChat?"
+        +"boardId=" + board._id
+        +"&playerId=" + playerId
+        +"&showItemsSince=" + showItemsSince
+        +"&limit=" + limit
+      )
+
       let historyItems = await response.json();
       console.log("history loaded", historyItems.docs);
       if(historyItems.docs.length) {
@@ -485,9 +470,7 @@
   const parseItem = (rawItem) => {
     if(!rawItem.attachment) rawItem.attachment = {};
     if(!rawItem.params) rawItem.params = {};
-
     if(rawItem.params.interfaceCommand) return null;
-
     if(rawItem.system && rawItem.params.moveTo) return null;
     
     if(rawItem.attachment.mediatype == "image") {
@@ -498,11 +481,16 @@
     }
 
     let isSystemMessage = rawItem.system || rawItem.label == "system";
+
+    let side = "left"
+    if(rawItem.sender == playerId) side = "right"
+    if(rawItem.recipients.includes(playerId)) side = "left"
+    if(isSystemMessage) side = "system"  
         
     return {
       ...rawItem,
       loaded: true,
-      side: rawItem.sender == playerId ? "right" : (isSystemMessage ? "system" : "left"),
+      side,
     }
   }
 
@@ -542,6 +530,7 @@
     }, 400);
   }
 
+  // item is set when user clicks an option
   const submitInput = (item = null, index = undefined)=>{
     console.log("submitInput", item)
     
@@ -586,6 +575,15 @@
         item.params.optionKey = item.params.optionsArray[index].key;
         item.message = item.params.optionsArray[index]
       }
+
+      //if(inputInterface.hideOwnInput) item.params.hideOwnInput = true;
+    }
+
+    let params = undefined
+    if(!item && inputInterface.hideOwnInput) {
+      params = {
+        hideOwnInput: true
+      }
     }
 
     // submission
@@ -597,7 +595,7 @@
         node: currentNode._id, 
         board: currentBoard._id, 
         project: projectId,
-        params: item ? item.params : undefined,
+        params: item ? item.params : params,
       });
       // todo handle submission errors!
 
@@ -711,12 +709,12 @@
       {/each}
     </div>
 
-    {#if !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
+    {#if inputAsAdmin || !attachmentMenuOpen && (inputInterface.attachments || inputInterface.text)}
       <div class="input-container">      
         {#if inputInterface.attachments}
           <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}></button>
         {/if}
-        {#if inputInterface.text}
+        {#if inputInterface.text || inputAsAdmin}
           <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
         {/if}
       </div>
@@ -728,10 +726,11 @@
       {currentNode}
       {attachmentMenuOpen}
       {inputInterface}
+      {inputAsAdmin}
       closeAttachmentMenu={()=>{attachmentMenuOpen = false}}
       {scrollUp}
       {googleMapsAPIKey}
-      addItem={(i)=>chatItems = chatItems.concat({...i})}
+      addItem={(i)=>{if(!inputInterface.hideOwnInput) chatItems = chatItems.concat({...i})}}
       clearInput={()=>inputValue = ""}
     />
 
@@ -854,6 +853,8 @@
 
   .authoring-tools input[type=text] {
     width: 50px;
+    font-size: 11px;
+    padding: 0px;
   }
 
   .authoring-tools button {

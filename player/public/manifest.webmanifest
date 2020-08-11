@@ -11,5 +11,5 @@
   ],
   "name": "interkit",
   "short_name": "interkit",
-  "start_url": "/index.html"
+  "start_url": "."
 }
