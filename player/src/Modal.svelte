@@ -20,6 +20,9 @@
     }
   }
 
+  const debounce = require('debounce');
+
+
 </script>
 
 <div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
@@ -39,7 +42,7 @@
       {#if item.value.buttons}
         <br><br>
         {#each item.value.buttons as button}
-          <button class:disabled="{!ready}" on:click={()=>buttonPress(button)}>{button.label}</button>
+          <button class:disabled="{!ready}" on:click={debounce(()=>{buttonPress(button)}, 200, true)}>{button.label}</button>
         {/each}
       {/if} 
     {/if}

@@ -9,6 +9,8 @@
 
   import { onMount } from 'svelte';
 
+  const debounce = require('debounce');
+
   let ready = true
 
   const buttonPress = (button) => {
@@ -30,7 +32,7 @@
 </script>
 
 <div id="container" on:click={onClose}>     
-  <div id="content" on:click|stopPropagation={e=>handleHtmlClicks(e, "modal")}>
+  <div id="content" on:click|stopPropagation={debounce(e=>{handleHtmlClicks(e, "modal")}, 200, true)}>
     <button id="close" on:click={onClose}>close</button>
       {#if page}
         {@html page.contentWithVars}
