@@ -80,15 +80,33 @@
 
   {:else}
 
+    <article class="optionsArray">
+
+      {#if item.params.prompt }
+        <h5>{ item.params.prompt }</h5>
+      {/if}
+
       {#each item.params.optionsArray as option, index}
-        <article class="optionsArray" on:click={()=>{if(item.params.index == undefined) onClick(index)}}>
+
           {#if typeof option == "object"}
-          <span class={index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "")}>{option.option}</span>
+            <span 
+              on:click={ () => { if(item.params.index == undefined) onClick(index) } } 
+              class={ index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "") }
+              >
+              {option.option}
+            </span>
           {:else}
-          <span class={index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "")}>{option}</span>
+            <span 
+              on:click={ () => { if(item.params.index == undefined) onClick(index) } } 
+              class={ index == item.params.index ? "selected" : (item.params.index != undefined ? "inactive" : "") }
+              >
+              {option}
+            </span>
           {/if}
-        </article>
+
       {/each}
+
+    </article>
 
   {/if}
 
@@ -96,10 +114,11 @@
 
 
 
-<style>
+<style type="text/scss">
 
 article {
-  margin: 0.5em 0;
+  margin-bottom: 12px;
+  clear: both;
 }
 
 .right {
@@ -110,33 +129,39 @@ article {
   text-align: center;
   margin-left: 25%;
   margin-right: 25%;
-  background-color: #efefef;
-  border-radius: 3px;
 }
 
 .system span {
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 10px;
-  color: gray;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 15px;  
+  text-transform: uppercase;
+  letter-spacing: --letter-spacing-bold;  
 }
 
 label {
   display: block;
   font-size: 10px;
   color: gray;
-  margin-bottom: 2px;
+  margin-bottom: 10px;
+  padding-left: 11px;
   margin-top: 2px;
+  text-transform: capitalize;
+  color: var(--color-orange);
 }
 
-span {
-  padding: 0.5em 1em;
+article:not(.system) span {
+  padding: 0.75em 1em;
   display: inline-block;
   user-select: none;
-  max-width: 100%;
+  max-width: 75%;
   word-wrap: break-word;
   box-sizing: border-box;
+  font-size: 16px;
+  line-height: 24px;  
   /*white-space: pre-line; */
+  border: 1px solid var(--color-dark);
+  background-color: var(--color-bright);
 }
 
 span img {
@@ -146,52 +171,89 @@ span img {
 
 .left span {
   background-color: #eee;
-  border-radius: 1em 1em 1em 0;
+  border-radius: var(--bubble-border-radius);
 }
 
 .right span {
-  background-color: #0074D9;
-  color: white;
-  border-radius: 1em 1em 0 1em;
+  border-radius: var(--bubble-border-radius);
   word-break: break-all;
 }
 
+// option
 .option {
   text-align: right;
+  width: 100%;
+  overflow: hidden;
+
+  span {
+    display: block;
+    margin-left: calc(20% + 12px);
+    width: calc(60% - 24px);
+  }
 }
 
-.option span {
-  background-color: yellow;
-  border-radius: 1em 1em 1em 1em;
-  word-break: break-all;
-  box-shadow: 1px 3px lightgray;
-}
 
 .option:hover {
   cursor: pointer;
 }
 
-.optionsArray {
+
+// options
+article.optionsArray {
   text-align: right;
+  margin-left: 20%;
+  border: 1px solid var(--color-dark);
+  background-color: var(--color-bright);  
+  border-radius: var(--bubble-border-radius);
+  max-width: 60%;
+
+  h5 {
+    margin:12px;
+    padding:0;
+    font-weight: normal;
+    text-align: center;
+    color: var(--color-orange);
+  }
+  span {
+    margin: 12px;
+    width: auto;
+    max-width: initial;
+    box-sizing: border-box;
+    & + span {
+      margin-top: 0;
+    }  
+  }
 }
 
-.optionsArray span {
-  background-color: yellow;
-  border-radius: 1em 1em 1em 1em;
+// button of option and options
+article.optionsArray span,
+article.option span {
   /*word-break: break-all;*/
-  box-shadow: 1px 3px lightgray;
+  border-radius: var(--bubble-border-radius);
+  border: 1px solid var(--color-dark);
+  font-weight: bold;
+  font-size: 15px;
+  line-height: 16px;
+  padding: 12px;
+  text-transform: uppercase;
+  display: block;
+  text-align:center;
+  background-color: var(--color-dark);
+  color: var(--color-bright);
+  letter-spacing: var(--letter-spacing-bold);
+  cursor: pointer;
+  //word-break: break-all;
+
+  &.inactive {
+    opacity: 0.25;
+    border: none;
+  }
+
+  &.selected {
+    // background-color: #0074D9;
+  }
 }
 
-.optionsArray span.selected {
-  background-color: #0074D9;
-  color: white;
-  box-shadow: none;
-}
-
-.optionsArray span.inactive {
-  background-color: #eee;
-  box-shadow: none; 
-}
 
 .qr-code {
   padding: 5px;

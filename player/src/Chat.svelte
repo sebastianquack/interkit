@@ -765,14 +765,14 @@
 
 
   .scrollable {
-    margin: 0 0 10px 0;
+    margin: 0 0 12px 0;
     overflow-y: auto;
     position: absolute;
     top: 0;
     bottom: 45px;
     left: 0;
     right: 0;
-    padding: 5px;
+    padding: 12px;
     padding-top: 10px;
     padding-bottom: 10px;
   }
@@ -824,7 +824,7 @@
     flex: auto;
     margin-bottom: 10px;
     border: 1px solid var(--color-dark);
-    border-radius: 12px;
+    border-radius: var(--bubble-border-radius);
     font-weight: 300;
     font-size: 17px;
     line-height: 22px;
