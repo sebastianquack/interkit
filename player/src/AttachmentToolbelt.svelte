@@ -18,6 +18,8 @@
   export let inputInterface;
   export let inputAsAdmin;
 
+  const debounce = require('debounce');
+
   let toolOpen = null;
   const openTool = (tool) => {
     toolOpen = tool;
@@ -123,7 +125,7 @@
       {#if inputInterface.image}<button class="button-photo" on:click={()=>{openTool("camera")}}>Photo</button>{/if}
       {#if inputInterface.audio}<button class="button-audio" on:click={()=>{openTool("audio")}}>Audio</button>{/if}
       {#if inputInterface.qr}   <button class="button-qr" on:click={()=>{openTool("qr-code")}}>QR</button>{/if}
-      {#if inputInterface.gps}  <button class="button-gps" on:click={getGPSLocation}>GPS</button>{/if}
+      {#if inputInterface.gps}  <button class="button-gps" on:click={debounce(getGPSLocation, 200, true)}>GPS</button>{/if}
   </div>  
 {/if}
   

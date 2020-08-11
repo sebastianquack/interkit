@@ -319,20 +319,9 @@
   
   }
 
-  let readyForClick = true
-
   // process clicks from menu pages and archive
   const handleHtmlClicks = async (event, from) => {
     
-    // prevent multiple fast clicks
-    if(!readyForClick) {
-      console.log("multiple button click, aborting")
-      return;
-    } else {
-      readyForClick = false;
-    }
-
-    // do the things
     console.log(event.target);
 
     dynamicModalParameter = event.target.getAttribute('data-parameter');
@@ -378,8 +367,6 @@
       debugPanelOpen = true;
     }
 
-    // reset clickreadyness
-    setTimeout(()=>readyForClick = true, 500);
   }
 
   // reactive & lifecycle calls
