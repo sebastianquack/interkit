@@ -376,24 +376,25 @@
 
     fileServerURL = await getConfig("fileServerURL");
     
-    //alert(location.search)
+    // if playerId has not been set -> user opens app for the first time
     if(!playerId) {
-      playerId = await findOrCreatePlayer();  
-
-      // reload page with playerId in url, so that ios keeps it when saving as PWA
-      if(!authoring) {
-        if(!location.pathname.includes("player")) {
-          if(location.port != 8081) {
-            location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
-          }
-        } 
-      }
+      playerId = await findOrCreatePlayer(); // create a new player and persist it in local storage
     } else {
+      // persist the player in local storage in case we got it from outside
       persistPlayerId(playerId)
     }
-    
+
+    // reload page with playerId in url, so that ios keeps it when saving as PWA
+    if(!authoring) {
+      if(!location.pathname.includes("player")) {
+        // doesn't work in local dev
+        if(location.port != 8081) {
+          location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
+        }
+      } 
+    }
+  
     await initSocket(playerId, updateConnectionStatus);
-    //setPlayerId(playerId);
     
     doWhenConnected(()=>{
       initPlayerContainerSocket();  
