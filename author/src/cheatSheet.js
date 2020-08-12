@@ -33,10 +33,8 @@ send.options(["yes", "no"], {key: "optionGroup1"}) // presents a set of options
 send.image("image.jpg") // sends an image
 send.audio("audio.mp3") // sends an audio file
 
-send.audio("audio.mp3", {autoplayTrigger: "test"}) // start audios when user taps option button
-send.option("start", {autoplayTrigger: "test"}) 
-
-send.audio("audio.mp3", {stopAfterEnded: true}) // stop after ended (default is to coninute to next loaded file)
+send.audio("audio.mp3", {autoplay: true}) // on android & web, autoplay sound when message appears 
+send.audio("audio.mp3", {stopAfterEnded: true}) // stop after ended (default is to coninute to next audio in chat)
 
 send.qr("bla") // display qr code on client
 

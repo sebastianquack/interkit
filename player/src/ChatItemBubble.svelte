@@ -14,7 +14,7 @@
   let audioIndex;
   onMount(()=>{
     if(registerAudioPlayer)
-      audioIndex = registerAudioPlayer(audioPlayer, item.params ? item.params.autoplayTrigger : null)
+      audioIndex = registerAudioPlayer(audioPlayer)
   })
 
   let qrCode = null

@@ -651,33 +651,17 @@
   let audioPlayers = [];
   const registerAudioPlayer = (audio, autoplayTrigger = null) => {
     if(audio) {
-      audioPlayers.push({
-        audio, autoplayTrigger
-        })
+      audioPlayers.push({audio})
       console.log("added audioPlayer", audioPlayers)  
       return audioPlayers.length - 1;
     }
   }
+  // plays next audio player
   const onAudioEnded = (index) => {
     console.log("onAudioEnded for index ", index)
     if(index + 1 < audioPlayers.length) {
       audioPlayers[index + 1].audio.play()
     }
-  }
-
-  const setupAutoplay = (item) => {
-    console.log("autoplay trigger setTimeout");
-    setTimeout(()=>{
-      console.log("check if autoplay appeared");
-      let playersWithTrigger = audioPlayers.filter(a=>(a.autoplayTrigger == item.params.autoplayTrigger) && item.params.autoplayTrigger)
-      console.log("found", playersWithTrigger);
-      playersWithTrigger.forEach(p=>{
-        if(!p.audio.playing || p.audio.currentTime == 0) {
-          p.audio.play()
-        }
-      })
-      
-    }, 800)
   }
 
 </script>
@@ -696,13 +680,7 @@
             if(item.attachment.mediatype == "GPS") mapClick(item)
 
             if(item.params.option || item.params.optionsArray) {
-              
-              if(item.params.autoplayTrigger) {
-                setupAutoplay(item);
-              }
-
-              submitInput(item, index);
-            
+              submitInput(item, index);            
             }
           }}
         />
