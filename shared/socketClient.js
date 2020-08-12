@@ -26,6 +26,9 @@ export const initSocket = async (playerId, updateConnectionStatus) => {
 
   socket.on('disconnect', function(){
     //alert("socket disconnect");
+    if(confirm("Socket-Verbindung verloren. Seite neu laden?")) {
+       location.reload(); 
+    }
     console.log("socket disconnect");
     if(updateConnectionStatus) updateConnectionStatus(socket.connected);
   });

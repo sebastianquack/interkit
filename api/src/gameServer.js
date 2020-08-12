@@ -408,7 +408,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           
           if(destinations.docs.length == 1) {
             let destination = destinations.docs[0];
-            console.log("processing move to node " + destination.name);
+            //console.log("processing move to node " + destination.name);
             if(destination._id != currentNode._id) {
               
               // move player(s) immediately

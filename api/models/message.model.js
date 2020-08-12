@@ -161,26 +161,31 @@ module.exports = function (mongoose) {
           let Boom = require('@hapi/boom')
 
           let handler = async function (request, h) {
+            console.log("markAsSeen start")
             try {
-              let message = await RestHapi.find(model, request.params._id, {}, Log);
-              if (message) {
-                if(!message.seen) message.seen = [];
-                
-                if(message.seen.indexOf(request.params._playerId) == -1) {
-                  message.seen.push(request.params._playerId);
-                }
-                //console.log("seen", message.seen);
-                let result = await RestHapi.update(model, request.params._id, {
-                  seen: message.seen
-                }, Log)
+              if(request.params._id && request.params._id != "undefined") {
+                let message = await RestHapi.find(model, request.params._id, {}, Log);
+                if (message) {
+                  if(!message.seen) message.seen = [];
+                  
+                  if(message.seen.indexOf(request.params._playerId) == -1) {
+                    message.seen.push(request.params._playerId);
+                  }
+                  //console.log("seen", message.seen);
+                  let result = await RestHapi.update(model, request.params._id, {
+                    seen: message.seen
+                  }, Log)
 
-                if(result)
-                  return h.response('{"ok": "true"}').code(200)
-                else 
-                  return h.response('{"error": "true"}').code(200)
-              }
-              else {
-                throw Boom.notFound("No resource was found with that id.")
+                  console.log("markAsSeen done")
+
+                  if(result)
+                    return h.response('{"ok": "true"}').code(200)
+                  else 
+                    return h.response('{"error": "true"}').code(200)
+                }
+                else {
+                  throw Boom.notFound("No resource was found with that id.")
+                }
               }
             } catch(err) {
               if (!err.isBoom) {

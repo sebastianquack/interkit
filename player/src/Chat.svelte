@@ -376,6 +376,10 @@
 
   const markAsSeen = async (item) => {
     if(!item.seen) item.seen = [];
+    if(!item._id) {
+      console.log("markAsSeen undefined id", item)
+      return
+    }
     if(item.seen.indexOf(playerId) == -1) {
       //console.log(item)
       item.seen = [playerId];

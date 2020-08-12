@@ -18,7 +18,7 @@ function logPlayerToNode(server, model, options, logger) {
       let nodeId = request.params._nodeId;      
 
       let arriveFrom = JSON.parse(request.payload);
-      console.log("logPlayerToNode payload: ", arriveFrom);
+      //console.log("logPlayerToNode payload: ", arriveFrom);
       
       let result = await gameServer.joinNode({
         nodeId, playerId, execOnArrive: true, arriveFrom
