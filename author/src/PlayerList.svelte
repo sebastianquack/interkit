@@ -51,7 +51,7 @@ const deletePlayer = async(id)=>{
 
 <div class="scroll-container">
 
-<h3>active players <button on:click={loadPlayers}>reload</button></h3> 
+<h3>players <button on:click={loadPlayers}>reload</button></h3> 
 
 <!--ul>
   {#each nodeLogs as nl}

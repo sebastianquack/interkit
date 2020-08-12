@@ -8,7 +8,8 @@
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';
-  import PlayerMonitoring from './PlayerMonitoring.svelte';
+  import ProjectMonitoring  from './ProjectMonitoring.svelte';
+  import PlayerList from './PlayerList.svelte';
   import AttachmentManager from './AttachmentManager.svelte'; 
   import ItemManager from './ItemManager.svelte';
   import PageManager from './PageManager.svelte';
@@ -208,6 +209,7 @@ function onReceive(input) {
 
     <div class="board-controls">
       <button class="project-menu-toggle" class:active={tabNavigation == "pages"} on:click={()=>{toggleTab("pages")}} title="pages">📄</button>
+      <button id="toggle-project-monitoring" class:active={tabNavigation == "projectMonitoring"} on:click={()=>{toggleTab("projectMonitoring")}} title="project-monitoring">👓</button>
       <button id="toggle-player-monitoring" class:active={tabNavigation == "players"} on:click={()=>{toggleTab("players")}} title="players">👥</button>
       <button id="toggle-item-manager" class:active={tabNavigation == "items"} on:click={()=>{toggleTab("items")}} title="items">🧳</button>
       <button id="toggle-attachment-manager" class:active={tabNavigation == "attachments"} on:click={()=>{toggleTab("attachments")}} title="attachments">📎</button>
@@ -262,8 +264,16 @@ function onReceive(input) {
         />
     {/if}
 
+    {#if tabNavigation == "projectMonitoring"}
+      <ProjectMonitoring
+        projectId={project._id}
+        {playerId}
+        setPlayerId = {(id)=>playerId = id}
+      />
+    {/if}
+
     {#if tabNavigation == "players"}
-      <PlayerMonitoring
+      <PlayerList
         projectId={project._id}
         dropConnectedPlayerId={()=>playerId = null}
         {playerId}

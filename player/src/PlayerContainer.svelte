@@ -529,6 +529,7 @@
           {registerMessageHandler}
           {displayAlert}
           openChatView={()=>{openChat(); itemModal = null; dynamicModalPage = null;}}
+          openDebugPanel={()=>debugPanelOpen=true}
         />
       {/if}
   </div>

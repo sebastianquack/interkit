@@ -26,6 +26,7 @@
   export let authoring;
   export let setEditNodeId = ()=>{console.log("setEditNodeId not implemented in stand-alone player")}
   export let updatePlayerNodeId;  
+  export let openDebugPanel;
 
   let currentNode = null; // this is the full object of the current node stored in playerodeId
   let chatItems = []; // these are all the chat chat items currently displayed
@@ -726,6 +727,7 @@
           <input type=text bind:value={inputAsAdminLabel}>
           <button on:click={()=>setEditNodeId(currentNode._id)}>edit code</button>
           <button on:click={collapseMessages}>hide msgs</button>
+          <button on:click={openDebugPanel}>debug</button>
         </div>
       </div>
     {/if}
