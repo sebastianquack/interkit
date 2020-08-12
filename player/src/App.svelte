@@ -21,40 +21,39 @@
 
   onMount(async () => {    
     
-    // try to get project id form url param
+    // parse search Params
     let searchParams = new URLSearchParams(window.location.search);
-    projectId = searchParams.get("project");
-
-    // try to get project id from local storage
-    if(!projectId) {
-      projectId = localStorage.getItem("projectId");
+    
+    // projectId low priority - use default project defined in config - used when user opens player first time
+    let defaultProjectId = await getConfig("defaultProject");
+    if(defaultProjectId) {
+      console.log("using defaultProject", defaultProjectId)
+      projectId = defaultProjectId;
+    }
+    
+    // projectId medium priority - get project id form url param - used in url from authoring
+    if(searchParams.get("project")) {
+      projectId = searchParams.get("project");
+      console.log("overriding with projectId from url param", projectId)
     }
 
-    // try to get default project
-    if(!projectId) {
-      let defaultProjectId = await getConfig("defaultProject");
-      if(defaultProjectId) {
-        projectId = defaultProjectId;
-      }
-    }
-
-    // save projectId for later
-    if(projectId)
-      localStorage.setItem("projectId", projectId);
-
-    // try to get player id form url param
-    playerId = searchParams.get("player");
-
-    // try to get player id from path
+    // get projectId & playerId from path - for PWA install on iOS and for opening personal links
     if(location.pathname.includes("project") && location.pathname.includes("player")) {
       let parts = location.pathname.split("/")
       if(parts.length == 6) {
         projectId = parts[2]
-        playerId = parts[4]
-        console.log("project: " + projectId + " player: " + playerId)
+        console.log("overriding with projectId from url path", projectId)
+        
+        playerId = parts[4] // playerId low priority
+        console.log("found playerId in url path", playerId)
       }
     }
 
+    // playerId medium priority - get player from localStorage (playerId might have been reset in client)
+    if(localStorage.getItem('playerId')) {
+      playerId = localStorage.getItem('playerId');
+      console.log("found playerId in localStorage, using that", playerId)
+    }
 
     loading = false;
   });

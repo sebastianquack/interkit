@@ -34,9 +34,9 @@
       {#if item.value.image}
         <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>
       {/if}
-      {#if item.value.sound} 
+      {#if item.value.audioSrc} 
         <audio controls>
-          <source src={fileServerURL + item.value.sound} type="audio/mpeg">
+          <source src={fileServerURL + item.value.audioSrc} type="audio/mp3">
         </audio>
       {/if}
       {#if item.value.buttons}

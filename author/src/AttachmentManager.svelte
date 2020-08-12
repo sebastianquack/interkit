@@ -12,12 +12,9 @@
   let loading = true;
 
   const loadAttattchments = async () => {
-    let result = await fetch("/api/file?project=" + projectId);
+    let result = await fetch("/api/file?project=" + projectId + "&$sort=name");
     let json = await result.json();
     if(json) {
-       json.docs.sort(function (a, b) {
-        return a.filename.toLowerCase().localeCompare(b.filename.toLowerCase());
-      });
       attachments = json.docs;
       console.log(attachments);
     }

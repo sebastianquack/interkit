@@ -12,7 +12,6 @@
   export let registerAudioPlayer;
   export let onAudioEnded;
 
-
   let qrCode = null
 
   afterUpdate(()=>{

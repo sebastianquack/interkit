@@ -233,7 +233,7 @@
   const doMoveTo = async (nodeId) => {
     if(boardChanged()) return
 
-    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST"});
+    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + editNodeId, {method: "POST", body: "{}"});
     let resJSON = await res.json();
     //console.log(resJSON);
   }

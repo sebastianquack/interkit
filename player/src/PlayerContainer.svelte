@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar, persistPlayerId } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar, persistPlayerId, getFilenameForFilekey } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -146,8 +146,17 @@
   const loadMarkers = async () => {
     let itemsRes = await fetch("/api/player/" + playerId + "/item?project=" + projectId);
     let itemsJson = await itemsRes.json();
-    if(itemsJson.docs)
-      markerItems = itemsJson.docs.filter(m=>m.type == "location");
+    if(itemsJson.docs) {
+      let locations = itemsJson.docs.filter(m=>m.type == "location");
+
+      locations.forEach(async (l)=>{
+        if(l.value.sound) {
+          l.value.audioSrc = await getFilenameForFilekey(l.value.sound)  
+        }
+      })
+
+      markerItems = locations;
+    }
     else 
       markerItems = [];
   }
@@ -376,24 +385,25 @@
 
     fileServerURL = await getConfig("fileServerURL");
     
-    //alert(location.search)
+    // if playerId has not been set -> user opens app for the first time
     if(!playerId) {
-      playerId = await findOrCreatePlayer();  
-
-      // reload page with playerId in url, so that ios keeps it when saving as PWA
-      if(!authoring) {
-        if(!location.pathname.includes("player")) {
-          if(location.port != 8081) {
-            location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
-          }
-        } 
-      }
+      playerId = await findOrCreatePlayer(); // create a new player and persist it in local storage
     } else {
+      // persist the player in local storage in case we got it from outside
       persistPlayerId(playerId)
     }
-    
+
+    // reload page with playerId in url, so that ios keeps it when saving as PWA
+    if(!authoring) {
+      if(!location.pathname.includes("player")) {
+        // doesn't work in local dev
+        if(location.port != 8081) {
+          location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
+        }
+      } 
+    }
+  
     await initSocket(playerId, updateConnectionStatus);
-    //setPlayerId(playerId);
     
     doWhenConnected(()=>{
       initPlayerContainerSocket();  
