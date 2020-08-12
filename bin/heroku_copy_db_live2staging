@@ -1,0 +1,3 @@
+#!/bin/bash
+
+# heroku pg:copy tanzfabrik-live::DATABASE_URL NAVY --app interkit-staging # --confirm interkit-staging
