@@ -1,6 +1,8 @@
 
 <script>
   import { token } from './stores.js';  
+
+  import { onMount } from 'svelte'
   
   export let nodes = [];
   export let setEditNodeId;
@@ -48,6 +50,46 @@
           body: JSON.stringify({zoom: z})
         })    
   }
+
+
+  let playersAtNode = {}
+
+  const loadActivePlayers = async ()=> {
+    let res = await fetch("/api/boardLog?"
+      + "board=" + currentBoardData._id
+      + "&$sort=-updatedAt"
+    )
+    let boardLogs = await res.json() 
+    //console.log(boardLogs)
+
+    playersAtNode = {}
+    if(boardLogs.docs) {
+      boardLogs.docs.forEach(boardLog=>{
+        // if currentNode is set for this board and player
+        if(boardLog.currentNode) {
+          if(!playersAtNode[boardLog.currentNode]) {
+            playersAtNode[boardLog.currentNode] = []
+          }
+          // save 
+          playersAtNode[boardLog.currentNode].push(boardLog.player)
+        }
+      })
+    }
+
+    //console.log(playersAtNode)
+    
+  }
+
+  let loadActivePlayersInterval;
+
+  onMount(async () => {
+    await loadActivePlayers();
+    loadActivePlayersInterval = setInterval(async ()=>{
+      await loadActivePlayers();
+    }, 5000)
+  })
+
+
 
   let mouseX;
   let mouseY;
@@ -220,6 +262,14 @@
         >
           {#if currentBoardData.startingNode == node._id}starting node{/if}
         </text>
+        <text
+          on:click={()=>alert("playerIds: " + playersAtNode[node._id])}
+          class="playerCounter"
+          x={node.posX+85}
+          y={node.posY+61}
+        >
+          {playersAtNode[node._id] ? playersAtNode[node._id].length : ""}
+        </text>
 
       </g>
 
@@ -282,6 +332,11 @@ g:hover {
 
 .scale-controls button {
   width: 1.5em;
+}
+
+.playerCounter {
+  fill: gray;
+  font-size: 10px;
 }
 
 </style>

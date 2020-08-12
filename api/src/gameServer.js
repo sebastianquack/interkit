@@ -434,7 +434,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
               // schedule move of players for later
               } else {
 
-                console.log("scheduling move...")
+                //console.log("scheduling move...")
                 
                 await db.scheduleMoveTo(playerId, destination, formatDelay(moveTo.delay));  
                 

@@ -8,7 +8,7 @@ const {
 
 const s3_sign = (request, h) => {
 
-  console.log("request.payload", request.payload);
+  //console.log("request.payload", request.payload);
 
   const s3 = new aws.S3();  // Create a new instance of S3
   const fileName = request.payload.fileName;
@@ -37,7 +37,7 @@ const s3_sign = (request, h) => {
         url: s3ForcePathStyle ? `${endpoint}/${S3_BUCKET}/${fileName}` : `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`,
         path: fileName
       };
-      console.log(returnData);
+      //console.log(returnData);
       // Send it all back    
       resolve({success:true, data:{returnData}});
 

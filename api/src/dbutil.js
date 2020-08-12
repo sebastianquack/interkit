@@ -1,4 +1,4 @@
-let mongoose = require('mongoose')
+const mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
 const Moment = require('moment')
 const dateFormat = require('dateformat');
@@ -294,7 +294,18 @@ exports.logPlayerToNode = async (playerId, node) => {
     node: mongoose.Types.ObjectId(node._id),
     timestamp: Date.now(),
     scheduled: false
-  }, Log);       
+  }, Log);    
+
+  // update boardLog
+  const BoardLog = mongoose.model("boardLog");
+  let boardLogs = await BoardLog.find({
+    player: mongoose.Types.ObjectId(playerId), 
+    board: mongoose.Types.ObjectId(node.board)
+  })
+  if(boardLogs.length) {
+    let boardLog = boardLogs[0];
+    await BoardLog.update({_id: boardLog._id}, {currentNode: node._id})
+  }
 
   if(prevNode)
     return prevNode.name;
@@ -520,7 +531,7 @@ exports.awardItemToPlayer = async (playerId, projectId, key, to = "one") => {
     return item;
 
   } else {
-      console.log("awardItemToPlayer - item not found")
+      console.log("awardItemToPlayer - item " + key + " not found")
   }
 }
 
@@ -541,7 +552,7 @@ exports.removeItemFromPlayer = async (playerId, projectId, key) => {
     )
     console.log("removeItemFromPlayer - success")
   } else {
-    console.log("removeItemFromPlayer - item not found")
+    console.log("removeItemFromPlayer - item " + key + " not found")
   }
 }
 

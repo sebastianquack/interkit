@@ -18,6 +18,10 @@ module.exports = function (mongoose) {
       type: Types.ObjectId,
       ref: "project"
     },
+    // save each players current node for a board here for easy reference
+    currentNode: {
+      type: Types.ObjectId
+    }
   });
   
   Schema.statics = {
