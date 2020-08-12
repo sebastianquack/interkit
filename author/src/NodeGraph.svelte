@@ -86,7 +86,7 @@
     await loadActivePlayers();
     loadActivePlayersInterval = setInterval(async ()=>{
       await loadActivePlayers();
-    }, 5000)
+    }, 20000)
   })
 
 

@@ -327,9 +327,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
   } catch (err) {
     clearTimeout(t);
     let report = "error: " + err.message + " details: " + err.stack
-    console.log("script execution failed", report)
+    //console.log("script execution failed", report)
     if(!sentResponse) {
-      callback({error: report});  
+      result.error = report;
+      callback(result);  
     }
   }
 }

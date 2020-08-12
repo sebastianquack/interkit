@@ -264,12 +264,13 @@ async function handleScript(currentNode, playerId, hook, msgData) {
   let timeMeasure = Date.now()
 
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
-
+    
     let timeDiff = Date.now() - timeMeasure;
     let report = "handleScript result after " + timeDiff + "ms ";
     ["outputs", "interfaceCommands", "moveTos", "forwards"].forEach((key)=>{
-      if(result[key].length) report += key + ": " + result[key].length + " ";  
+        if(result[key].length) report += key + ": " + result[key].length + " ";  
     })
+    if(result.error) report += "scriptError";
     console.log(report)
 
     // error in script - send error message back to sender
@@ -279,6 +280,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         message: result.error, 
         system: true, 
         recipients: [playerId],
+        params: {error: true},
         node, board
       });
     }
