@@ -27,7 +27,10 @@ const sendMessage = async (data) => {
   let msgData = {...data, timestamp: Date.now()};
   if(!msgData.params) msgData.params = {};
 
-  console.log("sendMessage '"+msgData.label+"' '"+msgData.message+"' "+msgData.params.interfaceCommand);
+  console.log("sendMessage to " + data.recipients.length + " recipients "
+    + (msgData.message ? "'" + (msgData.label ? msgData.label + ": " : "") + msgData.message + "' " : "")
+    + (Object.keys(msgData.params).length ? JSON.stringify(msgData.params) : "")
+  );
   //console.log("playerSockets", playerSockets);
   
   // get an id for the message
@@ -40,13 +43,13 @@ const sendMessage = async (data) => {
   // send to all recipients that are currently connected on socket
   for(playerId of data.recipients) {
     if(playerSockets[playerId]) {
-      console.log("emitting to", playerId);
+      //console.log("emitting to", playerId);
       playerSockets[playerId].forEach((socket)=>{
         io.to(socket).emit('message', {...msgData, _id: msgId});  
       });
     }
   }
-  console.log("done emitting");
+  //console.log("done emitting");
 }
 
 
@@ -61,7 +64,7 @@ async function joinNode(data) {
   let newNode = await RestHapi.find(RestHapi.models.scriptNode, id, {}, Log)
     
   if(newNode) {
-    console.log("joining " + newNode.name);    
+    //console.log("joining " + newNode.name);    
     
     data.arriveFrom.prevNode = await db.logPlayerToNode(data.playerId, newNode);
 
@@ -125,7 +128,7 @@ async function joinNodeMulti(data) {
 
 // player input something (called via rest api)
 async function handlePlayerMessage(data) {
-  console.log("message received", data);
+  console.log("handlePlayerMessage playerId " + data.sender + ": '" + data.message + "' " + (data.params ? JSON.stringify(data.params) : ""));
 
   //let id = mongoose.Types.ObjectId(data.node);
 
@@ -185,7 +188,7 @@ exports.init = (listener) => {
   io = require("socket.io")(listener)
 
   io.on('connection', function (socket) {
-    console.log('socket connection');    
+    //console.log('socket connection');    
 
     socket.on('disconnect', (reason) => {
       console.log("disconnect event for socket ", socket.id);
@@ -201,8 +204,7 @@ exports.init = (listener) => {
     // - limitation for now, player can only have one socket (cannot play with multiple tabs open)
     
     socket.on('registerPlayer', async (data) => {
-      console.log('registerPlayer');
-
+      
       if(!playerSockets[data.playerId]) {
         playerSockets[data.playerId] = []
       }
@@ -211,7 +213,10 @@ exports.init = (listener) => {
         playerSockets[data.playerId].push(socket.id);  
       }
       
-      console.log(playerSockets)
+      console.log('registerPlayer socket with playerId: ' + data.playerId
+        + " (connections for this player: " + playerSockets[data.playerId].length
+        + ", total connected: " + Object.keys(playerSockets).length + ")"
+      );
     })
 
   });
@@ -251,14 +256,21 @@ function formatDelay(delay) {
 // runs a node's script in the sandbox and updates socket connected clients
 async function handleScript(currentNode, playerId, hook, msgData) {
 
-  console.log("handleScript", playerId, currentNode.name, hook)
+  console.log("handleScript " + hook + " player " + playerId + " @" + currentNode.name)
 
   let node = currentNode._id;
   let board = currentNode.board;
 
+  let timeMeasure = Date.now()
+
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
-    
-    console.log("script result", result);
+
+    let timeDiff = Date.now() - timeMeasure;
+    let report = "handleScript result after " + timeDiff + "ms ";
+    ["outputs", "interfaceCommands", "moveTos", "forwards"].forEach((key)=>{
+      if(result[key].length) report += key + ": " + result[key].length + " ";  
+    })
+    console.log(report)
 
     // error in script - send error message back to sender
 
@@ -293,7 +305,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         
         // call getPlayersForNode only when needed
         if(output.to == "all" || output.to == "others") {
-          console.log("load other players in node if needed")
+          //console.log("load other players in node if needed")
           if(recipients["all"] == undefined && recipients["others"] == undefined) {
             recipients.all = await db.getPlayersForNode(node);
             recipients.others = recipients.all.filter(r=>r!=playerId); 
@@ -313,11 +325,11 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         }
 
 
-        console.log("recipients", recipients)
-        console.log("output.to", output.to)
+        //console.log("recipients", recipients)
+        //console.log("output.to", output.to)
 
         let msgObj = {...output, recipients: recipients[output.to], node, board, outputOrder: i}
-        console.log(msgObj);
+        //console.log(msgObj);
 
         if(!output.delay) {
           await sendMessage(msgObj); // send now
@@ -338,7 +350,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           let msgObj = {
             params: entry, 
             recipients: [playerId], node, board}
-          console.log(msgObj);
+          //console.log(msgObj);
 
           if(!entry.delay) {
             await sendMessage(msgObj); // send now
@@ -361,7 +373,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           board: forward.input.board
         }, Log)
 
-        console.log(forwardNodes);
+        //console.log(forwardNodes);
 
         if(forwardNodes.docs.length > 0) {
 
@@ -369,7 +381,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
           if(moveCounter < moveLimit) {
 
-            console.log("forwarding input to node " + forwardNode.name)
+            //console.log("forwarding input to node " + forwardNode.name)
             await db.setPlayerAttribute(playerId, "moveCounter", moveCounter+1) // count towards moveTo limit
             await handleScript(forwardNode, msgData.sender, "onReceive", msgData);
           

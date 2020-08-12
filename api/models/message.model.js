@@ -40,7 +40,7 @@ function selectForChat(server, model, options, logger) {
         ]
       }
 
-      console.log(query)
+      //console.log(query)
 
       let result = await model.find(query).sort({timestamp: -1}).limit(request.query.limit)
       //console.log("selectForChat", result)

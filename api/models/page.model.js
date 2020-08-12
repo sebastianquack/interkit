@@ -20,7 +20,7 @@ async function listWithVars(server, model, options, logger) {
 
    const handler = async function (request, h) {
 
-    console.log("key", request.query.key)
+    //console.log("key", request.query.key)
 
     let query = {
       project: request.query.project,

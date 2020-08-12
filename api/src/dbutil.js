@@ -63,7 +63,7 @@ const checkRefs = (scope, refs) => {
 }
 
 exports.setVar = async (scope, refs, key, value) => {
-  console.log("setVar", scope, refs, key, value);
+  //console.log("setVar", scope, refs, key, value);
 
   if(checkRefs(scope, refs)) {
 
@@ -111,13 +111,13 @@ exports.getVars = async (scope, refs) => {
 }
 
 exports.getVar = async (scope, refs, key) => {
-  console.log("getVar", scope, refs, key);
+  //console.log("getVar", scope, refs, key);
 
   if(checkRefs(scope, refs)) {
 
     let where = makeQuery(scope, refs, key);
 
-    console.log(where)
+    //console.log(where)
 
     // try to find variable
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
@@ -137,10 +137,10 @@ exports.embedVars = async (content, projectId, playerId=null) => {
   const replaceVars = async (regex, content, scope, refs) => {
 
     while ((m = regex.exec(content)) !== null) {
-      console.log("found project var ", m[1]);
-      console.log("string to replace", m[0]);
+      //console.log("found project var ", m[1]);
+      //console.log("string to replace", m[0]);
       let value = await exports.getVar(scope, refs, m[1])
-      console.log("value", value);
+      //console.log("value", value);
       if(!value) value = "[var "+m[1]+" not found]";
       content = content.replace(m[0], value);
     } 
@@ -253,7 +253,7 @@ exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) 
 
 // retrieves the current node for a given player and board
 exports.getCurrentNodeId = async (playerId, boardId) => {
-  console.log("getCurrentNodeId", playerId, boardId);
+  //console.log("getCurrentNodeId", playerId, boardId);
   
   // retrieve current node
   let nodeLogHistory = await RestHapi.list(RestHapi.models.nodeLog, {
@@ -278,7 +278,7 @@ exports.getCurrentNodeId = async (playerId, boardId) => {
 
 // creates a new nodelog and return the name of the current (now previous node)
 exports.logPlayerToNode = async (playerId, node) => {
-  console.log("logPlayerToNode", playerId, node._id);
+  console.log("logPlayerToNode " + playerId + " @" + node.name);
 
   let prevNodeId = await exports.getCurrentNodeId(playerId, node.board)
   let prevNode = null;
@@ -302,7 +302,7 @@ exports.logPlayerToNode = async (playerId, node) => {
 
 // retrieves players currently logged to a node
 exports.getPlayersForNode = async (nodeId) => {
-  console.log("getPlayersForNode", nodeId)
+  //console.log("getPlayersForNode", nodeId)
 
   // lode the node
   let node = await RestHapi.find(RestHapi.models.scriptNode, nodeId, null, Log);
@@ -314,7 +314,7 @@ exports.getPlayersForNode = async (nodeId) => {
     scheduled: {$ne: true}
   }
   let playerIds = await RestHapi.models.nodeLog.distinct("player", query);
-  console.log("playerIds", playerIds);
+  //console.log("playerIds", playerIds);
 
   // take only the ones that are currently here
   let result = []
@@ -325,7 +325,7 @@ exports.getPlayersForNode = async (nodeId) => {
       result.push(playerId)
   }
 
-  console.log("result", result)
+  //console.log("result", result)
 
   return result;
 }
@@ -401,16 +401,17 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
   //console.log("deliverScheduledMessages");
   let messages = await RestHapi.list(messageModel, {$where: {scheduled: true }}, log)
   let deliveredMesssages = [];
+  let scheduledCounter = 0;
   if(messages.docs.length) {
     for(let i = 0; i < messages.docs.length; i++) {
       let m = messages.docs[i];
       if(m.deliveryTime <= Date.now()) {
-        console.log("delivering: ", m);
+        //console.log("delivering: ", m);
         let result = await RestHapi.update(messageModel, m._id, {
           scheduled: false,
           timestamp: Date.now(),
         }, log)
-        console.log(result);
+        //console.log(result);
         deliveredMesssages.push(result);
 
         // not sure we should move on scheduled message!
@@ -421,9 +422,12 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
           }
         }
       } else {
-        console.log("found a scheduled message but not yet time to deliver");
+        scheduledCounter++;
       }
-    };
+    }
+    if(deliveredMesssages.length)
+      console.log("deliverScheduledMessages: " + deliveredMesssages.length + " (remaining: " + scheduledCounter + ")");
+
   } else {
     //console.log("no messages scheduled");
   }
@@ -545,7 +549,7 @@ exports.getItem = async (key, project) => {
 // retrieves a players items
 exports.getItemsForPlayer = async (playerId) => {
   let items = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
-  console.log("retrieved items for player", playerId, items.docs);
+  //console.log("retrieved items for player", playerId, items.docs);
   return items.docs;
 }
 
