@@ -3,6 +3,8 @@
   const QRCode = require('easyqrcodejs');
 
   import { onMount, afterUpdate } from 'svelte';
+  
+  import ChatAudioPlayer from './ChatAudioPlayer.svelte'
 
   export let item = {};
   export let onClick;
@@ -10,12 +12,6 @@
   export let registerAudioPlayer;
   export let onAudioEnded;
 
-  let audioPlayer;
-  let audioIndex;
-  onMount(()=>{
-    if(registerAudioPlayer)
-      audioIndex = registerAudioPlayer(audioPlayer, item.params ? item.params.autoplayTrigger : null)
-  })
 
   let qrCode = null
 
@@ -60,17 +56,11 @@
             <img alt={item.attachment.alt} src={item.attachment.imgSrc}/>
           {/if}
           {#if item.attachment.audioSrc} 
-             <audio 
-                bind:this={audioPlayer} 
-                controls 
-                on:ended={()=>{
-                  if(!item.params.stopAfterEnded)
-                    onAudioEnded(audioIndex)
-                }} 
-                autoplay={item.params.autoplay ? !item.loaded : false}
-              >
-              <source src={item.attachment.audioSrc} type="audio/mp3">
-            </audio> 
+            <ChatAudioPlayer
+              item = {item}
+              registerAudioPlayer = {registerAudioPlayer}
+              onAudioEnded = {onAudioEnded}
+            />
           {/if}
           {#if item.attachment.mediatype == "qr"}
             <div class="qr-code" id={"qr-" + item._id}></div>
