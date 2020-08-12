@@ -271,3 +271,14 @@ export const deleteFile = async (file, token) => {
   }, {headers: {authorization: `${token}`}})
   console.log(response);
 }
+
+export const getFilenameForFilekey = async (key) => {
+
+  let res = await fetch("api/file" + "?key=" + key)
+  const json = await res.json()
+  console.log(json);
+
+  if(json.docs)
+    return json.docs[0].filename
+
+}
