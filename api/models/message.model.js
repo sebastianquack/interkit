@@ -161,7 +161,7 @@ module.exports = function (mongoose) {
           let Boom = require('@hapi/boom')
 
           let handler = async function (request, h) {
-            console.log("markAsSeen start")
+            //console.log("markAsSeen start")
             try {
               if(request.params._id && request.params._id != "undefined") {
                 let message = await RestHapi.find(model, request.params._id, {}, Log);
@@ -176,7 +176,7 @@ module.exports = function (mongoose) {
                     seen: message.seen
                   }, Log)
 
-                  console.log("markAsSeen done")
+                  //console.log("markAsSeen done")
 
                   if(result)
                     return h.response('{"ok": "true"}').code(200)
