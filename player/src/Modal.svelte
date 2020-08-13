@@ -29,11 +29,14 @@
   <div id="content" on:click|stopPropagation>
     <button id="close" on:click={onClose}>close</button>
     {#if item}
-      <h2>{item.value.name}</h2>
-      <p>{item.value.description ? item.value.description : ""}</p>
       {#if item.value.image}
         <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>
       {/if}
+      {#if item.value.imageAsset}
+        <img src={"/assets/items/" + item.value.imageAsset + "_280px_post.png"} alt="image of {item.key}"/>
+      {/if}
+      <h2>{item.value.name}</h2>
+      <p>{item.value.description ? item.value.description : ""}</p>
       {#if item.value.audioSrc} 
         <audio controls>
           <source src={fileServerURL + item.value.audioSrc} type="audio/mp3">
