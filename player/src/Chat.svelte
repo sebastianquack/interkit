@@ -35,6 +35,9 @@
   let showItemsSince = Date.now();
   let showMoreItems = false;
   let beginningHistory = false;
+  let initialLoad = true;
+
+  export let doInitialLoad = true;
 
   let attachmentMenuOpen = false;
   let div;
@@ -95,8 +98,9 @@
     currentNode = null;
     chatItems = [];
     showItemsSince = Date.now();
-    let showMoreItems = false;
-    let beginningHistory = false;
+    initialLoad = true;
+    showMoreItems = false;
+    beginningHistory = false;
     inputValue = "";
     init();
   }
@@ -168,6 +172,7 @@
     status = "ready"
 
     // load history - and process any unseen messages in it
+    initialLoad = true;
     await loadMoreItems(currentBoard); 
     scrollUp();
 
@@ -412,14 +417,21 @@
 
       let historyItems = await response.json();
       console.log("history loaded", historyItems.docs);
-      if(historyItems.docs.length) {
-        //console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
-        showItemsSince = historyItems.docs[historyItems.docs.length - 1].timestamp;
-        console.log("showItemsSince", showItemsSince);  
-      }
-      if(historyItems.docs.length < limit) {
-        showMoreItems = false;
-        beginningHistory = true;
+
+      if(!initialLoad || doInitialLoad) {
+      
+        if(historyItems.docs.length) {
+          //console.log(historyItems.docs[historyItems.docs.length - 1].timestamp);
+          showItemsSince = historyItems.docs[historyItems.docs.length - 1].timestamp;
+          console.log("showItemsSince", showItemsSince);  
+        }
+        if(historyItems.docs.length < limit) {
+          showMoreItems = false;
+          beginningHistory = true;
+        } else {
+          showMoreItems = true;
+        }
+
       } else {
         showMoreItems = true;
       }
@@ -441,22 +453,26 @@
             unseenMessages.push(item);
         } else {
 
-          // ignore optionsArrays with no selection, these are replaced with selected items
-          if(!allowOptions && item.params.optionsArray && item.params.index == undefined) continue
+          // only show items if user user manually pushed button to load more
+          if(!initialLoad || doInitialLoad) {
 
-          if(!item.params.option // non-options are always allowed
-            || (item.params.option && allowOptions) // options if still allowed
-            || (item.params.option && item.sender == playerId) // or if player already chose and sent this
-            ) {
-            let parsedItem = parseItem(item);
-            if(parsedItem) chatItems.unshift(parsedItem); // adds item at beginning array
+            // ignore optionsArrays with no selection, these are replaced with selected items
+            if(!allowOptions && item.params.optionsArray && item.params.index == undefined) continue
+
+            if(!item.params.option // non-options are always allowed
+              || (item.params.option && allowOptions) // options if still allowed
+              || (item.params.option && item.sender == playerId) // or if player already chose and sent this
+              ) {
+              let parsedItem = parseItem(item);
+              if(parsedItem) chatItems.unshift(parsedItem); // adds item at beginning array
+            }
+
+            // turn off options as soon as a non-option non-interface command comes by
+            if(!item.params.option && !item.params.interfaceCommand) {
+              allowOptions = false
+            }
+
           }
-
-          // turn off options as soon as a non-option non-interface command comes by
-          if(!item.params.option && !item.params.interfaceCommand) {
-            allowOptions = false
-          }
-
 
         }
       }
@@ -470,6 +486,8 @@
       if(!beginningHistory && historyItems.docs.filter(i=>!i.params.interfaceCommand).length == 0) {
         loadMoreItems();
       }
+
+      initialLoad = false;
   } 
 
   const parseItem = (rawItem) => {

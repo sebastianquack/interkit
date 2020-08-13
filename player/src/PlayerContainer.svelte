@@ -38,7 +38,8 @@
   let arrowDirection = 0;
 
   let chatMessageHandler = null;
-  
+  let doInitialLoad = true;
+
   let mainView = "chat";
   let itemModal = null;
   
@@ -173,6 +174,7 @@
 
   const launch = (board) => {
     console.log("launching board", board.name, board._id)
+    doInitialLoad = true
     currentBoard = board;
   }
 
@@ -320,6 +322,7 @@
     menuOpen = false;
     itemModal = null;
     dynamicModalPage = null;
+    doInitialLoad = false;
     mainView = "chat"
          
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
@@ -372,6 +375,7 @@
       currentBoard = boardJSON.docs[0];
       menuOpen = false;
       dynamicModalPage = null;
+      mainView = "chat"
     }
     
     // button to open dynamicModal
@@ -542,6 +546,7 @@
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
+          {doInitialLoad}
           openChatView={()=>{openChat(); itemModal = null; dynamicModalPage = null;}}
           openDebugPanel={()=>debugPanelOpen=true}
         />
