@@ -315,7 +315,13 @@
     if(nodeJSON.docs.length != 1) return;
 
     console.log("node found", nodeJSON);
-    
+
+    currentBoard = boardJSON.docs[0];
+    menuOpen = false;
+    itemModal = null;
+    dynamicModalPage = null;
+    mainView = "chat"
+         
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
       method: "POST", 
       body: JSON.stringify({item, button})

@@ -45,7 +45,7 @@
       {#if item.value.buttons}
         <br><br>
         {#each item.value.buttons as button}
-          <button class:disabled="{!ready}" on:click={debounce(()=>{buttonPress(button)}, 200, true)}>{button.label}</button>
+          <button class:disabled="{!ready}" on:click={debounce(()=>{buttonPress(button)}, 500, true)}>{button.label}</button>
         {/each}
       {/if} 
     {/if}

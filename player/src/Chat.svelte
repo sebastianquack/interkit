@@ -142,10 +142,10 @@
 
     // set up socket events
     registerMessageHandler(receiveMessage)
-
+    
     // loads node we want to be in and saves it
     await setCurrentNode(nodeId)
-    
+
     // todo: move this logic to server!
     if(firstTimeOnBoard && nodeId) {
       // new: use rest api here for better error handling
@@ -171,7 +171,7 @@
     await loadMoreItems(currentBoard); 
     scrollUp();
 
-    await updateInputInterface();
+    await updateInputInterface();  
   }
   
 
@@ -232,7 +232,7 @@
     }
 
     //if this comes from a different node on the same board, quietly switch to that node
-    if(currentBoard._id == message.board && currentNode._id != message.node) {
+    if(currentBoard._id == message.board && (!currentNode || (currentNode._id != message.node))) {
         console.log("warning, message is from a different node")
         if(message.recipients.includes(playerId)) {
           await setCurrentNode(message.node);
