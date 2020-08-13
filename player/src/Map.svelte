@@ -72,12 +72,14 @@ const createMarker = (item) => {
 
   let placePosition = {lat: item.value.lat, lng: item.value.lng};
 
+  let defaultIconImage = "/assets/items/Insel_see_64px_post.png"
+
   let icon = {
-    url: "/marker.png", // url
-    scaledSize: {height: 50, width: 50}, // scaled size
+    url: item.value.imageAsset ? "/assets/items/" + item.value.imageAsset + "_64px_post.png" : defaultIconImage, // url
+    scaledSize: {height: 64, width: 64}, // scaled size
     origin: {x:0, y:0}, // origin
-    anchor: {x:25, y:50}, // anchor
-    labelOrigin: new google.maps.Point(25, 60)
+    anchor: {x:32, y:64}, // anchor
+    labelOrigin: new google.maps.Point(32, 70)
   };
 
   // add markers for user
@@ -121,7 +123,7 @@ const initMarkers = ()=>{
 
     markerCluster = new MarkerClusterer(map, markers, {
         imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
-        minimumClusterSize: 3, 
+        minimumClusterSize: 2, 
         maxZoom: 16, 
     });
 
