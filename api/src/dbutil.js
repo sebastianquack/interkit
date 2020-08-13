@@ -1,4 +1,4 @@
-let mongoose = require('mongoose')
+const mongoose = require('mongoose')
 const RestHapi = require('rest-hapi')
 const Moment = require('moment')
 const dateFormat = require('dateformat');
@@ -294,7 +294,18 @@ exports.logPlayerToNode = async (playerId, node) => {
     node: mongoose.Types.ObjectId(node._id),
     timestamp: Date.now(),
     scheduled: false
-  }, Log);       
+  }, Log);    
+
+  // update boardLog
+  const BoardLog = mongoose.model("boardLog");
+  let boardLogs = await BoardLog.find({
+    player: mongoose.Types.ObjectId(playerId), 
+    board: mongoose.Types.ObjectId(node.board)
+  })
+  if(boardLogs.length) {
+    let boardLog = boardLogs[0];
+    await BoardLog.update({_id: boardLog._id}, {currentNode: node._id})
+  }
 
   if(prevNode)
     return prevNode.name;
@@ -351,6 +362,8 @@ exports.scheduleMoveTo = async (playerId, node, timeFromNowObj) => {
 exports.executeScheduledMoves = async (nodeLogModel, log) => {
   //console.log("executeScheduledMoves");
   let nodeLogs = await RestHapi.list(nodeLogModel, {$where: {scheduled: true }}, log)
+  let scheduledCounter = 0
+  let moveCounter = 0
   
   if(nodeLogs.docs.length) {
     for(let i = 0; i < nodeLogs.docs.length; i++) {
@@ -365,10 +378,16 @@ exports.executeScheduledMoves = async (nodeLogModel, log) => {
         })
         // mark as done
         await RestHapi.update(nodeLogModel, nodeLog._id, {scheduled: false}, log)
+        moveCounter += 1;
       } else {
-        console.log("scheduled move found for player " + nodeLog.player + " to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
+        scheduledCounter += 1;
       }
-    };
+    }
+    //console.log("scheduled move found for player " + nodeLog.player + " to node " + nodeLog.node + " in " + ((nodeLog.moveTime - Date.now()) / 1000) + "s");
+    if(moveCounter) {
+      console.log("executeScheduledMoves " + moveCounter + " (remaining: " + scheduledCounter + ")")
+    }
+
   } else {
     //console.log("nothing to do");
   } 
@@ -438,7 +457,7 @@ exports.deliverScheduledMessages = async (messageModel, log) => {
 exports.createLocationThumbnail = async (coords) => {
 
   let googleMapsAPIKey = await RestHapi.list(RestHapi.models.config, {key: "googleMapsAPIKey"}, Log);
-  console.log(googleMapsAPIKey)
+  //console.log(googleMapsAPIKey)
 
   if(googleMapsAPIKey.docs)
     return mapImgUrl = 
@@ -464,11 +483,11 @@ exports.createOrUpdateItem = async (payload, projectId) => {
   let items = await RestHapi.list(RestHapi.models.item, {key: payload.key, project: projectId}, Log)
   delete payload._id; // remove key to prevent collisions when copying items
   if(items.docs.length == 0) {
-    console.log("creating item with", payload, projectId);
+    console.log("creating item with key " + payload.key);
     let item = await RestHapi.create(RestHapi.models.item, {...payload, project: projectId}, Log);  
   }
   else if(items.docs.length == 1) {
-    console.log("updating item with", payload, projectId);
+    console.log("updating item with with key " + payload.key);
     await RestHapi.update(RestHapi.models.item, items.docs[0]._id, {...payload, project: projectId}, Log);
   }
 }
@@ -496,10 +515,9 @@ exports.awardItemToPlayer = async (playerId, projectId, key, to = "one") => {
     }
 
     if(to == "all") {
-      console.log("awarding item to all players in project...")
       let projectLogs = await RestHapi.list(RestHapi.models.projectLog, {project: projectId}, Log); 
       let playerIds = projectLogs.docs.map(d=>d.player);
-      console.log("found players", playerIds);
+      console.log("awarding item " + item.key + " to all " + playerIds.length + " players in project")
       await RestHapi.addMany(
         RestHapi.models.item,
         item._id,
@@ -513,7 +531,7 @@ exports.awardItemToPlayer = async (playerId, projectId, key, to = "one") => {
     return item;
 
   } else {
-      console.log("awardItemToPlayer - item not found")
+      console.log("awardItemToPlayer - item " + key + " not found")
   }
 }
 
@@ -534,14 +552,14 @@ exports.removeItemFromPlayer = async (playerId, projectId, key) => {
     )
     console.log("removeItemFromPlayer - success")
   } else {
-    console.log("removeItemFromPlayer - item not found")
+    console.log("removeItemFromPlayer - item " + key + " not found")
   }
 }
 
 // retrieve one item
 exports.getItem = async (key, project) => {
   let item = await RestHapi.list(RestHapi.models.item, {key, project}, Log);
-  console.log(item);
+  //console.log(item);
   if(item.docs.length > 0) return item.docs[0]
   return null;
 }
@@ -559,7 +577,7 @@ exports.getItemsQuery = async (project, query) => {
   // { 'value.latIndex': 1000 } 
 
   let items = await RestHapi.list(RestHapi.models.item, {...query, project}, Log);
-  console.log("retrieved items for player", playerId, items.docs);
+  //console.log("retrieved items for player", playerId, items.docs);
   return items.docs;
 
 }
@@ -580,7 +598,7 @@ exports.getAttachmentFilename = async (keyOrName, projectId) => {
   const attachments = await mongoose.model("file").find(query)
   if (attachments.length === 0) { console.warn(`attachment "${keyOrName}" not found`); return ""; }
   if (attachments.length === 1) { return attachments[0].filename; }
-  if (attachments.length > 1)   { console.warn(`several attachments found for "${keyOrName}"`, attachments); return attachments[0].filename; }
+  if (attachments.length > 1)   { console.warn(`warning: several attachments found for "${keyOrName}"`); return attachments[0].filename; }
 }
 
 

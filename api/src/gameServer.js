@@ -18,7 +18,7 @@ let playerSockets = {}
 // we send messages to individual sockets depending on recipients
 const sendMessage = async (data) => {
 
-  if(data.recipients.length == 0) {
+  if(!data.recipients || data.recipients.length == 0) {
     console.log("sendMessage: empty recipients list, ignoring");
     return;
   }
@@ -264,12 +264,13 @@ async function handleScript(currentNode, playerId, hook, msgData) {
   let timeMeasure = Date.now()
 
   sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
-
+    
     let timeDiff = Date.now() - timeMeasure;
     let report = "handleScript result after " + timeDiff + "ms ";
     ["outputs", "interfaceCommands", "moveTos", "forwards"].forEach((key)=>{
-      if(result[key].length) report += key + ": " + result[key].length + " ";  
+        if(result[key].length) report += key + ": " + result[key].length + " ";  
     })
+    if(result.error) report += "scriptError";
     console.log(report)
 
     // error in script - send error message back to sender
@@ -279,6 +280,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
         message: result.error, 
         system: true, 
         recipients: [playerId],
+        params: {error: true},
         node, board
       });
     }
@@ -408,7 +410,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           
           if(destinations.docs.length == 1) {
             let destination = destinations.docs[0];
-            console.log("processing move to node " + destination.name);
+            //console.log("processing move to node " + destination.name);
             if(destination._id != currentNode._id) {
               
               // move player(s) immediately
@@ -434,7 +436,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
               // schedule move of players for later
               } else {
 
-                console.log("scheduling move...")
+                //console.log("scheduling move...")
                 
                 await db.scheduleMoveTo(playerId, destination, formatDelay(moveTo.delay));  
                 

@@ -25,9 +25,18 @@ export const initSocket = async (playerId, updateConnectionStatus) => {
   socket = io(socketURL);
 
   socket.on('disconnect', function(){
-    //alert("socket disconnect");
+    if(confirm("Socket-Verbindung verloren (disconnect). Seite neu laden?")) {
+       location.reload(); 
+    }
     console.log("socket disconnect");
     if(updateConnectionStatus) updateConnectionStatus(socket.connected);
+  });
+
+  socket.on('connect_timeout', function(){
+    if(confirm("Socket-Verbindung verloren (connect_timeout). Seite neu laden?")) {
+       location.reload(); 
+    }
+    console.log("socket connect_timeout");    
   });
   
   socket.on('connect', async function(){
