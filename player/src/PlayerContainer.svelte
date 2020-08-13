@@ -832,6 +832,7 @@
     &:nth-child(2) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
     &:nth-child(3) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
     &:nth-child(4) .board-name { background-image: url("/assets/picto/Piraten.svg") }
+    &:nth-child(5) .board-name { background-image: url("/assets/picto/Alle.svg") }
 
     .board-unseen {
       display: block;
