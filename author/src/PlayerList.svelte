@@ -15,7 +15,7 @@ let playerInfo = {}
 const loadPlayers = async ()=>{
     console.log("loading players for project", projectId);
     
-    const res = await fetch("/api/projectLog?project=" + projectId + "&$sort=-updatedAt");
+    const res = await fetch("/api/projectLog?project=" + projectId + "&$sort=updatedAt");
     const json = await res.json();
     if(json.docs) {
       projectLogs = json.docs;
