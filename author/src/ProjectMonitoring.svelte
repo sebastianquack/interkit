@@ -87,6 +87,7 @@ const loadMessages = async (boardKey)=>{
   let res = await fetch("/api/message?"
     + "board=" + board._id
     + "&$limit=100&$sort=-createdAt"
+    + "&$where= " + JSON.stringify({recipients: {$size: 0}})
   );
   let json = await res.json();
   messages = json.docs

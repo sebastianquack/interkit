@@ -12,8 +12,11 @@ function selectForChat(server, model, options, logger) {
       let query = { 
         board: request.query.boardId, // from this board
         $or: [
-          {sender: request.query.playerId}, // can be sent by player
-          {recipients: request.query.playerId} // or received by player
+          {$and: [  // sent by player (with no recipients, message from player -> server)
+            {sender: request.query.playerId}, 
+            {recipients: {$size: 0}}
+          ]},
+          {recipients: request.query.playerId} // player is a recipient
         ],
         timestamp: {$lt: request.query.showItemsSince}, // in the right timespan
         scheduled: {$ne: true}, // not scheduled
