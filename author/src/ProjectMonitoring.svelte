@@ -120,7 +120,9 @@ const reset = ()=>{
   <h4>Inseln</h4>
   <ul>
     {#each islandItems as item}
-      <li><Island {item} {projectId} {playerId} {attachPlayer} /></li>
+      {#if item.value.history}
+        <li><Island {item} {projectId} {playerId} {attachPlayer} /></li>
+      {/if}
     {/each}
   </ul>
   {/if}
