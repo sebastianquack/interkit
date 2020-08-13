@@ -45,7 +45,7 @@
       {#if item.value.buttons}
         <br><br>
         {#each item.value.buttons as button}
-          <button class:disabled="{!ready}" on:click={debounce(()=>{buttonPress(button)}, 500, true)}>{button.label}</button>
+          <button on:click={debounce(()=>{buttonPress(button)}, 5000, true)}>{button.label}</button>
         {/each}
       {/if} 
     {/if}
@@ -93,8 +93,5 @@
   box-shadow: 2px 2px #ddd;
 }
 
-button.disabled {
-  color: #aaa;
-}
 
 </style>
