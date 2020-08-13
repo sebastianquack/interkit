@@ -104,8 +104,8 @@
     await checkForUnseenMessages();    
   }
 
-  const checkForUnseenMessages = async () => {
-    console.log("checkForUnseenMessages")
+  const checkForUnseenMessages = async (log = undefined) => {
+    console.log("checkForUnseenMessages", log)
     let numUnseen = 0;
     for(let i = 0; i < boards.length; i++) {
       let board = boards[i];

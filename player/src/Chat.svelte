@@ -78,7 +78,7 @@
           //console.log(item, marked)
           if(marked) updated = true;
         }
-        if(updated) updateUnseenMessages()
+        if(updated) updateUnseenMessages("beforeUpdate")
       }
     }
   })

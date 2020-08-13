@@ -18,7 +18,7 @@ let playerSockets = {}
 // we send messages to individual sockets depending on recipients
 const sendMessage = async (data) => {
 
-  if(data.recipients.length == 0) {
+  if(!data.recipients || data.recipients.length == 0) {
     console.log("sendMessage: empty recipients list, ignoring");
     return;
   }

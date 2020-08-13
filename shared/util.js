@@ -55,6 +55,35 @@ export const getProjectVar = async (ids, key) => {
     return null;
 }
 
+export const loadBoardVariable = async (boardKey, varKey, projectId) => {
+  let board = await loadBoard(boardKey, projectId)
+  if(!board) return null
+  let query = {
+    project: projectId,
+    board: board._id,
+    varScope: "board",
+    key: varKey
+  };
+  let res = await fetch("/api/variable?$where=" + JSON.stringify(query));
+  let json = await res.json();
+  if(json.docs.length) return json.docs[0].value;
+}
+
+export const loadNodeVariable = async (boardKey, nodeName, varKey, projectId)=>{
+  let node = await loadNode(boardKey, nodeName, projectId)
+  if(!node) return null;
+  let query = {
+    project: projectId,
+    node: node._id,
+    varScope: "node",
+    key: varKey
+  };
+  let res = await fetch("/api/variable?$where=" + JSON.stringify(query));
+  let json = await res.json();
+  if(json.docs.length) return json.docs[0].value;
+}
+
+
 
 
 /* PLAYERS */
@@ -151,6 +180,21 @@ export const logPlayerToProject = async (player, project) => {
       },      
       body: JSON.stringify({player, project})});    
     // todo error handling
+  }
+}
+
+export const loadBoard = async (boardKey, projectId)=> {
+  let res = await fetch("/api/board?project=" + projectId + "&key=" + boardKey)
+  let json = await res.json()
+  if(json.docs.length) return json.docs[0]
+}
+
+export const loadNode = async (boardKey, nodeName, projectId)=> {
+  let board = await loadBoard(boardKey, projectId)
+  if(board) {
+    let res = await fetch("/api/scriptNode?board=" + board._id + "&name=" + nodeName)
+    let json = await res.json()
+    return json.docs[0]
   }
 }
 
