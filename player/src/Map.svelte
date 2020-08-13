@@ -72,7 +72,7 @@ const createMarker = (item) => {
 
   let placePosition = {lat: item.value.lat, lng: item.value.lng};
 
-  let defaultIconImage = "/assets/items/Insel_see_64px_post.png"
+  let defaultIconImage = "/assets/items/Insel_See_64px_post.png"
 
   let icon = {
     url: item.value.imageAsset ? "/assets/items/" + item.value.imageAsset + "_64px_post.png" : defaultIconImage, // url
