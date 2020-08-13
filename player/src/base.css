@@ -65,6 +65,7 @@ body {
 * {
   color: var(--color-dark);
   border-color: var(--color-dark);
+  padding:0; margin:0
 }
 
 a {
@@ -78,4 +79,12 @@ a:hover {
 
 a:visited {
 	color: rgb(0,80,160);
+}
+
+button {
+  border: 1px solid var(--color-dark);
+  border-radius: var(--bubble-border-radius);
+  font-size: 15px;
+  line-height: 16px;
+  padding: var(--bubble-border-radius);
 }

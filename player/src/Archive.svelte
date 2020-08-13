@@ -34,47 +34,84 @@
     {/each}
 </div-->
 
-<div id="container" on:click|stopPropagation={(e)=>handleHtmlClicks(e, "archive")}>{#if page}{@html page.contentWithVars}{/if}</div>
+<div id="container" class="archive-page" on:click|stopPropagation={(e)=>handleHtmlClicks(e, "archive")}>{#if page}{@html page.contentWithVars}{/if}</div>
 
 
-<style>
+<style type="text/scss">
 
-#container {
-  width: 100%; 
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: #f8f3e3;
-  padding: 20px;
-  box-sizing: border-box;
-  padding-top: 45px;
-}
+  #container {
+    width: 100%; 
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: #f8f3e3;
+    box-sizing: border-box;
+    padding-top: 75px;
+  }
 
-/*
-div.item {
-  float: left;
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-}
+  :global .archive-page {
 
-div.item img {
-  height: 50px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
+    image-rendering: pixelated;
 
-div.item span {
-  width: 100%;
-  text-align: center;
-  display: inline-block;
-}
+    .headline,
+    .boat-name {
+      text-transform: uppercase;
+      font-size: 18px;
+      line-height: 22px;    
+    }
 
-div.item:hover {
-  cursor: pointer;
-}
-*/
+    .headline {
+      font-weight: bold;
+      letter-spacing: var(--letter-spacing-bold);
+    }
+
+    > * {
+      margin-bottom: 24px;
+    }
+
+    .boat {
+      padding: 24px;
+      height: 50vh;
+      min-height: 300px;
+      width: 100%;
+      box-sizing: border-box;
+      background-repeat: no-repeat;
+      background-position: 50% 90%;
+      background-size: cover;
+      position: relative;
+
+      .island {
+        position: absolute;
+        bottom: 24px;
+      }
+
+      .boat-modal {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+      }
+
+    }
+
+    /*.goods*/ ul {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      li {
+        background-repeat: no-repeat;
+        width: 64px;
+        height: 64px;
+        button {
+          width: 100%; height: 100%;
+          padding: 0; margin: 0;
+          background: transparent;
+          border-radius: 0;
+          cursor: pointer;
+        }
+      }
+    }
+
+  }
 
 </style>
