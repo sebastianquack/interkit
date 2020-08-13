@@ -337,12 +337,20 @@
   // process clicks from menu pages and archive
   const handleHtmlClicks = async (event, from) => {
     
-    console.log(event.target);
+    console.log(event.target.tagName);
 
-    dynamicModalParameter = event.target.getAttribute('data-parameter');
+    let target = event.target;
+
+    if(target.tagName != "BUTTON") {
+      target = event.target.parentNode;
+    }
+
+    console.log(target)
+
+    dynamicModalParameter = target.getAttribute('data-parameter');
     
     // button with moveTo effect
-    let node = event.target.getAttribute('data-node');
+    let node = target.getAttribute('data-node');
     if(node) {
       console.log("handling button press at node " + node)
       handleButton({node, parameter: dynamicModalParameter}, from)
@@ -350,7 +358,7 @@
     }
 
     // button to open board
-    let boardKey = event.target.getAttribute('data-board');
+    let boardKey = target.getAttribute('data-board');
     if(boardKey) {
       console.log("opening board " + boardKey)
       
@@ -367,18 +375,18 @@
     }
     
     // button to open dynamicModal
-    let modalPage = event.target.getAttribute('data-modal-page');
+    let modalPage = target.getAttribute('data-modal-page');
     if(modalPage) {
       dynamicModalPage = modalPage
     }
 
     // button to reset player
-    if(event.target.getAttribute('data-special') == "resetPlayer") {
+    if(target.getAttribute('data-special') == "resetPlayer") {
       if(confirm("really?")) resetPlayerContainer()
     }
 
     // button to open debug panel
-    if(event.target.getAttribute('data-special') == "debugPanel") {
+    if(target.getAttribute('data-special') == "debugPanel") {
       debugPanelOpen = true;
     }
 
