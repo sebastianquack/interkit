@@ -54,6 +54,24 @@
 
     image-rendering: pixelated;
 
+    *, button {
+      font-family: "EurostyleLTStd", sans-serif;
+    }
+
+    .bgimg_64 {
+      width: 64px;
+      height: 64px;    
+      background-repeat: no-repeat;
+      background: transparent;
+    }
+
+    .bgimg_280 {
+      width: 280px;
+      height: 280px;    
+      background-repeat: no-repeat;
+      background: transparent;
+    }    
+
     .headline,
     .boat-name {
       text-transform: uppercase;
@@ -68,18 +86,30 @@
 
     > * {
       margin-bottom: 24px;
+      border: 0px solid black;
+      border-bottom-width: 1px;
     }
 
+    .player {
+      padding: 0 24px 24px 24px;
+    }
     .boat {
-      padding: 24px;
-      height: 50vh;
-      min-height: 300px;
+      padding: 24px 24px 24px 24px;
+      height: 300px;
       width: 100%;
       box-sizing: border-box;
+      background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;      
       background-repeat: no-repeat;
-      background-position: 50% 90%;
-      background-size: cover;
+      background-position: 90% 90%;
+      //background-size: 280 280;
       position: relative;
+
+      .bgimg {
+        position:absolute;
+        z-index: 0;
+        right: 12px;
+        bottom: 6px;
+      }
 
       .island {
         position: absolute;
@@ -94,20 +124,62 @@
 
     }
 
-    /*.goods*/ ul {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      li {
-        background-repeat: no-repeat;
-        width: 64px;
-        height: 64px;
-        button {
-          width: 100%; height: 100%;
-          padding: 0; margin: 0;
-          background: transparent;
-          border-radius: 0;
-          cursor: pointer;
+    .goods {
+      padding: 0 24px 24px 24px;
+      position: relative;
+
+      .headline {
+        margin-bottom: 18px;
+      }
+
+      .gauge {
+        position: absolute;
+        top:0;
+        right:12px;
+      }
+
+      ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        li {
+          width: 64px;
+          margin-right: 12px;
+          box-sizing: border-box;
+          button {
+            
+            width: 100%;      
+            padding: 0; margin: 0;
+            background: transparent;
+            border-radius: 0;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            display: block;
+
+            font-weight: 300;
+            font-size: 15px;
+            line-height: 16px;
+
+            .bgimg {
+              display: block;
+              border: 1px solid black;
+              margin-bottom: 6px;
+            }
+
+            .number {
+              display: block;
+              position: absolute;
+              right: 1px;
+              top: 1px;
+              padding: 4px;
+              background-color: var(--color-blue);
+              box-sizing: border-box;
+              border: 0px solid black;
+              border-width: 0 0 1px 1px;
+            }
+
+          }
         }
       }
     }

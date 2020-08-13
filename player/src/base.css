@@ -20,6 +20,12 @@
   src: url("/assets/fonts/EurostileLTStd-BoldEx2.otf") format("opentype");
 }
 
+@font-face {
+  font-family: "EurostyleLTStd";
+  font-weight: 300;
+  src: url("/assets/fonts/EurostileLTStd-Cn.otf") format("opentype");
+}
+
 /*
  *  Variables
  */
@@ -66,6 +72,10 @@ body {
   color: var(--color-dark);
   border-color: var(--color-dark);
   padding:0; margin:0
+}
+
+ul, ol {
+  list-style-type: none;
 }
 
 a {
