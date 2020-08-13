@@ -4,6 +4,7 @@
   export let attachPlayer
 </script>
 
+{#if messages}
 {#if messages.length}
 <h4>{messagesBoardKey}</h4>
   <ul>
@@ -16,4 +17,4 @@
   {/each}
   </ul>
 {/if}
-  
+{/if}
