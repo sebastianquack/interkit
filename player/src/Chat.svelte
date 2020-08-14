@@ -1,4 +1,6 @@
 <script>
+  import { isIOS } from 'mobile-device-detect';
+
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
   import { getConfig, postPlayerMessage, postAdminMessage, getCurrentNodeId, getPlayerVar } from '../../shared/util.js';
 
@@ -646,6 +648,12 @@
     }
   }
 
+  const handleBlur = event => {
+    if (event.target.value != "" && isIOS) {
+      submitInput();
+    }
+  }
+
   const autoType = (item) => {
     if(autoTyping) return;
     autoTyping = true;
@@ -716,7 +724,7 @@
           <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}></button>
         {/if}
         {#if inputInterface.text || inputAsAdmin}
-          <input bind:value={inputValue} on:keydown={handleKeydown} on:click={scrollUp}>
+          <input bind:value={inputValue} on:keydown={handleKeydown} on:blur={handleBlur} on:click={scrollUp}>
         {/if}
       </div>
     {/if}
