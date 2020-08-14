@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { generateFilename, generateFileKey } from './common.js'
 
+import { debounce } from "debounce";
+
 /* CONFIGS */
 
 export const getConfig = async (key) => {
@@ -202,7 +204,7 @@ export const loadNode = async (boardKey, nodeName, projectId)=> {
 
 /* MESSAGES */
 
-export const postPlayerMessage = async (msgData) => {
+export const postPlayerMessage = debounce(async (msgData) => {
   msgData.seen = [msgData.sender] // add seen 
   console.log("postPlayerMessage", msgData);
   let response = await fetch("/api/player/message", {
@@ -214,7 +216,7 @@ export const postPlayerMessage = async (msgData) => {
     responseJSON = await response.json();
   if(!response.ok || !responseJSON || !responseJSON.status == "ok") alert("warning: message was not received and processed correctly on the server");
   return responseJSON.status == "ok";
-}
+}, 500, true)
 
 export const postAdminMessage = async (msgData) => {
   console.log("postAdminMessage", msgData);
