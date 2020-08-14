@@ -13,6 +13,8 @@
   import Alert from './Alert.svelte';
   import DebugPanel from './DebugPanel.svelte';
   
+  import "./player.css";
+
   // the two main props that this comonent reacts on
   export let projectId; 
   // project is always set from outside

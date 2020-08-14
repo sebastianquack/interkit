@@ -41,13 +41,13 @@
 
   #container {
     width: 100%; 
-    height: 100%;
+    height: calc(100% - 70px);
     position: absolute;
     left: 0;
-    top: 0;
-    background-color: #f8f3e3;
+    top: 70px;
+    background-color: var(--color-bright);
     box-sizing: border-box;
-    padding-top: 75px;
+    overflow-y: auto;
   }
 
   :global .archive-page {
