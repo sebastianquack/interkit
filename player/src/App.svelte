@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
-  import "./base.css";
+  import "./app.css";
 
   let projectId;
   let playerId = null;
