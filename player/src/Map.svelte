@@ -257,6 +257,9 @@ const getUserPosition = (pan = false)=> {
 }
 
 const updateUserMarker = (userPosition) => {
+
+  console.log("updateUserMarker", userMarker)
+
     if(!userMarker) {
 
         userMarker = new google.maps.Marker({
@@ -345,9 +348,11 @@ onMount(async ()=>{
   playerName = await getPlayerVar({playerId, projectId}, "name")
   let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
   let boatTypes = await getProjectVar({projectId}, "boatTypes")
+  console.log("boatTypes", boatTypes, boatTypeKey)
   boatData = boatTypes[boatTypeKey]
   console.log("boatData", boatData)
   setupBoatIcon(boatData.image)
+
   updateUserMarker()
 
 })
