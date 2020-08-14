@@ -265,7 +265,7 @@ const updateUserMarker = (userPosition) => {
         userMarker = new google.maps.Marker({
           map: map,
           position: userPosition,
-          icon: arrowMode ? arrowIcon : (boatIcon ? boatIcon : dotIcon),
+          icon: boatIcon ? boatIcon : dotIcon,
           label: boatIcon ? {
             color: "#000",
             fontFamily: "sans-serif",
