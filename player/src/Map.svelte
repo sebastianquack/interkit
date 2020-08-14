@@ -257,12 +257,15 @@ const getUserPosition = (pan = false)=> {
 }
 
 const updateUserMarker = (userPosition) => {
+
+  console.log("updateUserMarker", userMarker)
+
     if(!userMarker) {
 
         userMarker = new google.maps.Marker({
           map: map,
           position: userPosition,
-          icon: arrowMode ? arrowIcon : (boatIcon ? boatIcon : dotIcon),
+          icon: boatIcon ? boatIcon : dotIcon,
           label: boatIcon ? {
             color: "#000",
             fontFamily: "sans-serif",
@@ -287,7 +290,7 @@ const updateUserMarker = (userPosition) => {
         }
         arrowIcon.rotation = rotation;
 
-        userMarker.setIcon(arrowIcon);  
+        //userMarker.setIcon(arrowIcon);  
       
       } else {
         
@@ -345,9 +348,11 @@ onMount(async ()=>{
   playerName = await getPlayerVar({playerId, projectId}, "name")
   let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
   let boatTypes = await getProjectVar({projectId}, "boatTypes")
+  console.log("boatTypes", boatTypes, boatTypeKey)
   boatData = boatTypes[boatTypeKey]
   console.log("boatData", boatData)
   setupBoatIcon(boatData.image)
+
   updateUserMarker()
 
 })
