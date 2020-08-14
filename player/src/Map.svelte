@@ -371,6 +371,11 @@ onDestroy(()=>{
 <div id="map-container" style="display: {visible ? 'block' : 'none'}">     
   <div id="map" bind:this={mapContainer}></div>
   <img id="locate-button" alt="locat button" src="locate.png" on:click={()=>getUserPosition(true)} />
+  {#if arrowMode}
+    <div class="windicator">
+      <img alt="Wind Direction Indicator" style="transform: rotate({arrowDirection}deg)" src="/assets/icons/Wind.svg" />
+    </div>
+  {/if}
 </div>
 
 
@@ -406,6 +411,25 @@ onDestroy(()=>{
 
 #locate-button:hover {
   cursor: pointer
+}
+
+.windicator {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  z-index: 100;
+  background: url("/assets/icons/Union.svg") no-repeat 0 0;
+}
+
+.windicator img {
+  width: 30px;
+  height: 30px;
+  transition: all 3s;
+  transform-origin: 50%;
+  /*background-color: black;*/
 }
 
 </style>
