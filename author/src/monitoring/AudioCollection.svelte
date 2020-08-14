@@ -4,6 +4,7 @@ import { onMount } from 'svelte'
 import { getFilenameForFilekey, getConfig } from '../../../shared/util.js'
 
 export let collection;
+export let attachPlayer;
 
 let fileServerURL;
 

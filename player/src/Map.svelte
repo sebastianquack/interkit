@@ -26,6 +26,7 @@ let arrowIcon;
 let dotIcon;
 
 let userPosition = null;
+let locationIssue = false;
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
@@ -211,6 +212,7 @@ const getUserPosition = (pan = false)=> {
         lat: position.coords.latitude,
         lng: position.coords.longitude
       };
+      locationIssue = false
 
       if(pan) {
         map.panTo(userPosition);
@@ -254,7 +256,11 @@ const getUserPosition = (pan = false)=> {
       updateMarkersPositionChange();
 
     }, ()=> {
-      alert("couldn't get location");
+      if(!locationIssue) {
+        alert("couldn't get location");
+        locationIssue = true;  
+      }
+      
     }, {
       enableHighAccuracy: true,
       timeout: 5000,
@@ -276,7 +282,7 @@ const initPositiontracking = () => {
         getUserPosition()
       }
 
-    }, 2000)
+    }, 5000)
   }
 }
 

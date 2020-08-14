@@ -3,6 +3,7 @@
 import { onMount } from "svelte"
 
 export let collection;
+export let attachPlayer;
 
 const formatTextEntry = async (entry) => {
   if(typeof entry == "string") {
