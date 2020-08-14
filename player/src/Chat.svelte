@@ -47,6 +47,7 @@
   let autoTyping = false;
   let googleMapsAPIKey;
   let fileServerURL;
+  let inputFocus = false;
 
   let messageQueue = []; // queue messages for sequencial processing if many come in fast via socket
   let status = "idle";
@@ -649,10 +650,15 @@
   }
 
   const handleBlur = event => {
+    inputFocus = false;
     if (event.target.value != "" && isIOS) {
       submitInput();
     }
   }
+
+  function handleFocus() {
+    inputFocus = true;
+  }  
 
   const autoType = (item) => {
     if(autoTyping) return;
@@ -697,7 +703,7 @@
 
 </script>
 
-<div class="chat">
+<div class="chat" class:focus="{ inputFocus}">
 
     <div class="scrollable {authoring? 'narrow' : ''}" class:no-inputs={!inputInterface.attachments && !inputInterface.text} bind:this={div}>
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
@@ -724,7 +730,7 @@
           <button style="width: 2em" class="open-attachment" on:click={()=>{attachmentMenuOpen = true}}></button>
         {/if}
         {#if inputInterface.text || inputAsAdmin}
-          <input bind:value={inputValue} on:keydown={handleKeydown} on:blur={handleBlur} on:click={scrollUp}>
+          <input bind:value={inputValue} on:keydown={handleKeydown} on:blur={handleBlur} on:focus={handleFocus} on:click={scrollUp}>
         {/if}
       </div>
     {/if}
@@ -759,6 +765,12 @@
     {/if}
   
 </div>
+
+{#if inputFocus}
+  <style type="text/scss">
+  // TODO: html/body height <-- window.innerHeight
+  </style>
+{/if}
 
 <style>
   button:hover {
