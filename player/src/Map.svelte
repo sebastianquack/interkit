@@ -43,6 +43,7 @@ boatIcon = {
       anchor: {x:25, y:25}, // anchor
       labelOrigin: new google.maps.Point(25, 60)
   }
+  console.log("set boatIcon to", boatIcon)
 }
 
 
