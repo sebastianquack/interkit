@@ -1,7 +1,7 @@
 <script>
 
 import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-import { getConfig } from '../../shared/util.js';
+import { getConfig, getPlayerVar, getProjectVar } from '../../shared/util.js';
 
 import MarkerClusterer from '@google/markerclustererplus';
 
@@ -17,6 +17,9 @@ export let arrowMode = false; // activate to turn on the directional arrow
 export let arrowDirection = 0; // turn it manually
 export let arrowTarget = null; // turn arrow to a target position (should be an item object)
 
+export let playerId
+export let projectId
+
 let mapContainer;
 let markers = [];
 let userMarker;
@@ -24,9 +27,24 @@ let markerCluster;
 let positionTrackerInterval;
 let arrowIcon;
 let dotIcon;
+let boatIcon;
 
 let userPosition = null;
 let locationIssue = false;
+let playerName = null;
+let boatData = {};
+
+const setupBoatIcon = (image) => {
+
+boatIcon = {
+      url: "/assets/items/" + image + "_64px_post.png",
+      scaledSize: {height: 50, width: 50}, // scaled size
+      origin: {x:0, y:0}, // origin
+      anchor: {x:25, y:25}, // anchor
+      labelOrigin: new google.maps.Point(25, 60)
+  }
+}
+
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
@@ -219,41 +237,7 @@ const getUserPosition = (pan = false)=> {
         map.setZoom(16);
       }
 
-      if(!userMarker) {
-
-          userMarker = new google.maps.Marker({
-            map: map,
-            position: userPosition,
-            icon: arrowMode ? arrowIcon : dotIcon 
-
-        }); 
-
-      } else {
-
-        userMarker.setPosition(userPosition);
-
-        if(arrowMode) {
-          let rotation = arrowDirection
-          
-          if(arrowTarget) {
-            // calculate rotation
-            // console.log("rotation for ", userPosition, arrowTarget, rotation)
-            rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget.value))
-          
-          }
-          arrowIcon.rotation = rotation;
-
-          userMarker.setIcon(arrowIcon);  
-        
-        } else {
-          
-          userMarker.setIcon(dotIcon);  
-        
-        }
-
-      }
-
-      updateMarkersPositionChange();
+      updateUserMarker(userPosition)
 
     }, ()=> {
       if(!locationIssue) {
@@ -270,6 +254,51 @@ const getUserPosition = (pan = false)=> {
     alert("browser doesn't support location");
   }
 
+}
+
+const updateUserMarker = (userPosition) => {
+    if(!userMarker) {
+
+        userMarker = new google.maps.Marker({
+          map: map,
+          position: userPosition,
+          icon: arrowMode ? arrowIcon : boatIcon,
+          label: {
+            color: "#000",
+            fontFamily: "sans-serif",
+            fontSize: "16px",
+            text: playerName ? playerName : "DU",
+          }, 
+      }); 
+
+    } else {
+
+      if(userPosition)
+        userMarker.setPosition(userPosition);
+
+      if(arrowMode) {
+        let rotation = arrowDirection
+        
+        if(arrowTarget) {
+          // calculate rotation
+          // console.log("rotation for ", userPosition, arrowTarget, rotation)
+          rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget.value))
+        
+        }
+        arrowIcon.rotation = rotation;
+
+        userMarker.setIcon(arrowIcon);  
+      
+      } else {
+        
+        userMarker.setIcon(boatIcon);  
+      
+      }
+
+    }
+
+    if(userPosition)
+    updateMarkersPositionChange();
 }
 
 const initPositiontracking = () => {
@@ -310,6 +339,17 @@ afterUpdate(()=>{
       getUserPosition(true); // pan map to user once on open
     initPositiontracking();
   }
+})
+
+onMount(async ()=>{
+  playerName = await getPlayerVar({playerId, projectId}, "name")
+  let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
+  let boatTypes = await getProjectVar({projectId}, "boatTypes")
+  boatData = boatTypes[boatTypeKey]
+  console.log("boatData", boatData)
+  setupBoatIcon(boatData.image)
+  updateUserMarker()
+
 })
 
 onDestroy(()=>{

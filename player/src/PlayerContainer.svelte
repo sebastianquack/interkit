@@ -564,6 +564,8 @@
     {arrowMode}
     {arrowTarget}
     {arrowDirection}
+    {playerId}
+    {projectId}
   />
 
   {#if mainView == "archive"}
