@@ -290,7 +290,7 @@ const updateUserMarker = (userPosition) => {
         }
         arrowIcon.rotation = rotation;
 
-        userMarker.setIcon(arrowIcon);  
+        //userMarker.setIcon(arrowIcon);  
       
       } else {
         
