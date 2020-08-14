@@ -262,13 +262,13 @@ const updateUserMarker = (userPosition) => {
         userMarker = new google.maps.Marker({
           map: map,
           position: userPosition,
-          icon: arrowMode ? arrowIcon : boatIcon,
-          label: {
+          icon: arrowMode ? arrowIcon : (boatIcon ? boatIcon : dotIcon),
+          label: boatIcon ? {
             color: "#000",
             fontFamily: "sans-serif",
             fontSize: "16px",
             text: playerName ? playerName : "DU",
-          }, 
+          } : undefined, 
       }); 
 
     } else {
@@ -291,7 +291,7 @@ const updateUserMarker = (userPosition) => {
       
       } else {
         
-        userMarker.setIcon(boatIcon);  
+        userMarker.setIcon(boatIcon ? boatIcon : dotIcon);  
       
       }
 
