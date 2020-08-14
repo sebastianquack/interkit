@@ -84,6 +84,11 @@ exports.setVar = async (scope, refs, key, value) => {
       await RestHapi.create(RestHapi.models.variable, {...where, value}, Log);  
     // update
     } else {
+
+      if(variable.docs.length > 1) {
+        console.log("warning: multiple version of var ", key)
+      }
+
       await RestHapi.update(RestHapi.models.variable, variable.docs[0]._id, {
         value: value, stringValue: null 
       }, Log);  
@@ -123,6 +128,11 @@ exports.getVar = async (scope, refs, key) => {
     let variable = await RestHapi.list(RestHapi.models.variable, {$where: where}, Log);
 
     if(variable.docs.length == 1) {
+
+      if(variable.docs.length > 1) {
+        console.log("warning: multiple version of var ", key)
+      }
+
       return variable.docs[0].value;
     } else {
       return undefined;

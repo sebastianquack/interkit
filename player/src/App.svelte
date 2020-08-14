@@ -72,7 +72,7 @@
   {#if loading}
     <p style="margin: 16px">loading...</p>
   {:else}
-    <p style="margin: 16px">no project specified</p>v
+    <p style="margin: 16px">no project specified</p>
   {/if}
 
 {/if}
