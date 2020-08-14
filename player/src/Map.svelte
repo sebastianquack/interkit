@@ -278,7 +278,7 @@ const updateUserMarker = (userPosition) => {
     } else {
 
       if(!userMarker.map && map) {
-        marker.setMap(map);
+        userMarker.setMap(map);
       }
 
       if(userPosition)
