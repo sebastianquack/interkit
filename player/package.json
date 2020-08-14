@@ -26,6 +26,7 @@
     "@google/markerclustererplus": "^5.0.4",
     "debounce": "^1.2.0",
     "easyqrcodejs": "^3.7.1",
-    "marked": "^1.1.0"
+    "marked": "^1.1.0",
+    "mobile-device-detect": "^0.4.3"
   }
 }
