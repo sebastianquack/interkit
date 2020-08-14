@@ -40,7 +40,8 @@
   let arrowDirection = 0;
 
   let chatMessageHandler = null;
-  
+  let doInitialLoad = true;
+
   let mainView = "chat";
   let itemModal = null;
   
@@ -175,6 +176,7 @@
 
   const launch = (board) => {
     console.log("launching board", board.name, board._id)
+    doInitialLoad = true
     currentBoard = board;
   }
 
@@ -317,7 +319,14 @@
     if(nodeJSON.docs.length != 1) return;
 
     console.log("node found", nodeJSON);
-    
+
+    currentBoard = boardJSON.docs[0];
+    menuOpen = false;
+    itemModal = null;
+    dynamicModalPage = null;
+    doInitialLoad = false;
+    mainView = "chat"
+         
     let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
       method: "POST", 
       body: JSON.stringify({item, button})
@@ -333,12 +342,20 @@
   // process clicks from menu pages and archive
   const handleHtmlClicks = async (event, from) => {
     
-    console.log(event.target);
+    console.log(event.target.tagName);
 
-    dynamicModalParameter = event.target.getAttribute('data-parameter');
+    let target = event.target;
+
+    if(target.tagName != "BUTTON") {
+      target = event.target.parentNode;
+    }
+
+    console.log(target)
+
+    dynamicModalParameter = target.getAttribute('data-parameter');
     
     // button with moveTo effect
-    let node = event.target.getAttribute('data-node');
+    let node = target.getAttribute('data-node');
     if(node) {
       console.log("handling button press at node " + node)
       handleButton({node, parameter: dynamicModalParameter}, from)
@@ -346,7 +363,7 @@
     }
 
     // button to open board
-    let boardKey = event.target.getAttribute('data-board');
+    let boardKey = target.getAttribute('data-board');
     if(boardKey) {
       console.log("opening board " + boardKey)
       
@@ -360,21 +377,22 @@
       currentBoard = boardJSON.docs[0];
       menuOpen = false;
       dynamicModalPage = null;
+      mainView = "chat"
     }
     
     // button to open dynamicModal
-    let modalPage = event.target.getAttribute('data-modal-page');
+    let modalPage = target.getAttribute('data-modal-page');
     if(modalPage) {
       dynamicModalPage = modalPage
     }
 
     // button to reset player
-    if(event.target.getAttribute('data-special') == "resetPlayer") {
+    if(target.getAttribute('data-special') == "resetPlayer") {
       if(confirm("really?")) resetPlayerContainer()
     }
 
     // button to open debug panel
-    if(event.target.getAttribute('data-special') == "debugPanel") {
+    if(target.getAttribute('data-special') == "debugPanel") {
       debugPanelOpen = true;
     }
 
@@ -530,6 +548,7 @@
           {updatePlayerNodeId}
           {registerMessageHandler}
           {displayAlert}
+          {doInitialLoad}
           openChatView={()=>{openChat(); itemModal = null; dynamicModalPage = null;}}
           openDebugPanel={()=>debugPanelOpen=true}
         />
