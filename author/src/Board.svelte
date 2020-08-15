@@ -84,6 +84,7 @@
           name: currentBoardData.name,
           description: currentBoardData.description,
           listed: currentBoardData.listed,
+          order: currentBoardData.order,
           library: currentBoardData.library,
           project: projectId
         }])
@@ -106,6 +107,7 @@
           key: currentBoardData.key,
           name: currentBoardData.name,
           description: currentBoardData.description,
+          order: currentBoardData.order,
           listed: currentBoardData.listed,
           library: currentBoardData.library,
           project: projectId
@@ -152,6 +154,8 @@
     <input bind:value={currentBoardData.key} type="text"/><br>
     <label>display name</label>
     <input bind:value={currentBoardData.name} type="text"/><br>
+    <label>order</label>
+    <input bind:value={currentBoardData.order} type="number"/><br>
     <textarea bind:value={currentBoardData.description}></textarea><br>
     <label>listed</label> <input type="checkbox" bind:checked={currentBoardData.listed}/><br><br>
     <label>code library (executed every time a node runs):</label><br>
