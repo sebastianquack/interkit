@@ -6,7 +6,9 @@
   import { onMount } from 'svelte';
   import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
+  import WelcomeScreen from './WelcomeScreen.svelte'
   import "./app.css";
+  import "./player.css";
 
   let projectId;
   let playerId = null;
@@ -58,6 +60,12 @@
     loading = false;
   });
 
+  let bypassWelcome = false;
+
+  function setBypassWelcome(value) {
+    bypassWelcome = value
+  }
+
 </script>
 
 
@@ -65,7 +73,11 @@
 
 {#if projectId}   
 
+  {#if playerId || bypassWelcome }
     <PlayerContainer {projectId} {playerId} {googleReady}/>
+  {:else}
+    <WelcomeScreen {setBypassWelcome} />
+  {/if}
     
 {:else}
 
