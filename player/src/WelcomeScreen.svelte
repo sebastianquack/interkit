@@ -7,7 +7,7 @@
   export let setBypassWelcome;
 
   let visible = true
-  let counter = 1
+  let counter = 0
 
   const images = [
     "Yacht_412px_post.png",
@@ -21,17 +21,20 @@
 
   const randomImage = images[Math.floor(Math.random()*images.length)];
 
-  setTimeout(function(){
-    if (!isIOS) next();
-  },8000)
-
-  let interval = setInterval(() => {
-    counter++
-    if (counter > 4) clearInterval(interval)
-  },2000)
+  //setTimeout(function(){
+  //  next();
+  //},8000)
 
   function next() {
-    setBypassWelcome(true)
+    if (isIOS) {
+      let interval = setInterval(() => {
+        counter++
+        if (counter > 4) clearInterval(interval)
+      },1200)
+    }
+    else {
+      setBypassWelcome(true)
+    }
   }
 
 </script>
@@ -41,46 +44,44 @@
     <h1>Willkommen bei<br/><b>Botboot</b></h1>
   </div>
   <div class="content">
-    <div class="author">
-      Botboot
-    </div>
 
-    <div class="bubble">
-      Hey, Lust auf Gesellschaft?
-    </div>
+    {#if counter === 0}
+      <div class="author">
+        Botboot
+      </div>
 
-    {#if isIOS }
-      {#if counter > 1}
-        <div class="bubble" style="max-width: 65%">
-          Du musst mich auf deinem Homescreen installieren, damit ich funkioniere. <br />
-        </div>
-      {/if}
-
-      {#if counter > 2}
-        <div class="bubble" style="width: 100%;">
-          Öffne dieses Menü <br />
-          <center>
-            <img alt="Safari menu button" style="height: 2em" src="/ios-pwa-step1.png" />
-          </center>
-        </div>        
-      {/if}
-
-      {#if counter > 3}
-        <div class="bubble" style="width: 100%;">
-          scroll herunter und wähle
-          <center>
-            <img alt="Add to Home Screen" style="width: 100%" src="/ios-pwa-step2.png" />
-          </center>      
-        </div>
-      {/if}
-
-    {:else}
-
-    <div class="button" on:click={next}>
-      Start Botboot
-    </div>
-    
+      <div class="bubble">
+        Lust auf Gesellschaft?
+      </div>
     {/if}
+
+    {#if counter > 0}
+      <div class="bubble" style="max-width: 65%">
+        Du musst mich auf deinem Homescreen installieren, damit ich funkioniere. <br />
+      </div>
+    {/if}
+
+    {#if counter > 1}
+      <div class="bubble" style="width: 100%;">
+        Öffne unten dieses Menü <br />
+        <center>
+          <img alt="Safari menu button" style="height: 2em" src="/ios-pwa-step1.png" />
+        </center>
+        <br />
+        Scroll herunter und wähle
+        <center>
+          <img alt="Add to Home Screen" style="width: 100%" src="/ios-pwa-step2.png" />
+        </center>      
+      </div>
+    {/if}
+
+    {#if counter === 0}
+      <div class="button" on:click={next}>
+        Starte Botboot
+      </div>
+    {/if}
+    
+
 
   </div>
 </div>

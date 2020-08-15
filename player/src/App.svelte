@@ -3,6 +3,8 @@
 </svelte:head>
 
 <script>
+  import { isIOS } from 'mobile-device-detect';
+
   import { onMount } from 'svelte';
   import { getConfig } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
@@ -15,6 +17,9 @@
 
   let googleReady = false;
   let loading = true;
+
+  let bypassWelcome = false;
+  const isPWAonIOS = isIOS && window.navigator.standalone
 
   window.googleReady = ()=>{
     console.log("googleReady");
@@ -60,8 +65,6 @@
     loading = false;
   });
 
-  let bypassWelcome = false;
-
   function setBypassWelcome(value) {
     bypassWelcome = value
   }
@@ -73,7 +76,7 @@
 
 {#if projectId}   
 
-  {#if playerId || bypassWelcome }
+  {#if playerId || bypassWelcome || isPWAonIOS}
     <PlayerContainer {projectId} {playerId} {googleReady}/>
   {:else}
     <WelcomeScreen {setBypassWelcome} />
