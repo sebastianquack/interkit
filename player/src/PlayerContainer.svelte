@@ -97,7 +97,7 @@
     const res = await fetch("/api/boardLog?player=" + playerId + "&project=" + projectId + "&listed=true&$embed=board");
     const json = await res.json();
     console.log("loadListedBoards", json);
-    boards = json.docs.map(log=>log.board).filter(b=>b); 
+    boards = json.docs.map(log=>log.board).filter(b=>b).sort(function(a, b){return a.order-b.order}); 
   
     if(boards.length == 1) {
       console.log("project has only 1 listed board, using that", boards[0].name);

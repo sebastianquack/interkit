@@ -24,6 +24,10 @@ module.exports = function (mongoose) {
       type: Types.Boolean,
       default: false
     },
+    order: {
+      type: Types.Number,
+      default: 0
+    },
     startingNode: {
       type: Types.ObjectId,
       ref: "scriptNode"

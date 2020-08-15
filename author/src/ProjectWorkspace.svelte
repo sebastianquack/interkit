@@ -83,7 +83,7 @@
   const closeTab = ()=>{tabNavigation = "boards"}
 
   const loadBoardList = async ()=>{
-    const res = await fetch("/api/board?project=" + project._id);
+    const res = await fetch("/api/board?project=" + project._id /*+ "&$sort=order"*/);
     const json = await res.json();
     boards = json.docs;
     playerURL = await getConfig("playerURL");
