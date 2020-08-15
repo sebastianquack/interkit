@@ -116,8 +116,10 @@ article {
 
 .system {
   text-align: center;
-  margin-left: 25%;
-  margin-right: 25%;
+  margin-left: 15%;
+  margin-right: 15%;
+  //word-break: break-all;
+  hyphens: auto;
 }
 
 .system span {

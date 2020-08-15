@@ -534,7 +534,7 @@
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
     chatItems = chatItems;
-    console.log("sorted items", chatItems);
+    //console.log("sorted items", chatItems);
   }
 
 
@@ -823,16 +823,14 @@
 
 
   .scrollable {
-    margin: 0 0 12px 0;
+    margin: 0;
     overflow-y: auto;
     position: absolute;
     top: 0;
     bottom: 45px;
     left: 0;
     right: 0;
-    padding: 12px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 12px 12px 24px 12px;
   }
 
   .no-inputs {

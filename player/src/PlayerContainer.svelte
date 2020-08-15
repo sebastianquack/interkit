@@ -805,7 +805,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: auto;
     background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;
   }
 
