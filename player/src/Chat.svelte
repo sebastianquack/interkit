@@ -353,7 +353,7 @@
               scrollUp();
             }
           });
-        }, 500);
+        }, 2000);
     }
 
     // show optionsArray
