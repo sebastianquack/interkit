@@ -66,11 +66,7 @@ module.exports = {
 			//	pathRewrite: { '.*': '' }
 			//}
 		},
-		historyApiFallback: {
-			rewrites: [
-				{ from: /\/player/, to: '/' }
-			]
-		},
+		historyApiFallback: true,
 		//publicPath: "/public/",
   },
 };

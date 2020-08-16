@@ -31,29 +31,20 @@
       projectId = defaultProjectId;
     }
 
-    let playerIdCandidate = null;
+    // get player from localStorage
+    const playerIdCandidate = await localStorage.getItem('playerId')
 
-    if(location.pathname.includes("player/")) {
-      let parts = location.pathname.split("/")
-      if(parts.length == 4) {
-        playerIdCandidate = parts[2] // playerId
-        console.log("found playerId in url path", playerId)
-      }
-    }
-
-    playerId = await findOrCreatePlayer(playerIdCandidate); // create or find player
+    // create or find player
+    playerId = await findOrCreatePlayer(playerIdCandidate);
 
     if (playerId === playerIdCandidate) {
+      // player was valid and known
       bypassWelcome = true
+    } else {
+      // new player -> save
+      await localStorage.setItem('playerId', playerId)
+      loading = false;
     }
-
-    console.log(playerIdCandidate + " " + playerId + " " + projectId)
-
-    //const specialPort = location.port !== 80 || location.post !== 443
-    //const targetURL = `${location.protocol}//${location.hostname}${specialPort && ':' + location.port}
-    history.replaceState({interkit_player_generated: true}, document.title, `/player/${playerId}`);
-
-    loading = false;
   });
 
   function setBypassWelcome(value) {
@@ -65,24 +56,12 @@
 
 <div class="app-container">
 
-{#if projectId}   
-
   {#if bypassWelcome}
     <PlayerContainer {projectId} {playerId} {googleReady}/>
   {:else}
-    <WelcomeScreen {setBypassWelcome} />
+    <WelcomeScreen {setBypassWelcome} message={loading ? "loading..." : (projectId ? "" : "no project specified")}/>
   {/if}
-    
-{:else}
-
-  {#if loading}
-    <p style="margin: 16px">loading...</p>
-  {:else}
-    <p style="margin: 16px">no project specified</p>
-  {/if}
-
-{/if}
-
+      
 </div>
 
 

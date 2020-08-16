@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   export let setBypassWelcome;
+  export let message;
 
   let visible = true
   let counter = 0
@@ -29,9 +30,11 @@
 </script>
 
 <div class="container" style={`background-image: url(/assets/boats/${randomImage})`}>
+
   <div class="header">
     <h1>Willkommen bei<br/><b>Botboot</b></h1>
   </div>
+
   <div class="content">
 
     <div class="author">
@@ -48,6 +51,8 @@
 
 
   </div>
+
+  <aside class="message">{message}</aside>
 </div>
 
 <style type="text/scss">
@@ -64,6 +69,14 @@
     padding: 12px 12px 0 12px;
     display: flex;
     flex-direction: column;
+  }
+
+  .message {
+    position: fixed;
+    top: 12px;
+    font-size: 12px;
+    line-height: 12px;
+    text-align: center;
   }
 
   .header {
