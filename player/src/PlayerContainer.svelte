@@ -151,13 +151,6 @@
     let itemsJson = await itemsRes.json();
     if(itemsJson.docs) {
       let locations = itemsJson.docs.filter(m=>m.type == "location");
-
-      locations.forEach(async (l)=>{
-        if(l.value.sound) {
-          l.value.audioSrc = await getFilenameForFilekey(l.value.sound)  
-        }
-      })
-
       markerItems = locations;
     }
     else 
@@ -172,6 +165,17 @@
       console.log(itemsJson.docs);
       documentItems = itemsJson.docs.filter(m=>m.type == "document");
     }
+  }
+
+  const loadItem = async (key) => {
+    console.log("loading item ", key);
+    let itemsRes = await fetch("/api/item?key=" + key + "&project=" + projectId);
+    let itemsJson = await itemsRes.json();
+    if(itemsJson.docs) {
+      console.log(itemsJson.docs);
+      return itemsJson.docs[0];
+    }
+    return null;
   }
 
   const launch = (board) => {
@@ -384,9 +388,9 @@
     }
     
     // button to open dynamicModal
-    let modalPage = target.getAttribute('data-modal-page');
-    if(modalPage) {
-      dynamicModalPage = modalPage
+    let itemModalKey = target.getAttribute('data-item-modal');
+    if(itemModalKey) {
+      itemModal = await loadItem(itemModalKey)
     }
 
     // button to reset player
@@ -397,6 +401,7 @@
         if(confirm("really?")) resetClient(true)
       }      
     }
+
 
     // button to reset client
     if(target.getAttribute('data-special') == "reloadClient") {

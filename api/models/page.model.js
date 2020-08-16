@@ -45,6 +45,7 @@ async function listWithVars(server, model, options, logger) {
           project: await db.getVars("project", {project: request.query.project}),
           projectId: request.query.project,
           items: await db.getItemsForPlayer(request.query.player),
+          documents: await db.getItemsForPlayer(request.query.player, {type: "document"}),
           parameter: request.query.parameter,
           playerURL: await db.getConfig("playerURL")
         }

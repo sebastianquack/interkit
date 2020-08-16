@@ -1,6 +1,9 @@
 <script>
 
   import {joinNode} from '../../shared/socketClient.js';
+  import {getFilenameForFilekey} from '../../shared/util.js';
+
+  import {onMount} from 'svelte'
 
   export let onClose;
   export let visible;
@@ -19,6 +22,11 @@
       setTimeout(()=>{ready = true}, 200)
     }
   }
+
+  onMount(async()=>{
+    item.value.audioSrc = await getFilenameForFilekey(item.value.sound)
+    console.log(item.value.audioSrc)
+  })
 
   const debounce = require('debounce');
 

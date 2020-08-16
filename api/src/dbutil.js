@@ -575,8 +575,8 @@ exports.getItem = async (key, project) => {
 }
 
 // retrieves a players items
-exports.getItemsForPlayer = async (playerId) => {
-  let items = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", {}, Log);
+exports.getItemsForPlayer = async (playerId, query = {}) => {
+  let items = await RestHapi.getAll(RestHapi.models.player, playerId, RestHapi.models.item, "items", query, Log);
   //console.log("retrieved items for player", playerId, items.docs);
   return items.docs;
 }
