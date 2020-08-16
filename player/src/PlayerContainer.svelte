@@ -174,6 +174,17 @@
     }
   }
 
+  const loadItem = async (key) => {
+    console.log("loading item ", key);
+    let itemsRes = await fetch("/api/item?key=" + key + "&project=" + projectId);
+    let itemsJson = await itemsRes.json();
+    if(itemsJson.docs) {
+      console.log(itemsJson.docs);
+      return itemsJson.docs[0];
+    }
+    return null;
+  }
+
   const launch = (board) => {
     console.log("launching board", board.name, board._id)
     doInitialLoad = true
@@ -391,9 +402,10 @@
       dynamicModalPage = modalPage
     }
 
-    // button to reset player
-    if(target.getAttribute('data-special') == "resetPlayer") {
-      if(confirm("really?")) resetPlayerContainer()
+    // button to open dynamicModal
+    let itemModalKey = target.getAttribute('data-item-modal');
+    if(itemModalKey) {
+      itemModal = await loadItem(itemModalKey)
     }
 
     // button to reset client
