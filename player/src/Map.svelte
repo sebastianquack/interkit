@@ -25,51 +25,18 @@ let markers = [];
 let userMarker;
 let markerCluster;
 let positionTrackerInterval;
-let arrowIcon;
-let dotIcon;
 let boatIcon;
 
 let userPosition = null;
 let locationIssue = false;
-let playerName = null;
+let boatName = null;
 let boatData = {};
 
-const setupBoatIcon = (markerAsset) => {
-
-boatIcon = {
-      url: "/assets/" + markerAsset,
-      scaledSize: {height: 50, width: 50}, // scaled size
-      origin: {x:0, y:0}, // origin
-      anchor: {x:25, y:25}, // anchor
-      labelOrigin: new google.maps.Point(25, 60)
-  }
-  console.log("set boatIcon to", boatIcon)
-}
+let permissionState = "init"
 
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
-
-    arrowIcon = {
-      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-      fillColor: '#000',
-      fillOpacity: 0.6,
-      strokeColor: '#000',
-      strokeOpacity: 0.9,
-      strokeWeight: 1,
-      scale: 6,
-      rotation: 0
-    }
-
-    dotIcon = {
-      path: google.maps.SymbolPath.CIRCLE,
-      fillColor: '#000',
-      fillOpacity: 0.6,
-      strokeColor: '#000',
-      strokeOpacity: 0.9,
-      strokeWeight: 1,
-      scale: 6,
-    }
 
     let defaultPos = {lat: await getConfig("defaultLat"), lng: await getConfig("defaultLng")};
     let defaultZoom = await getConfig("defaultZoom");
@@ -222,89 +189,48 @@ const updateMarkersPositionChange = () => {
 
 const getUserPosition = (pan = false)=> {
 
-  // Try HTML5 geolocation
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((position)=> {
-      userPosition = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-      locationIssue = false
-
-      if(pan) {
-        map.panTo(userPosition);
-        map.setZoom(16);
-      }
-
-      updateUserMarker(userPosition)
-
-    }, ()=> {
-      if(!locationIssue) {
-        alert("couldn't get location");
-        locationIssue = true;  
-      }
-      
-    }, {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0
-    });
-  } else {
-    alert("browser doesn't support location");
+  if(permissionState == "prompt") {
+    if(confirm("Gleich wird dich dein Gerät fragen, ob du deine Geoposition teilen willst. Stimme zu, um BOTBOOT im vollem Umfang spielen zu können.")) {
+      permissionState = "ok-ask";
+    } else {
+      spermissionState = "do-not-ask"
+    }
   }
 
-}
+  if(permissionState == "ok-ask" || permissionState == "granted") {
+    // Try HTML5 geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position)=> {
+        userPosition = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        locationIssue = false
 
-const updateUserMarker = (userPosition) => {
-
-  console.log("updateUserMarker", userMarker)
-
-    if(!userMarker) {
-
-        userMarker = new google.maps.Marker({
-          map: map,
-          position: userPosition,
-          icon: boatIcon ? boatIcon : dotIcon,
-          label: boatIcon ? {
-            color: "#000",
-            fontFamily: "sans-serif",
-            fontSize: "16px",
-            text: playerName ? playerName : "DU",
-          } : undefined, 
-      }); 
-
-    } else {
-
-      if(!userMarker.map && map) {
-        userMarker.setMap(map);
-      }
-
-      if(userPosition)
-        userMarker.setPosition(userPosition);
-
-      if(arrowMode) {
-        let rotation = arrowDirection
-        
-        if(arrowTarget) {
-          // calculate rotation
-          // console.log("rotation for ", userPosition, arrowTarget, rotation)
-          rotation = google.maps.geometry.spherical.computeHeading(new google.maps.LatLng(userPosition), new google.maps.LatLng(arrowTarget.value))
-        
+        if(pan) {
+          map.panTo(userPosition);
+          map.setZoom(16);
         }
-        arrowIcon.rotation = rotation;
 
-        //userMarker.setIcon(arrowIcon);  
-      
-      } else {
+        updateUserMarker(userPosition)
+
+      }, ()=> {
+        if(!locationIssue) {
+          alert("couldn't get location");
+          locationIssue = true;  
+        }
         
-        userMarker.setIcon(boatIcon ? boatIcon : dotIcon);  
-      
-      }
-
+      }, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      });
+    } else {
+      alert("browser doesn't support location");
     }
 
-    if(userPosition)
-    updateMarkersPositionChange();
+  }
+
 }
 
 const initPositiontracking = () => {
@@ -341,24 +267,86 @@ afterUpdate(()=>{
   if(map && visible) {
     if(!markerCluster)
       initMarkers();
-    if(!positionTrackerInterval)
-      getUserPosition(true); // pan map to user once on open
+    /*if(!positionTrackerInterval)
+      getUserPosition(true); // pan map to user once on open*/
     initPositiontracking();
   }
 })
 
-onMount(async ()=>{
-  playerName = await getPlayerVar({playerId, projectId}, "boatName")
-  let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
-  let boatTypes = await getProjectVar({projectId}, "boatTypes")
-  console.log("boatTypes", boatTypes, boatTypeKey)
-  boatData = boatTypes[boatTypeKey]
-  console.log("boatData", boatData)
-  setupBoatIcon(boatData.markerAsset)
+function handlePermission() {
+  navigator.permissions.query({name:'geolocation'}).then(function(result) {
+    permissionState = result.state;
+    report(result.state);
+    result.onchange = function() {
+      report(result.state);
+    }
+  });
+}
 
-  updateUserMarker()
+function report(state) {
+  console.log('geo permission: ' + state);
+}
 
+onMount(()=>{
+  handlePermission();  
 })
+
+const updateUserMarker = async (userPosition) => {
+
+  console.log("updateUserMarker")
+
+  if(!userMarker) {
+
+    boatName = await getPlayerVar({playerId, projectId}, "boatName")
+
+    if(boatName) {
+      let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
+      let boatTypes = await getProjectVar({projectId}, "boatTypes")
+      console.log("boatTypes", boatTypes, boatTypeKey)
+      boatData = boatTypes[boatTypeKey]
+      console.log("boatData", boatData)
+
+      if(boatData) {
+      
+        boatIcon = {
+            url: "/assets/" + boatData.markerAsset,
+            scaledSize: {height: 50, width: 50}, // scaled size
+            origin: {x:0, y:0}, // origin
+            anchor: {x:25, y:25}, // anchor
+            labelOrigin: new google.maps.Point(25, 60)
+        }
+        console.log("set boatIcon to", boatIcon)
+
+        // recreate userMarker if we don#'t have it yet
+        if(!userMarker && map) {
+          userMarker = new google.maps.Marker({
+            map: map,
+            position: userPosition,
+            icon: boatIcon,
+            label: boatIcon ? {
+              color: "#000",
+              fontFamily: "sans-serif",
+              fontSize: "16px",
+              text: boatName ? boatName : "DU",
+            } : undefined, 
+          });  
+        }
+        console.log(userMarker)
+
+      }
+    }
+      
+  }
+
+  if(userMarker && userPosition) {
+    userMarker.setPosition(userPosition);
+  }
+
+  if(userPosition) {
+    updateMarkersPositionChange();
+  }
+}
+
 
 onDestroy(()=>{
   console.log("onDestroy")
