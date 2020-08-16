@@ -31,23 +31,17 @@
       projectId = defaultProjectId;
     }
 
-    let playerIdCandidate = null;
+    // get player from URL, look for e.g. player/5f3945d16bf7b01450282cde
+    const match = location.pathname.match(/player\/([a-z0-9]+)/)
+    const playerIdCandidate = (match!==null && match.length == 2 ? match[1] : null)
 
-    if(location.pathname.includes("player/")) {
-      let parts = location.pathname.split("/")
-      if(parts.length == 4) {
-        playerIdCandidate = parts[2] // playerId
-        console.log("found playerId in url path", playerId)
-      }
-    }
-
-    playerId = await findOrCreatePlayer(playerIdCandidate); // create or find player
+    // create or find player
+    playerId = await findOrCreatePlayer(playerIdCandidate);
 
     if (playerId === playerIdCandidate) {
+      // player from URL was valid and known
       bypassWelcome = true
     }
-
-    console.log(playerIdCandidate + " " + playerId + " " + projectId)
 
     //const specialPort = location.port !== 80 || location.post !== 443
     //const targetURL = `${location.protocol}//${location.hostname}${specialPort && ':' + location.port}
