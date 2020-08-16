@@ -237,10 +237,9 @@
    //   mainView = "chat";
    // }
 
-  const resetClient = (resetURL = false) => {
-    localStorage.clear();
-    if (resetURL) {
-      history.replaceState({interkit_player_generated: true}, document.title, `/`);
+  const resetClient = (resetPlayer = false) => {
+    if (resetPlayer) {
+      localStorage.removeItem("playerId");
     }
     location.reload();
   }
@@ -395,11 +394,7 @@
 
     // button to reset player
     if(target.getAttribute('data-special') == "resetPlayer") {
-      if (authoring) {
-        alert("only available outside of authoring")
-      } else {
-        if(confirm("really?")) resetClient(true)
-      }      
+      if(confirm("really?")) resetClient(true)
     }
 
 
