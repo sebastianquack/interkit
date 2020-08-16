@@ -151,13 +151,6 @@
     let itemsJson = await itemsRes.json();
     if(itemsJson.docs) {
       let locations = itemsJson.docs.filter(m=>m.type == "location");
-
-      locations.forEach(async (l)=>{
-        if(l.value.sound) {
-          l.value.audioSrc = await getFilenameForFilekey(l.value.sound)  
-        }
-      })
-
       markerItems = locations;
     }
     else 
