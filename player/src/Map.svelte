@@ -93,7 +93,7 @@ const createMarker = (item) => {
   let placePosition = {lat: item.value.lat, lng: item.value.lng};
 
   let icon = {
-    url: item.value.markerAsset ? "/assets/" + item.value.markerAsset : undefined, // url
+    url: item.value.markerAsset ? "/assets/" + item.value.markerAsset : "/marker.png", // url
     scaledSize: {height: 64, width: 64}, // scaled size
     origin: {x:0, y:0}, // origin
     anchor: {x:32, y:64}, // anchor
