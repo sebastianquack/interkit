@@ -335,7 +335,7 @@
     if(item.message) {
 
       isSystemMessage = message.system || message.label == "system";
-      let showPlaceholder = !(isSystemMessage || item.params.option);
+      let showPlaceholder = false // !(isSystemMessage || item.params.option);
 
       // push item into displayed chat
       chatItems.push({...item, 
@@ -345,15 +345,17 @@
       sortItems();
       scrollUp();
 
+      // chat writing indicator deactivated until we have nicer handling of timing
       if(showPlaceholder)
-        setTimeout(() => {
+          setTimeout(() => {
           chatItems.forEach((comment, index)=> {
             if(chatItems[index].placeholder) {
               chatItems[index].placeholder = false;
               scrollUp();
             }
           });
-        }, 2000);
+        }, 200); 
+         
     }
 
     // show optionsArray
