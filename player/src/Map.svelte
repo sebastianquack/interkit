@@ -95,7 +95,7 @@ const createMarker = (item) => {
   let defaultIconImage = "/assets/items/Insel_See_64px_post.png"
 
   let icon = {
-    url: item.value.imageAsset ? "/assets/items/" + item.value.imageAsset + "_64px_post.png" : defaultIconImage, // url
+    url: item.value.imageAsset ? "/assets/" + item.value.imageAsset : defaultIconImage, // url
     scaledSize: {height: 64, width: 64}, // scaled size
     origin: {x:0, y:0}, // origin
     anchor: {x:32, y:64}, // anchor
@@ -350,7 +350,7 @@ afterUpdate(()=>{
 })
 
 onMount(async ()=>{
-  playerName = await getPlayerVar({playerId, projectId}, "name")
+  playerName = await getPlayerVar({playerId, projectId}, "boatName")
   let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
   let boatTypes = await getProjectVar({projectId}, "boatTypes")
   console.log("boatTypes", boatTypes, boatTypeKey)
