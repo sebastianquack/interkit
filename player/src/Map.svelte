@@ -34,10 +34,10 @@ let locationIssue = false;
 let playerName = null;
 let boatData = {};
 
-const setupBoatIcon = (image) => {
+const setupBoatIcon = (markerAsset) => {
 
 boatIcon = {
-      url: "/assets/items/" + image + "_64px_post.png",
+      url: "/assets/" + markerAsset,
       scaledSize: {height: 50, width: 50}, // scaled size
       origin: {x:0, y:0}, // origin
       anchor: {x:25, y:25}, // anchor
@@ -92,10 +92,8 @@ const createMarker = (item) => {
 
   let placePosition = {lat: item.value.lat, lng: item.value.lng};
 
-  let defaultIconImage = "/assets/items/Insel_See_64px_post.png"
-
   let icon = {
-    url: item.value.imageAsset ? "/assets/items/" + item.value.imageAsset + "_64px_post.png" : defaultIconImage, // url
+    url: item.value.markerAsset ? "/assets/" + item.value.markerAsset : undefined, // url
     scaledSize: {height: 64, width: 64}, // scaled size
     origin: {x:0, y:0}, // origin
     anchor: {x:32, y:64}, // anchor
@@ -350,13 +348,13 @@ afterUpdate(()=>{
 })
 
 onMount(async ()=>{
-  playerName = await getPlayerVar({playerId, projectId}, "name")
+  playerName = await getPlayerVar({playerId, projectId}, "boatName")
   let boatTypeKey = await getPlayerVar({playerId, projectId}, "boatType")
   let boatTypes = await getProjectVar({projectId}, "boatTypes")
   console.log("boatTypes", boatTypes, boatTypeKey)
   boatData = boatTypes[boatTypeKey]
   console.log("boatData", boatData)
-  setupBoatIcon(boatData.image)
+  setupBoatIcon(boatData.markerAsset)
 
   updateUserMarker()
 

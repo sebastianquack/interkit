@@ -1,0 +1,96 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="path-1-outside-1" maskUnits="userSpaceOnUse" x="0.5" y="0.5" width="47" height="47" fill="black">
+<rect fill="white" x="0.5" y="0.5" width="47" height="47"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 1.5H19.5H22.5H25.5H28.5H31.5V4.5H34.5H37.5V7.5H40.5V10.5H43.5V13.5V16.5H46.5V19.5V22.5V25.5V28.5V31.5H43.5V34.5V37.5H40.5V40.5H37.5V43.5H34.5H31.5V46.5H28.5H25.5H22.5H19.5H16.5V43.5H13.5H10.5V40.5H7.5V37.5H4.5V34.5V31.5H1.5V28.5V25.5V22.5V19.5V16.5H4.5V13.5V10.5H7.5V7.5H10.5V4.5H13.5H16.5V1.5Z"/>
+</mask>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 1.5H19.5H22.5H25.5H28.5H31.5V4.5H34.5H37.5V7.5H40.5V10.5H43.5V13.5V16.5H46.5V19.5V22.5V25.5V28.5V31.5H43.5V34.5V37.5H40.5V40.5H37.5V43.5H34.5H31.5V46.5H28.5H25.5H22.5H19.5H16.5V43.5H13.5H10.5V40.5H7.5V37.5H4.5V34.5V31.5H1.5V28.5V25.5V22.5V19.5V16.5H4.5V13.5V10.5H7.5V7.5H10.5V4.5H13.5H16.5V1.5Z" fill="#EAFEFF"/>
+<path d="M16.5 1.5V1.25H16.25V1.5H16.5ZM31.5 1.5H31.75V1.25H31.5V1.5ZM31.5 4.5H31.25V4.75H31.5V4.5ZM37.5 4.5H37.75V4.25H37.5V4.5ZM37.5 7.5H37.25V7.75H37.5V7.5ZM40.5 7.5H40.75V7.25H40.5V7.5ZM40.5 10.5H40.25V10.75H40.5V10.5ZM43.5 10.5H43.75V10.25H43.5V10.5ZM43.5 16.5H43.25V16.75H43.5V16.5ZM46.5 16.5H46.75V16.25H46.5V16.5ZM46.5 31.5V31.75H46.75V31.5H46.5ZM43.5 31.5V31.25H43.25V31.5H43.5ZM43.5 37.5V37.75H43.75V37.5H43.5ZM40.5 37.5V37.25H40.25V37.5H40.5ZM40.5 40.5V40.75H40.75V40.5H40.5ZM37.5 40.5V40.25H37.25V40.5H37.5ZM37.5 43.5V43.75H37.75V43.5H37.5ZM31.5 43.5V43.25H31.25V43.5H31.5ZM31.5 46.5V46.75H31.75V46.5H31.5ZM16.5 46.5H16.25V46.75H16.5V46.5ZM16.5 43.5H16.75V43.25H16.5V43.5ZM10.5 43.5H10.25V43.75H10.5V43.5ZM10.5 40.5H10.75V40.25H10.5V40.5ZM7.5 40.5H7.25V40.75H7.5V40.5ZM7.5 37.5H7.75V37.25H7.5V37.5ZM4.5 37.5H4.25V37.75H4.5V37.5ZM4.5 31.5H4.75V31.25H4.5V31.5ZM1.5 31.5H1.25V31.75H1.5V31.5ZM1.5 16.5V16.25H1.25V16.5H1.5ZM4.5 16.5V16.75H4.75V16.5H4.5ZM4.5 10.5V10.25H4.25V10.5H4.5ZM7.5 10.5V10.75H7.75V10.5H7.5ZM7.5 7.5V7.25H7.25V7.5H7.5ZM10.5 7.5V7.75H10.75V7.5H10.5ZM10.5 4.5V4.25H10.25V4.5H10.5ZM16.5 4.5V4.75H16.75V4.5H16.5ZM19.5 1.25H16.5V1.75H19.5V1.25ZM22.5 1.25H19.5V1.75H22.5V1.25ZM25.5 1.25H22.5V1.75H25.5V1.25ZM28.5 1.25H25.5V1.75H28.5V1.25ZM31.5 1.25H28.5V1.75H31.5V1.25ZM31.75 4.5V1.5H31.25V4.5H31.75ZM34.5 4.25H31.5V4.75H34.5V4.25ZM37.5 4.25H34.5V4.75H37.5V4.25ZM37.75 7.5V4.5H37.25V7.5H37.75ZM40.5 7.25H37.5V7.75H40.5V7.25ZM40.75 10.5V7.5H40.25V10.5H40.75ZM43.5 10.25H40.5V10.75H43.5V10.25ZM43.75 13.5V10.5H43.25V13.5H43.75ZM43.75 16.5V13.5H43.25V16.5H43.75ZM46.5 16.25H43.5V16.75H46.5V16.25ZM46.75 19.5V16.5H46.25V19.5H46.75ZM46.75 22.5V19.5H46.25V22.5H46.75ZM46.75 25.5V22.5H46.25V25.5H46.75ZM46.75 28.5V25.5H46.25V28.5H46.75ZM46.75 31.5V28.5H46.25V31.5H46.75ZM43.5 31.75H46.5V31.25H43.5V31.75ZM43.75 34.5V31.5H43.25V34.5H43.75ZM43.75 37.5V34.5H43.25V37.5H43.75ZM40.5 37.75H43.5V37.25H40.5V37.75ZM40.75 40.5V37.5H40.25V40.5H40.75ZM37.5 40.75H40.5V40.25H37.5V40.75ZM37.75 43.5V40.5H37.25V43.5H37.75ZM34.5 43.75H37.5V43.25H34.5V43.75ZM31.5 43.75H34.5V43.25H31.5V43.75ZM31.75 46.5V43.5H31.25V46.5H31.75ZM28.5 46.75H31.5V46.25H28.5V46.75ZM25.5 46.75H28.5V46.25H25.5V46.75ZM22.5 46.75H25.5V46.25H22.5V46.75ZM19.5 46.75H22.5V46.25H19.5V46.75ZM16.5 46.75H19.5V46.25H16.5V46.75ZM16.25 43.5V46.5H16.75V43.5H16.25ZM13.5 43.75H16.5V43.25H13.5V43.75ZM10.5 43.75H13.5V43.25H10.5V43.75ZM10.25 40.5V43.5H10.75V40.5H10.25ZM7.5 40.75H10.5V40.25H7.5V40.75ZM7.25 37.5V40.5H7.75V37.5H7.25ZM4.5 37.75H7.5V37.25H4.5V37.75ZM4.25 34.5V37.5H4.75V34.5H4.25ZM4.25 31.5V34.5H4.75V31.5H4.25ZM1.5 31.75H4.5V31.25H1.5V31.75ZM1.25 28.5V31.5H1.75V28.5H1.25ZM1.25 25.5V28.5H1.75V25.5H1.25ZM1.25 22.5V25.5H1.75V22.5H1.25ZM1.25 19.5V22.5H1.75V19.5H1.25ZM1.25 16.5V19.5H1.75V16.5H1.25ZM4.5 16.25H1.5V16.75H4.5V16.25ZM4.25 13.5V16.5H4.75V13.5H4.25ZM4.25 10.5V13.5H4.75V10.5H4.25ZM7.5 10.25H4.5V10.75H7.5V10.25ZM7.25 7.5V10.5H7.75V7.5H7.25ZM10.5 7.25H7.5V7.75H10.5V7.25ZM10.25 4.5V7.5H10.75V4.5H10.25ZM13.5 4.25H10.5V4.75H13.5V4.25ZM16.5 4.25H13.5V4.75H16.5V4.25ZM16.25 1.5V4.5H16.75V1.5H16.25Z" fill="#2B100D" mask="url(#path-1-outside-1)"/>
+<g clip-path="url(#clip0)">
+<rect x="18" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="33" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="31.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="19.5" y="27" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="28.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="34.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="19.5" y="36" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="18" y="37.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="12" y="37.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="13.5" y="37.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="15" y="37.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="16.5" y="37.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="10.5" y="36" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="9" y="34.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="9" y="33" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="9" y="28.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="10.5" y="27" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="9" y="31.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="9" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="12" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="12" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="13.5" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="13.5" y="28.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="15" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="16.5" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+</g>
+<g clip-path="url(#clip1)">
+<rect x="25.5" y="13.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="16.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="25.5" y="19.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="15" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="18" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="21" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="22.5" y="21" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="24" y="21" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="18" y="18" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="18" y="16.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="18" y="15" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="19.5" y="13.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="19.5" y="19.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="21" y="12" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="22.5" y="12" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="24" y="12" width="1.5" height="1.5" fill="#FF7758"/>
+</g>
+<g clip-path="url(#clip2)">
+<rect x="33" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="33" y="27" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="33" y="28.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="25.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="27" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="27" y="28.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="28.5" y="24" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="28.5" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="30" y="24" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="30" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="31.5" y="24" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="31.5" y="30" width="1.5" height="1.5" fill="#FF7758"/>
+</g>
+<g clip-path="url(#clip3)">
+<rect x="37.5" y="10.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="37.5" y="12" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="37.5" y="13.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="31.5" y="10.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="31.5" y="12" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="31.5" y="13.5" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="33" y="9" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="33" y="15" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="34.5" y="9" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="34.5" y="15" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="36" y="9" width="1.5" height="1.5" fill="#FF7758"/>
+<rect x="36" y="15" width="1.5" height="1.5" fill="#FF7758"/>
+</g>
+<defs>
+<clipPath id="clip0">
+<rect width="13.5" height="13.5" fill="white" transform="translate(9 25.5)"/>
+</clipPath>
+<clipPath id="clip1">
+<rect width="10.5" height="10.5" fill="white" transform="translate(18 12)"/>
+</clipPath>
+<clipPath id="clip2">
+<rect width="7.5" height="7.5" fill="white" transform="translate(27 24)"/>
+</clipPath>
+<clipPath id="clip3">
+<rect width="7.5" height="7.5" fill="white" transform="translate(31.5 9)"/>
+</clipPath>
+</defs>
+</svg>
