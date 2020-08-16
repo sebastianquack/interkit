@@ -92,10 +92,8 @@ const createMarker = (item) => {
 
   let placePosition = {lat: item.value.lat, lng: item.value.lng};
 
-  let defaultIconImage = "/assets/items/Insel_See_64px_post.png"
-
   let icon = {
-    url: item.value.imageAsset ? "/assets/" + item.value.imageAsset : defaultIconImage, // url
+    url: item.value.imageAsset ? "/assets/" + item.value.imageAsset : undefined, // url
     scaledSize: {height: 64, width: 64}, // scaled size
     origin: {x:0, y:0}, // origin
     anchor: {x:32, y:64}, // anchor
