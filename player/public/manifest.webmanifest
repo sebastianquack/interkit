@@ -2,6 +2,7 @@
   "background_color": "white",
   "description": "BOTBOOT",
   "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "botboot_icon.png",
