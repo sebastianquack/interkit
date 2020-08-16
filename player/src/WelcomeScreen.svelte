@@ -1,9 +1,6 @@
 <script>
   import { onMount } from 'svelte';
 
-  import { isIOS } from 'mobile-device-detect';
-  //let isIOS = true
-
   export let setBypassWelcome;
 
   let visible = true
@@ -26,15 +23,7 @@
   //},8000)
 
   function next() {
-    if (isIOS) {
-      let interval = setInterval(() => {
-        counter++
-        if (counter > 4) clearInterval(interval)
-      },1200)
-    }
-    else {
-      setBypassWelcome(true)
-    }
+    setBypassWelcome(true)
   }
 
 </script>
@@ -45,42 +34,17 @@
   </div>
   <div class="content">
 
-    {#if counter === 0}
-      <div class="author">
-        Botboot
-      </div>
+    <div class="author">
+      Botboot
+    </div>
 
-      <div class="bubble">
-        Lust auf Gesellschaft?
-      </div>
-    {/if}
+    <div class="bubble">
+      Lust auf Gesellschaft?
+    </div>
 
-    {#if counter > 0}
-      <div class="bubble" style="max-width: 65%">
-        Du musst mich auf deinem Homescreen installieren, damit ich funkioniere. <br />
-      </div>
-    {/if}
-
-    {#if counter > 1}
-      <div class="bubble" style="width: 100%;">
-        Öffne unten dieses Menü <br />
-        <center>
-          <img alt="Safari menu button" style="height: 2em" src="/ios-pwa-step1.png" />
-        </center>
-        <br />
-        Scroll herunter und wähle
-        <center>
-          <img alt="Add to Home Screen" style="width: 100%" src="/ios-pwa-step2.png" />
-        </center>      
-      </div>
-    {/if}
-
-    {#if counter === 0}
-      <div class="button" on:click={next}>
-        Starte Botboot
-      </div>
-    {/if}
-    
+    <div class="button" on:click={next}>
+      Starte Botboot
+    </div>    
 
 
   </div>

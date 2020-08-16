@@ -4,7 +4,7 @@
 
   import {token, boardCodeChanged } from './stores.js';
   //import { initSocket, registerPlayer } from '../../shared/socketClient.js';
-  import { getConfig, /*findOrCreatePlayer, refreshPlayerId*/ } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer /*, refreshPlayerId*/ } from '../../shared/util.js';
 
   import Board from './Board.svelte';
   import EditNode from './EditNode.svelte';
@@ -20,6 +20,10 @@
   export let project;
   export let close;
   export let googleReady;
+
+  const createAndAttachNewPlayer = async ()=> {
+      playerId = await findOrCreatePlayer()
+  }
 
   let editNodeId = null;
   const setEditNodeId = async (nodeId)=>{
@@ -309,6 +313,12 @@ function onReceive(input) {
   </div>
 
   <div slot="playtest-area" class="h100">
+
+    {#if !playerId}
+      <button on:click={createAndAttachNewPlayer}>create and attach fresh player</button>
+
+    {:else}
+
     <PlayerContainer
       projectId={project._id}
       bind:playerId={playerId}
@@ -317,6 +327,8 @@ function onReceive(input) {
       {updatePlayerNodeId}
       {googleReady}
     />
+
+    {/if}
   </div>
 
 </WorkspaceFrame>

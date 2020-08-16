@@ -60,7 +60,17 @@ module.exports = {
 	devtool: prod ? false: 'source-map',
   devServer: {
     proxy: {
-      '/api': 'http://localhost:9000',
-    },
+			'/api': 'http://localhost:9000',
+			//'/player': {
+			//	target: '/',
+			//	pathRewrite: { '.*': '' }
+			//}
+		},
+		historyApiFallback: {
+			rewrites: [
+				{ from: /\/player/, to: '/' }
+			]
+		},
+		//publicPath: "/public/",
   },
 };

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, findOrCreatePlayer, logPlayerToProject, refreshPlayerId, postPlayerMessage, getPlayerVar, persistPlayerId, getFilenameForFilekey } from '../../shared/util.js';
+  import { getConfig, logPlayerToProject, postPlayerMessage, getPlayerVar, persistPlayerId, getFilenameForFilekey } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -224,23 +224,21 @@
     menuOpen = true;
   }
 
-  const resetPlayerContainer = () => {
-    if(loading) return;
-    resetPlayer();
-    menuOpen = false;
-    boards = [];
-    currentBoard = null;
-    mainView = "chat";
-  }
+   // const resetPlayerContainer = () => {
+   //   if(loading) return;
+   //   resetPlayer();
+   //   menuOpen = false;
+   //   boards = [];
+   //   currentBoard = null;
+   //   mainView = "chat";
+   // }
 
-  const resetClient = () => {
+  const resetClient = (resetURL = false) => {
     localStorage.clear();
+    if (resetURL) {
+      history.replaceState({interkit_player_generated: true}, document.title, `/`);
+    }
     location.reload();
-  }
-
-  const resetPlayer = async ()=> {
-    playerId = await refreshPlayerId();
-    registerPlayer(playerId);
   }
 
   const initPlayerContainerSocket = ()=>{
@@ -393,15 +391,19 @@
 
     // button to reset player
     if(target.getAttribute('data-special') == "resetPlayer") {
-      if(confirm("really?")) resetPlayerContainer()
-    }
-
-    // button to reset client
-    if(target.getAttribute('data-special') == "resetClient") {
       if (authoring) {
         alert("only available outside of authoring")
       } else {
-        if(confirm("really?")) resetClient()
+        if(confirm("really?")) resetClient(true)
+      }      
+    }
+
+    // button to reset client
+    if(target.getAttribute('data-special') == "reloadClient") {
+      if (authoring) {
+        alert("only available outside of authoring")
+      } else {
+        resetClient()
       }
     }
 
@@ -417,26 +419,13 @@
 
   onMount(async () => {
 
-    fileServerURL = await getConfig("fileServerURL");
     
-    // if playerId has not been set -> user opens app for the first time
-    if(!playerId) {
-      playerId = await findOrCreatePlayer(); // create a new player and persist it in local storage
-    } else {
-      // persist the player in local storage in case we got it from outside
-      persistPlayerId(playerId)
-    }
+  });
 
-    // reload page with playerId in url, so that ios keeps it when saving as PWA
-    if(!authoring) {
-      if(!location.pathname.includes("player")) {
-        // doesn't work in local dev
-        if(location.port != 8081) {
-          location.pathname = "/project/" + projectId + "/player/" + playerId + "/"
-        }
-      } 
-    }
-  
+  const initProject = async () => {
+
+    fileServerURL = await getConfig("fileServerURL");
+      
     await initSocket(playerId, updateConnectionStatus);
     
     doWhenConnected(()=>{
@@ -451,9 +440,7 @@
         archiveButtonLabel = pages.docs[0].menuEntry
 
     loading = false;
-  });
 
-  const initProject = async () => {
     loadInterfaceState();
     await loadListedBoards();        
   }
@@ -469,7 +456,7 @@
         initProject();
       } 
     } else {
-      resetPlayerContainer();
+      //resetPlayerContainer();
     }
   }
 
@@ -647,6 +634,14 @@
       {socketConnectionStatus}
       close={()=>{menuOpen = false; debugPanelOpen = false}}
     />
+  {/if}
+
+{:else}
+
+  Loading...
+
+  {#if !playerId} 
+    missing playerId
   {/if}
 
 {/if}

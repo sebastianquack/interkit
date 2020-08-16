@@ -100,10 +100,10 @@ async function api() {
     });
 
   
-    // for ios PWA, we need to save projectId and playerId in the url
+    // let app get playerId from url
     server.route({
         method: 'GET',
-        path: '/project/{project}/player/{player}/{param*}',
+        path: '/player/{player}/{param*}',
         handler: {
             directory: {
                 path: './player',
