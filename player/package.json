@@ -8,8 +8,10 @@
     "css-loader": "^2.1.1",
     "jsqr": "1.2.0",
     "mini-css-extract-plugin": "^0.6.0",
+    "node-fetch": "^1.7.3",
     "node-sass": "^4.14.1",
     "serve": "^11.0.0",
+    "source-map-support": "^0.5.19",
     "style-loader": "^0.23.1",
     "svelte": "^3.0.0",
     "svelte-loader": "2.13.3",
@@ -20,7 +22,8 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
-    "dev": "webpack-dev-server --content-base public --host 0.0.0.0"
+    "dev": "webpack-dev-server --content-base public --host 0.0.0.0",
+    "loadtest": "webpack --config webpack-node-tests.config.js && node node-tests-dist/bundle.js"
   },
   "dependencies": {
     "@google/markerclustererplus": "^5.0.4",

@@ -14,9 +14,9 @@ export const doWhenConnected = (callback) => {
   }
 }
 
-export const initSocket = async (playerId, updateConnectionStatus) => {
+export const initSocket = async (playerId, updateConnectionStatus, apiUrlPrefix="") => {
 
-  let socketURL = await getConfig("socketURL");
+  let socketURL = await getConfig("socketURL", apiUrlPrefix);
   if(!socketURL) {
     alert("coult not connect to server, try again later")
     return;

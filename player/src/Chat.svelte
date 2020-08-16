@@ -2,7 +2,7 @@
   import { isIOS } from 'mobile-device-detect';
 
   import { beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte';
-  import { getConfig, postPlayerMessage, postAdminMessage, getCurrentNodeId, getPlayerVar } from '../../shared/util.js';
+  import { getConfig, postPlayerMessage, postAdminMessage, getCurrentNodeId, getPlayerVar, logPlayerToNode } from '../../shared/util.js';
 
   import ChatItemBubble from './ChatItemBubble.svelte';
   import AttachmentToolbelt from './AttachmentToolbelt.svelte';
@@ -163,20 +163,7 @@
 
     // todo: move this logic to server!
     if(firstTimeOnBoard && nodeId) {
-      // new: use rest api here for better error handling
-      let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, {method: "POST"});
-      if(!res.ok) {
-        console.log("could not reach server");
-      }
-      let resJSON = await res.json();
-      console.log("logPlayerToNode", resJSON);
-      if(!resJSON.status == "ok") {
-        alert("error logging player to node - please check your internet connection");
-        // todo - give option to retry
-      }
-      if(resJSON.statusCode == 500) {
-        alert(resJSON.error)
-      }
+      await logPlayerToNode(playerId, nodeId)
     }
 
     // we are ready receive messages
