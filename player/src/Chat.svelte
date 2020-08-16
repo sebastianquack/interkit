@@ -43,7 +43,15 @@
 
   let attachmentMenuOpen = false;
   let div;
-  let autoscroll;
+
+  let   autoscroll = true;
+  //let   autoscrollLastTimestamp = 0;
+  //let   userScrollLastInteractionTimestamp = 0;
+  const autoscrollDelayMs = 400;
+  //const autoscrollIsDoneAfterMs = 800;
+  //const userScrollTimeoutMs = 
+  const autoscrollOffsetPx = 40;
+
   let autoTyping = false;
   let googleMapsAPIKey;
   let fileServerURL;
@@ -526,7 +534,7 @@
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
     chatItems = chatItems;
-    console.log("sorted items", chatItems);
+    //console.log("sorted items", chatItems);
   }
 
 
@@ -550,10 +558,22 @@
   }
 
   const scrollUp = ()=> {
+    if (!autoscroll) return
+
+    const {scrollHeight, scrollTop, clientHeight} = div
+    const offset = scrollHeight - scrollTop - clientHeight
+
+    if (offset > autoscrollOffsetPx) return
+
+    //autoscrollLastTimestamp = Date.now()
     setTimeout(()=>{
       if(div)
-        div.scrollTo(0, div.scrollHeight);
-    }, 400);
+        div.scrollTo({
+          left: 0, 
+          top: div.scrollHeight,
+          behavior: 'smooth'
+        })
+    }, autoscrollDelayMs);
   }
 
   // item is set when user clicks an option
@@ -656,6 +676,18 @@
     }
   }
 
+  /*
+  const handleScroll = event => {
+    const now = Date.now()
+    if (autoscroll && now - autoscrollLastTimestamp > autoscrollIsDoneAfterMs) {
+      // scroll was probably autoscroll
+    } else {
+      // scroll was probably scroll
+      const {scrollHeight, scrollTop, clientHeight} = event.target
+      const offset = scrollHeight - scrollTop - clientHeight
+    }
+  }*/
+
   function handleFocus() {
     inputFocus = true;
   }  
@@ -705,7 +737,11 @@
 
 <div class="chat" class:focus="{ inputFocus}">
 
-    <div class="scrollable {authoring? 'narrow' : ''}" class:no-inputs={!inputInterface.attachments && !inputInterface.text} bind:this={div}>
+    <div 
+      class="scrollable {authoring? 'narrow' : ''}" 
+      class:no-inputs={!inputInterface.attachments && !inputInterface.text} 
+      bind:this={div}
+      >
       {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each chatItems as item}
@@ -787,16 +823,14 @@
 
 
   .scrollable {
-    margin: 0 0 12px 0;
+    margin: 0;
     overflow-y: auto;
     position: absolute;
     top: 0;
     bottom: 45px;
     left: 0;
     right: 0;
-    padding: 12px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 12px 12px 24px 12px;
   }
 
   .no-inputs {

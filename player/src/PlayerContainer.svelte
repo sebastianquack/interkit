@@ -233,6 +233,11 @@
     mainView = "chat";
   }
 
+  const resetClient = () => {
+    localStorage.clear();
+    location.reload();
+  }
+
   const resetPlayer = async ()=> {
     playerId = await refreshPlayerId();
     registerPlayer(playerId);
@@ -389,6 +394,15 @@
     // button to reset player
     if(target.getAttribute('data-special') == "resetPlayer") {
       if(confirm("really?")) resetPlayerContainer()
+    }
+
+    // button to reset client
+    if(target.getAttribute('data-special') == "resetClient") {
+      if (authoring) {
+        alert("only available outside of authoring")
+      } else {
+        if(confirm("really?")) resetClient()
+      }
     }
 
     // button to open debug panel
@@ -805,7 +819,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: auto;
     background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;
   }
 

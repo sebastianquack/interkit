@@ -19,3 +19,6 @@ public/
 
 # local migration status
 .migrate
+
+# reports
+report.*.json

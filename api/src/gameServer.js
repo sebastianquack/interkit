@@ -268,7 +268,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     let timeDiff = Date.now() - timeMeasure;
     let report = "handleScript result after " + timeDiff + "ms ";
     ["outputs", "interfaceCommands", "moveTos", "forwards"].forEach((key)=>{
-        if(result[key].length) report += key + ": " + result[key].length + " ";  
+        if(result[key] && result[key].length) report += key + ": " + result[key].length + " ";  
     })
     if(result.error) report += "scriptError";
     console.log(report)
