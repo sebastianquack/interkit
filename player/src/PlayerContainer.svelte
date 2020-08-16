@@ -385,8 +385,14 @@
       dynamicModalPage = null;
       mainView = "chat"
     }
+
+    // button to open dynamicModal (handlebars)
+    let modalPage = target.getAttribute('data-modal-page');
+    if(modalPage) {
+      dynamicModalPage = modalPage
+    }
     
-    // button to open dynamicModal
+    // button to open itemModal (svelte component)
     let itemModalKey = target.getAttribute('data-item-modal');
     if(itemModalKey) {
       itemModal = await loadItem(itemModalKey)
