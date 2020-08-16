@@ -108,11 +108,9 @@ export const removePlayerFromLocalStorage = () => {
   localStorage.setItem("playerId", null);
 }
 
-export const findOrCreatePlayer = async () => {
+export const findOrCreatePlayer = async (playerId) => {
 
   let player;
-  let playerId = localStorage.getItem('playerId');
-  console.log("playerId found", playerId);
 
   if(!playerId || playerId == "null") {
     player = await createPlayer();
@@ -132,20 +130,15 @@ export const findOrCreatePlayer = async () => {
   }
 
   if(player && player._id) {
-    persistPlayerId(player._id)    
     return player._id;
   }
 }
 
-export const persistPlayerId = (id) => {
-  localStorage.setItem('playerId', id);
-}
-
-export const refreshPlayerId = async () => {
-  removePlayerFromLocalStorage();
-  let playerId = await findOrCreatePlayer();
-  return playerId;
-}
+ export const refreshPlayerId = async () => {
+   //removePlayerFromLocalStorage();
+   let playerId = await findOrCreatePlayer("unknown");
+   return playerId;
+ }
 
 
 

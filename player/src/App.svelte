@@ -3,23 +3,19 @@
 </svelte:head>
 
 <script>
-  import { isIOS } from 'mobile-device-detect';
-
   import { onMount } from 'svelte';
-  import { getConfig } from '../../shared/util.js';
+  import { getConfig, findOrCreatePlayer } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
   import WelcomeScreen from './WelcomeScreen.svelte'
   import "./app.css";
   import "./player.css";
 
-  let projectId;
-  let playerId = null;
+  let projectId, playerId;
 
   let googleReady = false;
   let loading = true;
 
   let bypassWelcome = false;
-  const isPWAonIOS = isIOS && window.navigator.standalone
 
   window.googleReady = ()=>{
     console.log("googleReady");
@@ -27,40 +23,35 @@
   }
 
   onMount(async () => {    
-    
-    // parse search Params
-    let searchParams = new URLSearchParams(window.location.search);
-    
-    // projectId low priority - use default project defined in config - used when user opens player first time
+
+    // projectId - use default project defined in config
     let defaultProjectId = await getConfig("defaultProject");
     if(defaultProjectId) {
       console.log("using defaultProject", defaultProjectId)
       projectId = defaultProjectId;
     }
-    
-    // projectId medium priority - get project id form url param - used in url from authoring
-    if(searchParams.get("project")) {
-      projectId = searchParams.get("project");
-      console.log("overriding with projectId from url param", projectId)
-    }
 
-    // get projectId & playerId from path - for PWA install on iOS and for opening personal links
-    if(location.pathname.includes("project") && location.pathname.includes("player")) {
+    let playerIdCandidate = null;
+
+    if(location.pathname.includes("player/")) {
       let parts = location.pathname.split("/")
-      if(parts.length == 6) {
-        projectId = parts[2]
-        console.log("overriding with projectId from url path", projectId)
-        
-        playerId = parts[4] // playerId low priority
+      if(parts.length == 4) {
+        playerIdCandidate = parts[2] // playerId
         console.log("found playerId in url path", playerId)
       }
     }
 
-    // playerId medium priority - get player from localStorage (playerId might have been reset in client)
-    if(localStorage.getItem('playerId')) {
-      playerId = localStorage.getItem('playerId');
-      console.log("found playerId in localStorage, using that", playerId)
+    playerId = await findOrCreatePlayer(playerIdCandidate); // create or find player
+
+    if (playerId === playerIdCandidate) {
+      bypassWelcome = true
     }
+
+    console.log(playerIdCandidate + " " + playerId + " " + projectId)
+
+    //const specialPort = location.port !== 80 || location.post !== 443
+    //const targetURL = `${location.protocol}//${location.hostname}${specialPort && ':' + location.port}
+    history.replaceState({interkit_player_generated: true}, document.title, `/player/${playerId}`);
 
     loading = false;
   });
@@ -76,7 +67,7 @@
 
 {#if projectId}   
 
-  {#if playerId || bypassWelcome || isPWAonIOS}
+  {#if bypassWelcome}
     <PlayerContainer {projectId} {playerId} {googleReady}/>
   {:else}
     <WelcomeScreen {setBypassWelcome} />
