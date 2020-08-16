@@ -3,6 +3,8 @@
 import { token } from './stores.js';  
 import { getPlayerVar } from '../../shared/util.js'
 
+import { onMount } from 'svelte'
+
 export let projectId;
 export let playerId;
 export let dropConnectedPlayerId;
@@ -32,7 +34,7 @@ const loadPlayerInfo = async (id)=>{
 }
 
 $: {
-  if(projectId && playerId) loadPlayers();
+  if(projectId) loadPlayers();
 }
 
 const attachPlayer = (id) => {
