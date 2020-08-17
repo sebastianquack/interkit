@@ -232,8 +232,8 @@ const getUserPosition = (pan = false)=> {
         
       }, {
         enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
+        timeout: 10000,
+        maximumAge: 10
       });
     } else {
       alert("browser doesn't support location");
@@ -254,7 +254,7 @@ const initPositiontracking = () => {
         getUserPosition(false)
       }
 
-    }, 5000)
+    }, 12000)
   }
 }
 
