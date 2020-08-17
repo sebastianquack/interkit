@@ -39,7 +39,7 @@
   let beginningHistory = false;
   let initialLoad = true;
 
-  export let doInitialLoad = true;
+  export let doInitialLoad = true; // set to false if we open from buttons
 
   let attachmentMenuOpen = false;
   let div;
@@ -108,7 +108,7 @@
   const reset = ()=>{
     currentNode = null;
     chatItems = [];
-    showItemsSince = Date.now();
+    showItemsSince = null;
     initialLoad = true;
     showMoreItems = false;
     beginningHistory = false;
@@ -171,10 +171,12 @@
 
     // load history - and process any unseen messages in it
     initialLoad = true;
+
     await loadMoreItems(currentBoard); 
     scrollUp();
 
     await updateInputInterface();  
+    
   }
   
 
@@ -402,6 +404,11 @@
 
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
+
+      if(!showItemsSince) {
+        showItemsSince = Date.now()
+      }
+
       console.log("loading items earlier than", showItemsSince);  
 
       let limit = 10;
@@ -433,6 +440,7 @@
         }
 
       } else {
+        console.log("doInitialLoad=", doInitialLoad)
         showMoreItems = true;
       }
 
@@ -478,8 +486,12 @@
       }
       chatItems = chatItems;
 
+      console.log("loadMoreItems found " + unseenMessages.length + " unseen nessages, processing...")
+
       // process the unseen messages
-      unseenMessages.forEach(async (m)=>await receiveMessage(m));
+      for(let m of unseenMessages) {
+        await receiveMessage(m);
+      }
 
       await updateUnseenMessages();
 
