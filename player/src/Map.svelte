@@ -221,7 +221,7 @@ const getUserPosition = (pan = false)=> {
 
         if(pan) {
           map.panTo(userPosition);
-          map.setZoom(16);
+          map.setZoom(18);
         }
 
         updateUserMarker(userPosition)
