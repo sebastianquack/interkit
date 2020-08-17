@@ -528,23 +528,32 @@
     }
   }
 
-  // removes duplicate objects form array of objects based on propertiy
-  const removeDuplicates = (myArr, prop)=> {
-    return myArr.filter((obj, pos, arr) => {
-        return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
-    });
-  } 
+  const removeDuplicates = (items) => {
+    const result = [];
+    const map = new Map();
+    for (const item of items) {
+        if(!item._id) {
+          result.push(item)
+        } else {
+          if(!map.has(item._id)){
+            map.set(item._id, true);    // set any value to Map
+            result.push(item);
+          }
+        }
+    }
+    return result;
+  }
 
   const sortItems = () => {
 
-    let itemsForSorting = removeDuplicates(chatItems, "_id")
+    let itemsForSorting = removeDuplicates(chatItems)
     if(itemsForSorting.length != chatItems.length) console.log("removed a duplicate chatItem")
     itemsForSorting.sort((a,b)=> {
       let x = a.timestamp - b.timestamp;
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
     chatItems = itemsForSorting;
-    //console.log("sorted items", chatItems);
+    
   }
 
 
