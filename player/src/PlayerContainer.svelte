@@ -12,7 +12,8 @@
   import Menu from './Menu.svelte';
   import Alert from './Alert.svelte';
   import DebugPanel from './DebugPanel.svelte';
-  
+  import WelcomeScreen from './WelcomeScreen.svelte';
+
   import "./player.css";
 
   // the two main props that this comonent reacts on
@@ -635,11 +636,7 @@
 
 {:else}
 
-  Loading...
-
-  {#if !playerId} 
-    missing playerId
-  {/if}
+  <WelcomeScreen buttonHidden message={ playerId ? "Loading..." : "missing playerId" } />
 
 {/if}
 
