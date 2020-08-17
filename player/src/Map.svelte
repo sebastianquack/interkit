@@ -26,6 +26,7 @@ let userMarker;
 let markerCluster;
 let positionTrackerInterval;
 let boatIcon;
+let navigatorPermissionsNotAvailable;
 
 let userPosition = null;
 let locationIssue = false;
@@ -189,11 +190,16 @@ const updateMarkersPositionChange = () => {
 
 const getUserPosition = (pan = false)=> {
 
+  // prompt -> ok-ask -> ... -> granted
+  // prompt -> ok-ask -> ... -> denied
+  // prompt -> do-no-ask
+
   if(permissionState == "prompt") {
     if(confirm("Gleich wird dich dein Gerät fragen, ob du deine Geoposition teilen willst. Stimme zu, um BOTBOOT im vollem Umfang spielen zu können.")) {
       permissionState = "ok-ask";
     } else {
-      spermissionState = "do-not-ask"
+      alert("Falls du die Lokalisierung später aktivieren willst, lade die Seite neu oder wende dich an den Support.")
+      permissionState = "do-not-ask"
     }
   }
 
@@ -205,7 +211,9 @@ const getUserPosition = (pan = false)=> {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        locationIssue = false
+        locationIssue = false // prevent recurring failure notifications triggered by system
+
+        if (navigatorPermissionsNotAvailable) localStorage.setItem("locationPermissionState", "granted") // persist
 
         if(pan) {
           map.panTo(userPosition);
@@ -219,6 +227,8 @@ const getUserPosition = (pan = false)=> {
           alert("couldn't get location");
           locationIssue = true;  
         }
+
+        if (navigatorPermissionsNotAvailable) permissionState="do-not-ask" // do not persist
         
       }, {
         enableHighAccuracy: true,
@@ -274,13 +284,23 @@ afterUpdate(()=>{
 })
 
 function handlePermission() {
-  navigator.permissions.query({name:'geolocation'}).then(function(result) {
-    permissionState = result.state;
-    report(result.state);
-    result.onchange = function() {
+  if (navigator.permissions) { // most systems
+    navigator.permissions.query({name:'geolocation'}).then(function(result) {
+      permissionState = result.state;
       report(result.state);
+      result.onchange = function() {
+        report(result.state);
+      }
+    });
+  } else { // safari (ios and desktop)
+    navigatorPermissionsNotAvailable = true
+    const storedPermissionState = localStorage.getItem("locationPermissionState")
+    if (storedPermissionState && permissionState == "init") { // get initial permissionState from localStorage
+      permissionState = storedPermissionState
+    } else {
+      permissionState = "prompt"
     }
-  });
+  }
 }
 
 function report(state) {
