@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd api
+
+echo $DISABLE_API
+
+if [ "$DISABLE_API" = "true" ]
+then
+  npm run start
+else
+  npm run migrate+start
+fi

@@ -12,7 +12,8 @@
   import Menu from './Menu.svelte';
   import Alert from './Alert.svelte';
   import DebugPanel from './DebugPanel.svelte';
-  
+  import WelcomeScreen from './WelcomeScreen.svelte';
+
   import "./player.css";
 
   // the two main props that this comonent reacts on
@@ -484,7 +485,7 @@
     {/if}
 
     <div class="menu-buttons-right">
-      <button class="button-chat" disabled={mainView == "chat"} on:click={openChat}>
+      <button class="button-chat" disabled={mainView == "chat"} on:touchstart={openChat} on:click={openChat}>
         <span>
           chat 
         </span>
@@ -495,11 +496,11 @@
         {/if}        
       </button>
       {#if archiveButtonLabel}
-        <button class="button-archive" disabled={mainView == "archive"} on:click={openArchive}>
+        <button class="button-archive" disabled={mainView == "archive"} on:touchstart={openArchive} on:click={openArchive}>
           <span>{archiveButtonLabel}</span>
         </button>
       {/if}
-      <button class="button-map" disabled={mainView == "map"} on:click={openMap}>
+      <button class="button-map" disabled={mainView == "map"} on:touchstart={openMap} on:click={openMap}>
         <span>map</span>
       </button>
     </div>
@@ -635,11 +636,7 @@
 
 {:else}
 
-  Loading...
-
-  {#if !playerId} 
-    missing playerId
-  {/if}
+  <WelcomeScreen buttonHidden message={ playerId ? "Loading..." : "missing playerId" } />
 
 {/if}
 
@@ -679,6 +676,7 @@
     display: flex;
     align-items: stretch;
     justify-content: space-between;
+    user-select: none;
   }
 
   .highlight {
@@ -693,7 +691,7 @@
       border: none;
       background-color: transparent;
       background-image: url("/assets/Menu-bg-Normal.svg");
-      &:hover, &[disabled] {
+      &:active, &[disabled] {
         background-image: url("/assets/Menu-bg-Active.svg");
       }
       background-size: cover;
@@ -716,6 +714,8 @@
       width: 61px;
       height: 48px;
       position: relative;
+
+      cursor: pointer;
       
       span {
         color: transparent;
@@ -743,7 +743,7 @@
         top: 0.05em;
         left: 0.4em;
       }
-      &:hover span, &:active span,  &[disabled] span {
+      /*&:hover span,*/ &:active span,  &[disabled] span {
         background-image: url("/assets/icons/Chat-white.svg");
       }   
     }
@@ -755,7 +755,7 @@
       top: 0em;
       left: 0.4em;    
     }
-    &:hover span, &[disabled] span {
+    /*&:hover span,*/ &:active span, &[disabled] span {
       background-image: url("/assets/icons/Boat-white.svg");
     }    
   }
@@ -766,7 +766,7 @@
       top: 0;
       left: 0.2em;
     }
-    &:hover span, &[disabled] span {
+    /*&:hover span,*/ &:active span, &[disabled] span {
       background-image: url("/assets/icons/Map-white.svg");
     }   
   }

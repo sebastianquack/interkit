@@ -3,6 +3,7 @@
 
   export let setBypassWelcome;
   export let message;
+  export let buttonHidden = false;
 
   let visible = true
   let counter = 0
@@ -45,7 +46,7 @@
       Lust auf Gesellschaft?
     </div>
 
-    <div class="button" on:click={next}>
+    <div class="button" style="visibility: { buttonHidden ? "hidden" : "visisble"}" on:click={next}>
       Starte Botboot
     </div>    
 
@@ -140,10 +141,10 @@
     .bubble {
       display: inline;
       box-sizing: border-box;
-      animation-name: appear;
-      animation-duration: 1s;
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;
+      // animation-name: appear;
+      // animation-duration: 1s;
+      // animation-iteration-count: 1;
+      // animation-fill-mode: forwards;
     }
 
     .button {
@@ -156,6 +157,11 @@
       line-height: 16px;
       font-weight: bold;
       text-transform: uppercase;
+      animation-name: appear;
+      animation-duration: 1s;
+      animation-duration: 0.5s;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;      
       &:hover, &:active {
         background-color: var(--color-bright);
         color: var(--color-dark);
