@@ -246,11 +246,12 @@ const getUserPosition = (pan = false)=> {
 const initPositiontracking = () => {
   if(!positionTrackerInterval) {
 
+    getUserPosition(true)
     positionTrackerInterval = setInterval(()=>{
 
       if(visible) {
         //console.log("checking user geolocation")
-        getUserPosition()
+        getUserPosition(true)
       }
 
     }, 5000)
