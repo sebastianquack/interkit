@@ -23,7 +23,7 @@ async function runTest() {
   // create playerId
   playerId = await findOrCreatePlayer(null, apiUrlPrefix);
 
-  await logPlayerToNode(playerId, nodeId, apiUrlPrefix)
+  await logPlayerToNode(playerId, nodeId, null, apiUrlPrefix)
 
   log(`created player ${playerId}`)
   await initSocket(playerId, updateConnectionStatus, apiUrlPrefix);

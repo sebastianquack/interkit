@@ -66,6 +66,7 @@ module.exports = {
 			//	pathRewrite: { '.*': '' }
 			//}
 		},
+		disableHostCheck: true, // use any hostname, e.g. macbook.local
 		//historyApiFallback: true,
 		//publicPath: "/public/",
   },
