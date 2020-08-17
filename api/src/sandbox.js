@@ -270,7 +270,10 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
       getItems: async () => { return await db.getItemsForPlayer(playerId) },
       getItemsQuery: async (query) => {return await db.getItemsQuery(project._id, query) },
       
-      distance: (pos1, pos2) => { return geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1); },
+      distance: (pos1, pos2) => { return (pos1.lat && pos2.lat) ? 
+        geolib.getDistance({latitude: pos1.lat, longitude: pos1.lng}, {latitude: pos2.lat, longitude: pos2.lng}, 1)
+        : null 
+      },
       
       interface: async (key, params={}) => { 
         let defaultInputs = {
