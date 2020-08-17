@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getConfig, logPlayerToProject, postPlayerMessage, getPlayerVar, persistPlayerId, getFilenameForFilekey } from '../../shared/util.js';
+  import { getConfig, logPlayerToProject, postPlayerMessage, getPlayerVar, persistPlayerId, getFilenameForFilekey, logPlayerToNode } from '../../shared/util.js';
   import { initSocket, registerPlayer, listenForMessages, doWhenConnected } from '../../shared/socketClient.js';
   
   import Chat from './Chat.svelte';
@@ -186,18 +186,27 @@
 
   const openBoardFromNodeId = async (nodeId)=>{
     console.log("openBoardFromNodeId", nodeId)
-    showLockScreen = false; // hide lock screen when openening new board
-    itemModal = null;
-    dynamicModalPage = null;
-    mainView = "chat";
+    //console.log("currentBoard is", currentBoard ? currentBoard.key : null)
     let res = await fetch("/api/scriptNode/" + nodeId + "?$embed=board");
-    let nodeJson = await res.json();      
-    console.log("currentBoard is", currentBoard ? currentBoard.key : null)
-    currentBoard = null;
-    currentBoard = nodeJson.board;
-    console.log("loading", loading)
-    console.log("set currentBoard to", currentBoard.key);
-    status = "board open"
+    let nodeJson = await res.json();
+    //console.log(nodeJson)      
+    if(nodeJson.board) {
+      if(nodeJson.board._id != currentBoard._id) {
+        console.log("switching boards...")
+        showLockScreen = false; // hide lock screen when openening new board
+        itemModal = null;
+        dynamicModalPage = null;
+        mainView = "chat";
+        currentBoard = nodeJson.board;
+        console.log("loading", loading)
+        console.log("set currentBoard to", currentBoard.key);
+        //status = "board open"
+      } else {
+        console.log("board " + currentBoard.key + " is already open, ignoring")
+      }
+    } else {
+      console.log("couldn't find board")
+    }
   }
 
   const openBoardForMessage = async (boardId, nodeId)=>{
@@ -272,23 +281,23 @@
 
       if(chatMessageHandler) {
         //console.log("handing off to chatMessageHandler");
-        if(status != "opening board") {
+        //if(status != "opening board") {
           chatMessageHandler(message);
-        } else {
-          console.log("ignoring socket message while board is opening")
-        }
+        //} else {
+        //  console.log("ignoring socket message while board is opening")
+        //}
       } else {
         console.log("player container: msg received but no chat message handler registered", message)
         if(!message.params) message.params = {}
         if(message.forceOpen || message.params.interfaceCommand == "request-geoposition") {
-          if(status != "opening board") {
-            status = "opening board"
+          //if(status != "opening board") {
+            //status = "opening board"
             openBoardFromNodeId(message.node);
-          }
+          //}
         } else {
-          if(status != "opening board") {
+          //if(status != "opening board") {
             await checkForUnseenMessages();
-          }
+          //}
         }
       }
     });
@@ -326,23 +335,16 @@
 
     console.log("node found", nodeJSON);
 
-    currentBoard = boardJSON.docs[0];
+    // this kicks off script activity on server (onArrive)
+    await logPlayerToNode(playerId, nodeJSON.docs[0]._id, {item, button})  
+
+    doInitialLoad = false; // do not load history (start at top)
+    currentBoard = boardJSON.docs[0]; // setup correct board
+    mainView = "chat"
+
     menuOpen = false;
     itemModal = null;
     dynamicModalPage = null;
-    doInitialLoad = false;
-    mainView = "chat"
-         
-    let res = await fetch("/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeJSON.docs[0]._id, {
-      method: "POST", 
-      body: JSON.stringify({item, button})
-    });
-    let resJSON = await res.json();
-    //console.log(resJSON);
-    if(!resJSON.status == "ok") {
-      alert("error moving player");
-    }
-  
   }
 
   // process clicks from menu pages and archive

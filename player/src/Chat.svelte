@@ -39,7 +39,7 @@
   let beginningHistory = false;
   let initialLoad = true;
 
-  export let doInitialLoad = true;
+  export let doInitialLoad = true; // set to false if we open from buttons
 
   let attachmentMenuOpen = false;
   let div;
@@ -108,7 +108,7 @@
   const reset = ()=>{
     currentNode = null;
     chatItems = [];
-    showItemsSince = Date.now();
+    showItemsSince = null;
     initialLoad = true;
     showMoreItems = false;
     beginningHistory = false;
@@ -171,10 +171,12 @@
 
     // load history - and process any unseen messages in it
     initialLoad = true;
+
     await loadMoreItems(currentBoard); 
     scrollUp();
 
     await updateInputInterface();  
+    
   }
   
 
@@ -402,11 +404,15 @@
 
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
-      console.log("loading items earlier than", showItemsSince);  
-
+      
       let limit = 10;
 
       if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
+
+      if(!showItemsSince) {
+        showItemsSince = Date.now()
+      }
+      console.log("loading items earlier than", showItemsSince);  
 
       let response = await fetch("/api/message/selectForChat?"
         +"boardId=" + board._id
@@ -433,6 +439,7 @@
         }
 
       } else {
+        console.log("doInitialLoad=", doInitialLoad)
         showMoreItems = true;
       }
 
@@ -478,8 +485,12 @@
       }
       chatItems = chatItems;
 
+      console.log("loadMoreItems found " + unseenMessages.length + " unseen nessages, processing...")
+
       // process the unseen messages
-      unseenMessages.forEach(async (m)=>await receiveMessage(m));
+      for(let m of unseenMessages) {
+        await receiveMessage(m);
+      }
 
       await updateUnseenMessages();
 
@@ -517,12 +528,22 @@
     }
   }
 
+  // removes duplicate objects form array of objects based on propertiy
+  const removeDuplicates = (myArr, prop)=> {
+    return myArr.filter((obj, pos, arr) => {
+        return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
+    });
+  } 
+
   const sortItems = () => {
-    chatItems.sort((a,b)=> {
+
+    let itemsForSorting = removeDuplicates(chatItems, "_id")
+    if(itemsForSorting.length != chatItems.length) console.log("removed a duplicate chatItem")
+    itemsForSorting.sort((a,b)=> {
       let x = a.timestamp - b.timestamp;
       return x == 0 ? a.outputOrder - b.outputOrder : x;
     });
-    chatItems = chatItems;
+    chatItems = itemsForSorting;
     //console.log("sorted items", chatItems);
   }
 

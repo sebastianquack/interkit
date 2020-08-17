@@ -178,9 +178,13 @@ export const logPlayerToProject = async (player, project) => {
   }
 }
 
-export const logPlayerToNode = async (playerId, nodeId, apiUrlPrefix = "") => {
+export const logPlayerToNode = async (playerId, nodeId, payload, apiUrlPrefix = "") => {
   // new: use rest api here for better error handling
-  let res = await fetch(apiUrlPrefix + "/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, { method: "POST" });
+  let res = await fetch(apiUrlPrefix + "/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, 
+    { method: "POST",
+      body: JSON.stringify(payload)
+    }
+  );
   if (!res.ok) {
     console.log("could not reach server");
   }
