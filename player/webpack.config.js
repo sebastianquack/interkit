@@ -66,7 +66,7 @@ module.exports = {
 			//	pathRewrite: { '.*': '' }
 			//}
 		},
-		historyApiFallback: true,
+		//historyApiFallback: true,
 		//publicPath: "/public/",
   },
 };

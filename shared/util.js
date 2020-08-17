@@ -5,8 +5,8 @@ import { debounce } from "debounce";
 
 /* CONFIGS */
 
-export const getConfig = async (key) => {
-  const res = await fetch("/api/config?key=" + key);
+export const getConfig = async (key, apiUrlPrefix = "") => {
+  const res = await fetch(apiUrlPrefix + "/api/config?key=" + key);
   if(!res.ok) {
     console.log("error fetching config ", key);
     return null;
@@ -90,8 +90,8 @@ export const loadNodeVariable = async (boardKey, nodeName, varKey, projectId)=>{
 
 /* PLAYERS */
 
-const createPlayer = async () => {
-  const res = await fetch("/api/player", {
+const createPlayer = async (apiUrlPrefix = "") => {
+  const res = await fetch(apiUrlPrefix + "/api/player", {
     method: "POST", 
     headers: {
       'Content-Type': 'application/json'
@@ -108,14 +108,14 @@ export const removePlayerFromLocalStorage = () => {
   localStorage.setItem("playerId", null);
 }
 
-export const findOrCreatePlayer = async (playerId) => {
+export const findOrCreatePlayer = async (playerId, apiUrlPrefix = "") => {
 
   let player;
 
   if(!playerId || playerId == "null") {
-    player = await createPlayer();
+    player = await createPlayer(apiUrlPrefix);
   } else {
-    const res = await fetch("/api/player/" + playerId);
+    const res = await fetch(apiUrlPrefix + "/api/player/" + playerId);
     if(res.ok) {
       player = await res.json();  
       console.log("player loaded", player);
@@ -178,16 +178,33 @@ export const logPlayerToProject = async (player, project) => {
   }
 }
 
-export const loadBoard = async (boardKey, projectId)=> {
-  let res = await fetch("/api/board?project=" + projectId + "&key=" + boardKey)
+export const logPlayerToNode = async (playerId, nodeId, apiUrlPrefix = "") => {
+  // new: use rest api here for better error handling
+  let res = await fetch(apiUrlPrefix + "/api/nodeLog/logPlayerToNode/" + playerId + "/" + nodeId, { method: "POST" });
+  if (!res.ok) {
+    console.log("could not reach server");
+  }
+  let resJSON = await res.json();
+  console.log("logPlayerToNode", resJSON);
+  if (!resJSON.status == "ok") {
+    alert("error logging player to node - please check your internet connection");
+    // todo - give option to retry
+  }
+  if (resJSON.statusCode == 500) {
+    alert(resJSON.error)
+  }
+}
+
+export const loadBoard = async (boardKey, projectId, apiUrlPrefix = "")=> {
+  let res = await fetch(apiUrlPrefix + "/api/board?project=" + projectId + "&key=" + boardKey)
   let json = await res.json()
   if(json.docs.length) return json.docs[0]
 }
 
-export const loadNode = async (boardKey, nodeName, projectId)=> {
-  let board = await loadBoard(boardKey, projectId)
+export const loadNode = async (boardKey, nodeName, projectId, apiUrlPrefix = "")=> {
+  let board = await loadBoard(boardKey, projectId, apiUrlPrefix)
   if(board) {
-    let res = await fetch("/api/scriptNode?board=" + board._id + "&name=" + nodeName)
+    let res = await fetch(apiUrlPrefix + "/api/scriptNode?board=" + board._id + "&name=" + nodeName)
     let json = await res.json()
     return json.docs[0]
   }
@@ -197,12 +214,13 @@ export const loadNode = async (boardKey, nodeName, projectId)=> {
 
 /* MESSAGES */
 
-export const postPlayerMessage = debounce(async (msgData) => {
+export const postPlayerMessage = debounce(async (msgData, apiUrlPrefix="") => {
   msgData.seen = [msgData.sender] // add seen 
   console.log("postPlayerMessage", msgData);
-  let response = await fetch("/api/player/message", {
+  let response = await fetch(apiUrlPrefix + "/api/player/message", {
     method: "POST",
-    body: JSON.stringify(msgData)
+    body: JSON.stringify(msgData),
+    headers: { "Content-type": "text/plain; charset=UTF-8"}
   })
   let responseJSON = {};
   if(response.ok)
