@@ -251,7 +251,7 @@ const initPositiontracking = () => {
 
       if(visible) {
         //console.log("checking user geolocation")
-        getUserPosition(true)
+        getUserPosition(false)
       }
 
     }, 5000)
