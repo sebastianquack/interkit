@@ -694,7 +694,7 @@
       border: none;
       background-color: transparent;
       background-image: url("/assets/Menu-bg-Normal.svg");
-      /*&:hover,*/ &[disabled] {
+      &:active, &[disabled] {
         background-image: url("/assets/Menu-bg-Active.svg");
       }
       background-size: cover;
@@ -758,7 +758,7 @@
       top: 0em;
       left: 0.4em;    
     }
-    /*&:hover span,*/ &[disabled] span {
+    /*&:hover span,*/ &:active span, &[disabled] span {
       background-image: url("/assets/icons/Boat-white.svg");
     }    
   }
@@ -769,7 +769,7 @@
       top: 0;
       left: 0.2em;
     }
-    /*&:hover span,*/ &[disabled] span {
+    /*&:hover span,*/ &:active span, &[disabled] span {
       background-image: url("/assets/icons/Map-white.svg");
     }   
   }
