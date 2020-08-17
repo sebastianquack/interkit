@@ -35,6 +35,7 @@
 
   let map;
   let markerItems;
+  let mapItem;
   let documentItems;
   let arrowMode = false;
   let arrowTarget = null;
@@ -139,6 +140,7 @@
 
   const openMapTo = async (chatItem) => {
     console.log(chatItem);
+    mapItem = chatItem;
     mainView = "map";
     await loadMarkers();
     map.panTo(chatItem.attachment);
@@ -225,6 +227,7 @@
   
   const openMap = async () => {
     await loadMarkers();
+    mapItem = null;
     mainView = "map";
   }
 
@@ -565,6 +568,7 @@
     {arrowDirection}
     {playerId}
     {projectId}
+    {mapItem}
   />
 
   {#if mainView == "archive"}

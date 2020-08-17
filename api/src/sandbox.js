@@ -205,7 +205,8 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         location: async (latlng, params={}) => { result.outputs.push({
             attachment: {
               mediatype: "GPS", 
-              imgSrc: await db.createLocationThumbnail(latlng),
+              imgSrc: params.imageAsset ? undefined : await db.createLocationThumbnail(latlng),
+              imageAsset: params.imageAsset,
               lat: latlng.lat,
               lng: latlng.lng,
             }, 

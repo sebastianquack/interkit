@@ -13,6 +13,8 @@ export let map = null;
 export let markerItems;
 export let setItemModal;
 
+export let mapItem;
+
 export let arrowMode = false; // activate to turn on the directional arrow
 export let arrowDirection = 0; // turn it manually
 export let arrowTarget = null; // turn arrow to a target position (should be an item object)
@@ -32,6 +34,8 @@ let userPosition = null;
 let locationIssue = false;
 let boatName = null;
 let boatData = {};
+
+
 
 let permissionState = "init"
 
@@ -243,18 +247,6 @@ const getUserPosition = (pan = false)=> {
 
 }
 
-const initPositiontracking = () => {
-  getUserPosition(true)
-}
-
-$: {
-  if(visible) {
-    console.log("map visible", visible)
-    getUserPosition(false)
-  }
-}
-
-
 
 /* lifecycle methods */
 
@@ -263,6 +255,12 @@ $: {
   updateMarkers(markerItems);
 }
 
+$: {
+  if(visible) {
+    console.log("map visible", visible)
+    getUserPosition(true)
+  }
+}
 
 afterUpdate(()=>{
   //console.log("afterUpdate")
@@ -276,7 +274,7 @@ afterUpdate(()=>{
       initMarkers();
     /*if(!positionTrackerInterval)
       getUserPosition(true); // pan map to user once on open*/
-    initPositiontracking();
+    //initPositiontracking();
   }
 })
 
