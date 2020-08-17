@@ -93,3 +93,9 @@
   line-height: 16px;
   padding: var(--bubble-border-radius);
 }
+
+img.spinner {
+  width: 100%;
+  height: calc(1em + 30px);
+  object-fit: contain;
+}

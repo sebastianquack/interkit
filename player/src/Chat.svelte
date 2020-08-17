@@ -38,6 +38,7 @@
   let showMoreItems = false;
   let beginningHistory = false;
   let initialLoad = true;
+  let loadingMessages = false;
 
   export let doInitialLoad = true; // set to false if we open from buttons
 
@@ -45,12 +46,13 @@
   let div;
 
   let   autoscroll = true;
+  let   lastScrollEvent = null
   //let   autoscrollLastTimestamp = 0;
   //let   userScrollLastInteractionTimestamp = 0;
   const autoscrollDelayMs = 400;
   //const autoscrollIsDoneAfterMs = 800;
   //const userScrollTimeoutMs = 
-  const autoscrollOffsetPx = 40;
+  const autoscrollOffsetPx = 20;
 
   let autoTyping = false;
   let googleMapsAPIKey;
@@ -404,6 +406,8 @@
 
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
+
+      loadingMessages = true
       
       let limit = 10;
 
@@ -498,6 +502,7 @@
         loadMoreItems();
       }
 
+      loadingMessages = false
       initialLoad = false;
   } 
 
@@ -707,6 +712,19 @@
     }
   }*/
 
+  const handleScroll = event => {
+    if (lastScrollEvent) {
+      if (event.timeStamp - lastScrollEvent.timeStamp < 100) {
+        const {scrollTop} = event.target
+        if (scrollTop <= 1) {
+          loadMoreItems(currentBoard)
+        }
+      }
+      console.log(event.timeStamp - lastScrollEvent.timeStamp, event.target.scrollTop)
+    }
+    lastScrollEvent = event
+  }  
+
   function handleFocus() {
     inputFocus = true;
   }  
@@ -760,8 +778,13 @@
       class="scrollable {authoring? 'narrow' : ''}" 
       class:no-inputs={!inputInterface.attachments && !inputInterface.text} 
       bind:this={div}
+      on:scroll={handleScroll}
       >
-      {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>load older messages</button> {/if}
+      {#if loadingMessages}
+        <img class="spinner" src="/spinner.svg" alt="loading" />
+      {:else}
+        {#if showMoreItems} <button class="load-more" on:click={()=>loadMoreItems()}>Ältere Nachrichten laden</button> {/if}
+      {/if}
       {#if beginningHistory} <!--small class="history-start"></small--> {/if}
       {#each chatItems as item}
         <ChatItemBubble 
