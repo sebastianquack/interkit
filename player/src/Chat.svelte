@@ -421,7 +421,7 @@
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
 
-      loadingMessages = true
+      loadingMessages = initialLoad ? false : true
       
       let limit = 10;
 
@@ -792,7 +792,6 @@
       class="scrollable {authoring? 'narrow' : ''}" 
       class:no-inputs={!inputInterface.attachments && !inputInterface.text} 
       bind:this={div}
-      on:scroll={handleScroll}
       >
       {#if loadingMessages}
         <img class="spinner" src="/spinner.svg" alt="loading" />

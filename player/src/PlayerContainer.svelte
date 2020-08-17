@@ -231,11 +231,11 @@
   }
 
   const openChat = async () => {
-    if (mainView == "chat" && boards.length > 1) {
-      currentBoard = null; loadListedBoards()
-    } else {
+    //if (mainView == "chat" && boards.length > 1) {
+    //  currentBoard = null; loadListedBoards()
+    //} else {
       mainView = "chat"
-    }
+    //}
   }
   
   const openMap = async () => {
@@ -495,9 +495,13 @@
         </span>
       </div>
     {:else}
-      <button class="menu-button" on:click={toggleMenu}>
-        <span>{"menu"}</span>
-      </button>
+       {#if mainView == "chat"}
+        <button class="menu-button" on:click={toggleMenu}>
+          <span>{"menu"}</span>
+        </button>
+        {:else}
+        <span></span>
+      {/if}
     {/if}
 
     <div class="menu-buttons-right">
@@ -802,7 +806,7 @@
     border: none;
     background: transparent url("/assets/icons/Menu.svg") no-repeat 0 50%;
     padding-left: 30px;
-    margin-left: 25px;
+    margin-left: 12px;
     cursor: pointer;
   }
 
@@ -815,6 +819,11 @@
       border: none;
       margin: 0;
       cursor: pointer;
+
+      & + .breadcrumb {
+        position: relative;
+        left: -1em;
+      }
     }
   }
 
