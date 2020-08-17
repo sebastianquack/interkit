@@ -1,12 +1,14 @@
 let Hapi = require('@hapi/hapi')
 let mongoose = require('mongoose')
 let RestHapi = require('rest-hapi')
-let Auth = require("./plugins/auth.plugin.js");
+let Proxy = require("@hapi/h2o2")
 const Path = require('path');
 const Inert = require('@hapi/inert');
 
+let Auth = require("./plugins/auth.plugin.js");
 const gameServer = require('./src/gameServer.js');
 const db = require('./src/dbutil.js');
+const { start } = require('repl');
 
 console.log("  NODE_ENV: " + process.env.NODE_ENV)
 
@@ -14,134 +16,200 @@ if(process.env.NODE_ENV != "production") {
   require('dotenv-safe').config()  
 }
 
-async function api() {
+async function webserver() {
+
+  let server = Hapi.Server({
+    port: process.env.PORT,
+    routes: {
+      files: {
+        relativeTo: Path.join(__dirname, 'public')
+      }
+    }
+  })
+
+  await server.register(Inert);
+
+  if (process.env.NODE_ENV == "production") {
+    server.ext('onRequest', function (request, h) {
+      if (request.headers['x-forwarded-proto'] != 'https') {
+        let newUrl = 'https://' + request.headers.host + (request.url.path || request.url.pathname + request.url.search);
+        console.log(newUrl);
+        return h
+          .redirect(newUrl)
+          .takeover()
+          .code(301)
+      }
+      else
+        return h.continue;
+    });
+  }
+
+  server.route({
+    method: 'GET',
+    path: '/shared_public/{param*}',
+    handler: {
+      directory: {
+        path: './shared_public',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/admin/{param*}',
+    handler: {
+      directory: {
+        path: './admin',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/author/{param*}',
+    handler: {
+      directory: {
+        path: './author',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/tmp/{param*}',
+    handler: {
+      directory: {
+        path: './tmp',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+
+  // let app get playerId from url
+  server.route({
+    method: 'GET',
+    path: '/player/{player}/{param*}',
+    handler: {
+      directory: {
+        path: './player',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/project/{project}/{param*}',
+    handler: {
+      directory: {
+        path: './player',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/{param*}',
+    handler: {
+      directory: {
+        path: './player',
+        redirectToSlash: true
+      }
+    },
+    options: {
+      auth: false
+    }
+  });
+
+  return server
+}
+
+async function start_webserver(api_proxy_target_url) {
+  let server = await webserver()
+
+  if (api_proxy_target_url) {
+
+    await server.register(Proxy);
+
+    console.log("  API_PROXY_TARGET_URL: " + api_proxy_target_url)
+
+    server.route({
+      method: ['GET', 'POST', 'PUT', 'PATCH'],
+      path: '/api/{params*}',
+      handler: {
+        proxy: {
+          uri: 'https://botboot-live.herokuapp.com{path}',
+          passThrough: true,
+          redirects: 5,
+          // host: 'botboot-live.herokuapp.com',
+          // protocol: 'https',
+          // port: 443,
+          onRequest: req => { console.log("req", req)}
+        }
+      }
+    });
+
+  } else {
+    console.warn("Warning: API_PROXY_TARGET_URL is missing")
+  }
+
+  // server.route([
+  //   {
+  //     method: '*',
+  //     path: '/api/{params*}',
+  //     handler: {
+  //       proxy: {
+  //         mapUri: function (request, callback) {
+  //           var url = "https://botboot-live.herokapp.com" + "/" + request.url.href;
+  //           callback(null, url);
+  //         },
+  //         passThrough: true,
+  //         xforward: true
+  //       }
+  //     }
+  //   }
+  // ]);
+
+  try {
+    await server.start(function () {
+      console.log('Server running at:', server.info.uri);
+    })
+  } catch (err) {
+    console.log("Error starting server:", err);
+  }
+  return server
+}
+
+
+
+
+async function start_api() {
   try {
 
-      let server = Hapi.Server({ 
-        port: process.env.PORT,
-        routes: {
-          files: {
-            relativeTo: Path.join(__dirname, 'public')
-          }
-        }
-      })
-
-      await server.register(Inert);
-
-      if(process.env.NODE_ENV == "production") {
-        server.ext('onRequest', function (request, h) {
-          if(request.headers['x-forwarded-proto'] != 'https') {
-            let newUrl = 'https://' + request.headers.host + (request.url.path || request.url.pathname + request.url.search);
-            console.log(newUrl);
-            return h
-              .redirect(newUrl)
-              .takeover()
-              .code(301)
-          }
-          else 
-            return h.continue; 
-        });
-      }
-
-      server.route({
-          method: 'GET',
-          path: '/shared_public/{param*}',
-          handler: {
-              directory: {
-                  path: './shared_public',
-                  redirectToSlash: true
-              }
-          },
-          options: {
-            auth: false
-          }
-      });
-
-      server.route({
-          method: 'GET',
-          path: '/admin/{param*}',
-          handler: {
-              directory: {
-                  path: './admin',
-                  redirectToSlash: true
-              }
-          },
-          options: {
-            auth: false
-          }
-      });
-
-      server.route({
-          method: 'GET',
-          path: '/author/{param*}',
-          handler: {
-              directory: {
-                  path: './author',
-                  redirectToSlash: true
-              }
-          },
-          options: {
-            auth: false
-          }
-      });
-
-      server.route({
-        method: 'GET',
-        path: '/tmp/{param*}',
-        handler: {
-            directory: {
-                path: './tmp',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-  
-    // let app get playerId from url
-    server.route({
-        method: 'GET',
-        path: '/player/{player}/{param*}',
-        handler: {
-            directory: {
-                path: './player',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/project/{project}/{param*}',
-        handler: {
-            directory: {
-                path: './player',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
-  
-    server.route({
-        method: 'GET',
-        path: '/{param*}',
-        handler: {
-            directory: {
-                path: './player',
-                redirectToSlash: true
-            }
-        },
-        options: {
-          auth: false
-        }
-    });
+    let server = await webserver()
 
     let config = {
       appTitle: "testresthapi",
@@ -214,4 +282,4 @@ async function api() {
   }
 }
 
-module.exports = api()
+module.exports = process.env.DISABLE_API ? start_webserver(process.env.API_PROXY_TARGET_URL) : start_api()
