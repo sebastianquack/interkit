@@ -35,6 +35,7 @@
 
   let map;
   let markerItems;
+  let mapItem;
   let documentItems;
   let arrowMode = false;
   let arrowTarget = null;
@@ -148,6 +149,7 @@
 
   const openMapTo = async (chatItem) => {
     console.log(chatItem);
+    mapItem = chatItem;
     mainView = "map";
     await loadMarkers();
     map.panTo(chatItem.attachment);
@@ -238,6 +240,7 @@
   
   const openMap = async () => {
     await loadMarkers();
+    mapItem = null;
     mainView = "map";
   }
 
@@ -576,6 +579,7 @@
     {arrowDirection}
     {playerId}
     {projectId}
+    {mapItem}
   />
 
   {#if mainView == "archive"}
@@ -869,11 +873,12 @@
       background-image: url("/assets/picto/Botboot.svg");
     }
 
-    &:nth-child(1) .board-name { background-image: url("/assets/picto/Botboot.svg") }
-    &:nth-child(2) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
-    &:nth-child(3) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
-    &:nth-child(4) .board-name { background-image: url("/assets/picto/Piraten.svg") }
-    &:nth-child(5) .board-name { background-image: url("/assets/picto/Alle.svg") }
+    &:nth-child(1) .board-name { background-image: url("/assets/picto/Intro.svg") }
+    &:nth-child(2) .board-name { background-image: url("/assets/picto/Fools.svg") }
+    &:nth-child(3) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
+    &:nth-child(4) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
+    &:nth-child(5) .board-name { background-image: url("/assets/picto/Waterworld.svg") }
+    &:nth-child(6) .board-name { background-image: url("/assets/picto/Dryland.svg") }
 
     .board-unseen {
       display: block;

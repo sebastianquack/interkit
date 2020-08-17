@@ -54,6 +54,9 @@
           {#if item.attachment.imgSrc && !item.attachment.imgLink} 
             <img alt={item.attachment.alt} src={item.attachment.imgSrc}/>
           {/if}
+          {#if item.attachment.imageAsset && !item.attachment.imgLink} 
+            <img alt={item.attachment.alt} src={"/assets" + item.attachment.imageAsset}/>
+          {/if}
           {#if item.attachment.audioSrc} 
             <ChatAudioPlayer
               item = {item}

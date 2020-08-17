@@ -287,6 +287,20 @@
               node: item._id, board: item.board, project: projectId, sender: playerId        
             }
             postPlayerMessage(responseItem)
+          },
+          () => {
+            console.log("couln't get location")
+            let responseItem = {
+              attachment: {
+                mediatype: "GPS",
+              },
+              params: {
+                interfaceCommand: "request-geoposition-response-fail",
+                interfaceOptions: item.params.interfaceOptions
+              },
+              node: item._id, board: item.board, project: projectId, sender: playerId        
+            }
+            postPlayerMessage(responseItem)
           })
         }
         return; 

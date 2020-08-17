@@ -13,6 +13,8 @@ export let map = null;
 export let markerItems;
 export let setItemModal;
 
+export let mapItem;
+
 export let arrowMode = false; // activate to turn on the directional arrow
 export let arrowDirection = 0; // turn it manually
 export let arrowTarget = null; // turn arrow to a target position (should be an item object)
@@ -32,6 +34,8 @@ let userPosition = null;
 let locationIssue = false;
 let boatName = null;
 let boatData = {};
+
+
 
 let permissionState = "init"
 
@@ -75,7 +79,7 @@ const createMarker = (item) => {
     visible: item.value.revealOnProximity ? false : true, 
     label: {
       color: "#000",
-      fontFamily: "sans-serif",
+      fontFamily: "EurostyleLTStd, sans-serif",
       fontSize: "16px",
       text: item.value.name ? item.value.name : item.key,
     },
@@ -232,8 +236,8 @@ const getUserPosition = (pan = false)=> {
         
       }, {
         enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
+        timeout: 10000,
+        maximumAge: 10
       });
     } else {
       alert("browser doesn't support location");
@@ -243,22 +247,6 @@ const getUserPosition = (pan = false)=> {
 
 }
 
-const initPositiontracking = () => {
-  if(!positionTrackerInterval) {
-
-    getUserPosition(true)
-    positionTrackerInterval = setInterval(()=>{
-
-      if(visible) {
-        //console.log("checking user geolocation")
-        getUserPosition(false)
-      }
-
-    }, 5000)
-  }
-}
-
-
 
 /* lifecycle methods */
 
@@ -267,6 +255,12 @@ $: {
   updateMarkers(markerItems);
 }
 
+$: {
+  if(visible) {
+    console.log("map visible", visible)
+    getUserPosition(true)
+  }
+}
 
 afterUpdate(()=>{
   //console.log("afterUpdate")
@@ -280,7 +274,7 @@ afterUpdate(()=>{
       initMarkers();
     /*if(!positionTrackerInterval)
       getUserPosition(true); // pan map to user once on open*/
-    initPositiontracking();
+    //initPositiontracking();
   }
 })
 
@@ -345,8 +339,8 @@ const updateUserMarker = async (userPosition) => {
             position: userPosition,
             icon: boatIcon,
             label: boatIcon ? {
-              color: "#000",
-              fontFamily: "sans-serif",
+              color: "#FF7758",
+              fontFamily: "EurostyleLTStd, sans-serif",
               fontSize: "16px",
               text: boatName ? boatName : "DU",
             } : undefined, 
