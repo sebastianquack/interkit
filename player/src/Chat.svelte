@@ -404,16 +404,15 @@
 
   const loadMoreItems = async (board = currentBoard) => {
       console.log("loadMoreItems");
+      
+      let limit = 10;
+
+      if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
 
       if(!showItemsSince) {
         showItemsSince = Date.now()
       }
-
       console.log("loading items earlier than", showItemsSince);  
-
-      let limit = 10;
-
-      if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
 
       let response = await fetch("/api/message/selectForChat?"
         +"boardId=" + board._id

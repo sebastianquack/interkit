@@ -336,7 +336,7 @@
     console.log("node found", nodeJSON);
 
     // this kicks off script activity on server (onArrive)
-    await logPlayerToNode(playerId, nodeJSON.docs[0]._id)  
+    await logPlayerToNode(playerId, nodeJSON.docs[0]._id, {item, button})  
 
     doInitialLoad = false; // do not load history (start at top)
     currentBoard = boardJSON.docs[0]; // setup correct board
