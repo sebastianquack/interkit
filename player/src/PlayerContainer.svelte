@@ -802,7 +802,7 @@
     border: none;
     background: transparent url("/assets/icons/Menu.svg") no-repeat 0 50%;
     padding-left: 30px;
-    margin-left: 25px;
+    margin-left: 12px;
     cursor: pointer;
   }
 
@@ -815,6 +815,11 @@
       border: none;
       margin: 0;
       cursor: pointer;
+
+      & + .breadcrumb {
+        position: relative;
+        left: -1em;
+      }
     }
   }
 
