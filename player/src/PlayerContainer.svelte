@@ -857,11 +857,12 @@
       background-image: url("/assets/picto/Botboot.svg");
     }
 
-    &:nth-child(1) .board-name { background-image: url("/assets/picto/Botboot.svg") }
-    &:nth-child(2) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
-    &:nth-child(3) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
-    &:nth-child(4) .board-name { background-image: url("/assets/picto/Piraten.svg") }
-    &:nth-child(5) .board-name { background-image: url("/assets/picto/Alle.svg") }
+    &:nth-child(1) .board-name { background-image: url("/assets/picto/Intro.svg") }
+    &:nth-child(2) .board-name { background-image: url("/assets/picto/Fools.svg") }
+    &:nth-child(3) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
+    &:nth-child(4) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
+    &:nth-child(5) .board-name { background-image: url("/assets/picto/Waterworld.svg") }
+    &:nth-child(6) .board-name { background-image: url("/assets/picto/Dryland.svg") }
 
     .board-unseen {
       display: block;

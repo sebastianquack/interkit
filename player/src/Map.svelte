@@ -75,7 +75,7 @@ const createMarker = (item) => {
     visible: item.value.revealOnProximity ? false : true, 
     label: {
       color: "#000",
-      fontFamily: "sans-serif",
+      fontFamily: "EurostyleLTStd, sans-serif",
       fontSize: "16px",
       text: item.value.name ? item.value.name : item.key,
     },
@@ -345,8 +345,8 @@ const updateUserMarker = async (userPosition) => {
             position: userPosition,
             icon: boatIcon,
             label: boatIcon ? {
-              color: "#000",
-              fontFamily: "sans-serif",
+              color: "#FF7758",
+              fontFamily: "EurostyleLTStd, sans-serif",
               fontSize: "16px",
               text: boatName ? boatName : "DU",
             } : undefined, 
