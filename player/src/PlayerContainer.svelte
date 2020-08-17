@@ -97,15 +97,24 @@
 
     const res = await fetch("/api/boardLog?player=" + playerId + "&project=" + projectId + "&listed=true&$embed=board");
     const json = await res.json();
-    console.log("loadListedBoards", json);
-    boards = json.docs.map(log=>log.board).filter(b=>b).sort(function(a, b){return a.order-b.order}); 
+    console.log("loadListedBoards", json, boards);
+    
+    function getUnseenMessages(id) {
+      const foundBoard = boards.find(b => b._id === id)
+      return foundBoard ? foundBoard.unSeenMessages : 0
+    }
+    const newBoards = json.docs.map(log=>log.board).filter(b=>b).sort(function(a, b){return a.order-b.order}); 
+    boards = newBoards.map(b => ({
+      ...b,
+      unSeenMessages: getUnseenMessages(b._id)
+    }))
   
     if(boards.length == 1) {
       console.log("project has only 1 listed board, using that", boards[0].name);
       currentBoard = boards[0];
-    } 
+    }
 
-    await checkForUnseenMessages();    
+    await checkForUnseenMessages();
   }
 
   const checkForUnseenMessages = async (log = undefined) => {
@@ -220,7 +229,11 @@
   }
 
   const openChat = async () => {
-    mainView = "chat"
+    if (mainView == "chat" && boards.length > 1) {
+      currentBoard = null; loadListedBoards()
+    } else {
+      mainView = "chat"
+    }
   }
   
   const openMap = async () => {
@@ -464,7 +477,7 @@
 
 {#if !loading}
 
-  <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
+  <div class="top-menu highlight">
   
     {#if currentBoard && mainView == "chat" && boards.length > 1}
       <div class="breadcrumbs">
@@ -485,7 +498,7 @@
     {/if}
 
     <div class="menu-buttons-right">
-      <button class="button-chat" disabled={mainView == "chat"} on:touchstart={openChat} on:click={openChat}>
+      <button class="button-chat {mainView == "chat" && "active"}" on:touchstart={openChat} on:click={openChat}>
         <span>
           chat 
         </span>
@@ -520,13 +533,11 @@
                   {board.description} 
                 </p>
               {/if}
-              <small class="board-unseen {board.unSeenMessages || "no-messages"}">
                 {#if board.unSeenMessages } 
-                  {board.unSeenMessages} neue Nachrichten
-                {:else}
-                  Keine neuen Nachrichten
+                  <small class="board-unseen {board.unSeenMessages || "no-messages"}">
+                    {board.unSeenMessages} neue Nachrichten
+                  </small>
                 {/if} 
-              </small> 
             </li>
             {/if}
           {/each}
@@ -681,6 +692,7 @@
 
   .highlight {
     border-bottom: 1px solid;
+    background-color: var(--color-bright);
   }
 
   .menu-buttons-right {
@@ -691,7 +703,7 @@
       border: none;
       background-color: transparent;
       background-image: url("/assets/Menu-bg-Normal.svg");
-      &:active, &[disabled] {
+      &:active, &[disabled], &.active {
         background-image: url("/assets/Menu-bg-Active.svg");
       }
       background-size: cover;
@@ -743,7 +755,7 @@
         top: 0.05em;
         left: 0.4em;
       }
-      /*&:hover span,*/ &:active span,  &[disabled] span {
+      /*&:hover span,*/ &:active span, &.active span,  &[disabled] span {
         background-image: url("/assets/icons/Chat-white.svg");
       }   
     }
@@ -828,7 +840,7 @@
     cursor: pointer;
 
     +.board {
-      border-top: 1px solid lightgray;
+      border-top: 1px solid var(--color-dark);
     }
 
     position: relative;

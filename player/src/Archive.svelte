@@ -94,6 +94,9 @@
 
     .player {
       padding: 0 24px 24px 24px;
+      &:empty {
+        display: none;
+      }
     }
     .boat {
       padding: 24px 24px 24px 24px;
