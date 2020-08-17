@@ -636,7 +636,7 @@
 
 {:else}
 
-  <WelcomeScreen buttonHidden message={ playerId ? "Loading..." : "missing playerId" } />
+  <WelcomeScreen buttonHidden message={ playerId ? "Loading Player..." : "missing playerId" } />
 
 {/if}
 

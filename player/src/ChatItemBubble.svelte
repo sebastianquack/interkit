@@ -192,11 +192,11 @@ span img {
 // options
 article.optionsArray {
   text-align: right;
-  margin-left: 20%;
+  margin-left: 15%;
   border: 1px solid var(--color-dark);
   background-color: var(--color-bright);  
   border-radius: var(--bubble-border-radius);
-  max-width: 60%;
+  max-width: 70%;
 
   h5 {
     margin:12px;
