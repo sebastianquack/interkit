@@ -45,7 +45,7 @@ const sendMessage = async (data) => {
     if(playerSockets[playerId]) {
       //console.log("emitting to", playerId);
       playerSockets[playerId].forEach((socket)=>{
-        //io.to(socket).emit('message', {...msgData, _id: msgId});  
+        io.to(socket).emit('message', {...msgData, _id: msgId});  
       });
     }
   }
