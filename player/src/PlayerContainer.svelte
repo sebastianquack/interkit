@@ -56,7 +56,7 @@
   let archiveButtonLabel = null;
   let loading = true;
   let fileServerURL = "";
-  let menuOpen = false;
+  let menuOpen = true;
   let debugPanelOpen = false;
   let socketConnectionStatus = null;
   const updateConnectionStatus = (s)=>socketConnectionStatus=s;
@@ -496,7 +496,7 @@
       </div>
     {:else}
        {#if mainView == "chat"}
-        <button class="menu-button" on:click={toggleMenu}>
+        <button class="menu-button {menuOpen && "active"}" on:click={toggleMenu}>
           <span>{"menu"}</span>
         </button>
         {:else}
@@ -637,12 +637,12 @@
   {/if}
 
   {#if menuOpen}
-  <Menu
-    {projectId}
-    {playerId}
-    onClose={()=>menuOpen=false}
-    {handleHtmlClicks}
-  />
+    <Menu
+      {projectId}
+      {playerId}
+      onClose={()=>menuOpen=false}
+      {handleHtmlClicks}
+    />
   {/if}
 
   {#if debugPanelOpen && playerId}
@@ -810,6 +810,9 @@
     padding-left: 30px;
     margin-left: 12px;
     cursor: pointer;
+    &.active {
+      background: transparent url("/assets/icons/Close.svg") no-repeat 0 50%;
+    }
   }
 
   .breadcrumbs {
