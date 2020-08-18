@@ -103,6 +103,20 @@
   }
 
 
+  const reportRecordingError = async () => {
+    let responseItem = {
+        attachment: {
+          mediatype: "audio",
+        },
+        params: {
+          interfaceCommand: "recording-permission-fail",
+        },
+        node: currentNode._id, board: currentNode.board, project: projectId, sender: playerId
+      }
+    await postPlayerMessage(responseItem)
+  }
+
+
   let singleTool = null;
 
   $: {
@@ -164,6 +178,7 @@
       }}
       onClose={closeTool}
       singleTool={singleTool == "audio"}
+      {reportRecordingError}
     />
   </div>
 {/if}

@@ -263,7 +263,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
   let timeMeasure = Date.now()
 
-  sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
+  await sandbox.run(currentNode, playerId, hook, msgData, async (result)=>{
     
     let timeDiff = Date.now() - timeMeasure;
     let report = "handleScript result after " + timeDiff + "ms ";

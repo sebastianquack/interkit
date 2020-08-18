@@ -424,7 +424,7 @@
       if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
 
       if(!showItemsSince) {
-        showItemsSince = Date.now()
+        showItemsSince = Date.now() - 500 // load a bit more than needed
       }
       console.log("loading items earlier than", showItemsSince);  
 
