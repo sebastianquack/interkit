@@ -115,6 +115,9 @@ article {
 
 .right {
   text-align: right;
+  span {
+    text-align: left;
+  }
 }
 
 .system {
