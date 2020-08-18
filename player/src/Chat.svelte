@@ -178,6 +178,14 @@
     scrollUp();
 
     await updateInputInterface();  
+
+    setTimeout(async ()=>{
+      if(chatItems.length == 0) {
+        //alert("no chat items loaded, polliing server")
+        showItemsSince = null;
+        await loadMoreItems(currentBoard); 
+      }
+    }, 4000)
     
   }
   
@@ -428,7 +436,7 @@
       if(!fileServerURL) fileServerURL = await getConfig("fileServerURL");
 
       if(!showItemsSince) {
-        showItemsSince = Date.now()
+        showItemsSince = Date.now() - 500 // load a bit more than needed
       }
       console.log("loading items earlier than", showItemsSince);  
 

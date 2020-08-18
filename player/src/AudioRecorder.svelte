@@ -12,6 +12,8 @@ export let projectId;
 export let onUpload;
 export let singleTool = false;
 
+export let reportRecordingError
+
 let status = "idle";
 let doUpload = true; // upload is planned 
 let uploadProgress = 0;
@@ -157,8 +159,9 @@ const startRecording = (timeslice) => {
       _startRecordingWithStream(stream, timeslice)
     })
     .catch((error) => {
-      alert('Error with getUserMedia: ' + error.message) // temp: helps when testing for strange issues on ios/safari
+      console.log('Error with getUserMedia: ' + error.message) // temp: helps when testing for strange issues on ios/safari
       console.log(error)
+      reportRecordingError()
     })
 }
 

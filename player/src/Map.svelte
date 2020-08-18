@@ -35,10 +35,9 @@ let locationIssue = false;
 let boatName = null;
 let boatData = {};
 
-
-
 let permissionState = "init"
-
+let locationWatchId;
+let panToUser = false;
 
 const initGoogleMap = async ()=>{
     console.log("initGoogleMap");
@@ -192,8 +191,42 @@ const updateMarkersPositionChange = () => {
 
 }
 
-const getUserPosition = (pan = false)=> {
+const locationOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 1000
+}
 
+function positionSuccess(pos) {
+  
+  userPosition = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude
+  };
+  locationIssue = false // prevent recurring failure notifications triggered by system
+
+  if (navigatorPermissionsNotAvailable) localStorage.setItem("locationPermissionState", "granted") // persist
+
+  if(panToUser) {
+    map.panTo(userPosition);
+    map.setZoom(18);
+    panToUser = false;
+  }
+
+  updateUserMarker(userPosition)
+
+}
+
+function positionError() {
+  if(!locationIssue) {
+    //alert("couldn't get location");
+    locationIssue = true;  
+  }
+  if (navigatorPermissionsNotAvailable) permissionState="do-not-ask" // do not persist
+}
+
+const getUserPosition = (pan = false)=> {
+  panToUser = pan
   // prompt -> ok-ask -> ... -> granted
   // prompt -> ok-ask -> ... -> denied
   // prompt -> do-no-ask
@@ -210,35 +243,20 @@ const getUserPosition = (pan = false)=> {
   if(permissionState == "ok-ask" || permissionState == "granted") {
     // Try HTML5 geolocation
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position)=> {
-        userPosition = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        locationIssue = false // prevent recurring failure notifications triggered by system
+      navigator.geolocation.getCurrentPosition(
+        positionSuccess, 
+        positionError,
+        locationOptions
+      );
 
-        if (navigatorPermissionsNotAvailable) localStorage.setItem("locationPermissionState", "granted") // persist
+      if(!locationWatchId) {  
+        locationWatchId = navigator.geolocation.watchPosition(
+          positionSuccess, 
+          positionError, 
+          locationOptions
+        );
+      }
 
-        if(pan) {
-          map.panTo(userPosition);
-          map.setZoom(16);
-        }
-
-        updateUserMarker(userPosition)
-
-      }, ()=> {
-        if(!locationIssue) {
-          alert("couldn't get location");
-          locationIssue = true;  
-        }
-
-        if (navigatorPermissionsNotAvailable) permissionState="do-not-ask" // do not persist
-        
-      }, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 10
-      });
     } else {
       alert("browser doesn't support location");
     }

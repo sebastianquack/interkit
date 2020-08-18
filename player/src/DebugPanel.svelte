@@ -61,7 +61,7 @@ $: {
 
   <p>playerId: {playerId}</p>
 
-  <p>project: {project.name}</p>
+  <p>project: {project.name} ({project._id})</p>
 
   <p>socket connected: {socketConnectionStatus}</p>
 
