@@ -18,7 +18,7 @@
     "Fischerboot_412px_post.png",
   ]
 
-  const randomImage = images[Math.floor(Math.random()*images.length)];
+  window.randomImage = window.randomImage || images[Math.floor(Math.random()*images.length)];
 
   //setTimeout(function(){
   //  next();
@@ -30,13 +30,13 @@
 
 </script>
 
-<div class="container" style={`background-image: url(/assets/boats/${randomImage})`}>
+<div class="container" style={`background-image: url(/assets/boats/${window.randomImage})`}>
 
   <div class="header">
     <h1>Willkommen bei<br/><b>Botboot</b></h1>
   </div>
 
-  <div class="content">
+  <div class="content" style="visibility: { buttonHidden ? "hidden" : "visible"}">
 
     <div class="author">
       Botboot
@@ -46,7 +46,7 @@
       Lust auf Gesellschaft?
     </div>
 
-    <div class="button" style="visibility: { buttonHidden ? "hidden" : "visisble"}" on:click={next}>
+    <div class="button" on:click={next}>
       Starte Botboot
     </div>    
 
@@ -73,11 +73,14 @@
   }
 
   .message {
+    opacity: 0.2;
     position: fixed;
     top: 12px;
     font-size: 12px;
     line-height: 12px;
-    text-align: center;
+    text-align: left;
+    box-sizing: border-box;
+    width: 100%;
   }
 
   .header {
@@ -162,11 +165,11 @@
       animation-duration: 0.5s;
       animation-iteration-count: 1;
       animation-fill-mode: forwards;      
+      user-select: none;      
       &:hover, &:active {
         background-color: var(--color-bright);
         color: var(--color-dark);
         cursor: pointer;
-        user-select: none;
       }
     }
 

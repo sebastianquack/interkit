@@ -59,7 +59,7 @@
   {#if bypassWelcome}
     <PlayerContainer {projectId} {playerId} {googleReady}/>
   {:else}
-    <WelcomeScreen {setBypassWelcome} message={loading ? "loading..." : (projectId ? "" : "no project specified")}/>
+    <WelcomeScreen {setBypassWelcome} buttonHidden={projectId ? false : true} message={loading ? "Loading App..." : (projectId ? "" : "no project specified")}/>
   {/if}
       
 </div>

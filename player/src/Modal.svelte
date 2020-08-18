@@ -33,9 +33,9 @@
 
 </script>
 
-<div id="container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
-  <div id="content" on:click|stopPropagation>
-    <button id="close" on:click={onClose}>close</button>
+<div id="modal-container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
+  <div class="modal-content" on:click|stopPropagation>
+    <button id="modal-close" on:click={onClose}>close</button>
     {#if item}
       {#if item.value.image}
         <img src={fileServerURL + item.value.image} alt="image of {item.key}"/>
@@ -60,46 +60,96 @@
   </div>
 </div>
 
-<style>
+<style type="text/scss">
 
-#container {
-  width: 100%; 
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background-color: rgb(0,0,0,0.75);
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  z-index: 11;
+:global {
+  #modal-container {
+
+    width: 100%; 
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: var(--color-dark-shade);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 11;
+
+    .modal-content {
+      background-color: var(--color-bright);
+      width: calc(100% - 2 * 24px);
+      margin: 24px;
+      max-height: calc(100vh - 4 * 24px);
+      position: relative;
+      box-sizing: border-box;
+      flex-direction: column;
+      border-radius: 12px;
+      border: 1px var(--color-dark) solid;
+     img {
+        &:first-of-type {
+          border-radius: 12px 12px 0 0;
+          width: 100%;
+          height: 40vh;
+          object-fit: contain;
+          background: transparent url(/assets/insel_dither_farbig.png);
+          padding: 24px;
+          box-sizing: border-box;   
+          margin-bottom: 12px;   
+        }
+
+        & + * {
+          margin-top: 24px;
+        }
+      }
+
+      h2, h3, p {
+        display: block;
+        margin-left:24px;
+        margin-right:24px;
+        margin-bottom:24px;
+      }
+
+      small {
+        background-color: var(--color-blue);
+        display: inline-block;
+        margin-right: 12px;
+        border: 1px var(--color-dark) solid;
+        padding: 4px;
+      }
+
+      p:empty {
+        display: nonde;
+      }
+
+      button:not(#modal-close) {
+        display: block;
+        width: calc(100% - 2 * 24px);
+        margin: 24px;
+        font-weight: bold;
+        letter-spacing: var(--letter-spacing-bold);
+        text-transform: uppercase;
+      }
+    }
+
+    #modal-close {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      width: 32px;
+      height: 32px;
+      color: transparent;
+      overflow: hidden;
+      display: block;
+      border-radius: 50%;
+      border: none;
+      background: transparent url("/assets/icons/Close_Round_32px.svg") no-repeat 50%;
+    }
+
+  }
+
 }
-
-#content {
-  background-color: #fff;
-  width: 100%;
-  max-height: 100%;
-  position: relative;
-  padding: 20px;
-  box-sizing: border-box;
-  flex-grow: 0.5;
-  flex-direction: column;
-}
-
-#content img {
-  width: 100%;
-  max-height: 60%;
-  object-fit: contain;
-}
-
-#close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  box-shadow: 2px 2px #ddd;
-}
-
 
 </style>

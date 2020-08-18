@@ -8,16 +8,21 @@
   export let playerId;
   export let handleHtmlClicks;
 
-  let pages = [];
   let currentPage = null;
   let playerURL;
+  let menuPages = [];
 
   onMount(async ()=>{
     let res = await fetch("/api/page/listWithVars?project=" + projectId + "&player=" + playerId)
     let json = await res.json();
-    if(json.docs) pages = json.docs;  
+    if(json.docs) {
+      const pages = json.docs;  
+      menuPages = pages
+        .filter(p => p.menuOrder !== undefined && parseInt(p.menuOrder) >= 0)
+        .sort((p1,p2) => parseInt(p1.order)-parseInt(p2.order))   
+    }
 
-    playerURL = await getConfig("playerURL");
+    playerURL = await getConfig("playerURL"); 
   })
 
 </script>
@@ -26,13 +31,12 @@
   
   {#if !currentPage}
   
-    <div class="menu-container" on:click|stopPropagation>     
-      <button class="close-button" on:click={()=>{onClose()}}>{"close"}</button>    
+    <div class="menu-container" on:click|stopPropagation>      
       <div class="menu-entries">
-      {#each pages as page}
-        {#if page.menuOrder >= 0}
+      {#each menuPages as page}
+        <div class="menu-entry">
           <h3 on:click|stopPropagation={()=>currentPage=page}>{page.menuEntry}</h3>
-        {/if}
+        </div>
       {/each}
       </div>
     </div>
@@ -40,8 +44,7 @@
   {:else}
 
     <div class="page-container">
-      <button class="close-button" on:click={()=>{currentPage=null; onClose()}}>{"close"}</button>    
-      <div on:click|stopPropagation={e=>handleHtmlClicks(e, "menu")}>
+      <div class="page" on:click|stopPropagation={e=>handleHtmlClicks(e, "menu")}>
         {@html currentPage.contentWithVars}
       </div>
     </div>
@@ -52,7 +55,7 @@
 
 
 
-<style>
+<style type="text/scss">
 
 .click-catch {
   position: absolute;
@@ -61,7 +64,7 @@
   width: 100%;
   bottom: 0;
   z-index: 11;
-  background-color: rgb(0,0,0, 0.75);
+  //background-color: rgb(0,0,0, 0.75);
 }
 
 
@@ -71,22 +74,29 @@
   top: 10px;
 }
 
-.menu-container {
+.menu-container, .page-container {
   position: absolute;
   left: 0;
-  top: 0;
-  width: 85%; 
+  top: 69px;
+  width: 100%; 
   bottom: 0;
-  background-color: #fff;
-  padding: 20px;
+  background-color:var(--color-bright);
   box-sizing: border-box;
   z-index: 10;
+  overflow-y: scroll;
 }
 
-.menu-entries {
-  padding-top: 1em;
-  font-weight: normal;
+.menu-container {
+    padding-top: 24px;
+}
 
+.menu-entry {
+  border-bottom: 1px var(--color-dark) solid;
+  padding: 24px;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 21px;  
+  letter-spacing: var(--letter-spacing-bold);
 }
 
 .menu-entries h3:hover {
@@ -94,16 +104,45 @@
 }
 
 .page-container {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 85%; 
-  background-color: #fff;
-  padding: 20px;
-  box-sizing: border-box;
-  z-index: 10;   
-  overflow-y: scroll;
+  
+  color: red;
+}
+:global {
+  .page-container {
+    .page {
+    }
+    .page > * {
+      margin-bottom: 18px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    font-size: 17px;
+    line-height: 24px;
+
+    h1 {
+      font-family: EurostyleLTStd-Ex2;
+      font-size: 27px;
+      line-height: 30px;      
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 32px 24px 24px 24px;
+      background: url("/assets/insel_dither_farbig.png") 0% 0% repeat;
+      background-position: 20%;
+      text-align: center;
+    }
+
+    h2 {
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 21px;
+      letter-spacing: var(--letter-spacing-bold);
+    }
+
+    p {
+      margin-bottom: 1em;
+    }
+  }
 }
 
 </style>

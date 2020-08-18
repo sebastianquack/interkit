@@ -115,6 +115,9 @@ article {
 
 .right {
   text-align: right;
+  span {
+    text-align: left;
+  }
 }
 
 .system {
@@ -195,11 +198,11 @@ span img {
 // options
 article.optionsArray {
   text-align: right;
-  margin-left: 20%;
+  margin-left: 15%;
   border: 1px solid var(--color-dark);
   background-color: var(--color-bright);  
   border-radius: var(--bubble-border-radius);
-  max-width: 60%;
+  max-width: 70%;
 
   h5 {
     margin:12px;
@@ -238,13 +241,21 @@ article.option span {
   cursor: pointer;
   //word-break: break-all;
 
+  &.inactive, &.selected {
+    cursor: default;
+  }
+
   &.inactive {
-    opacity: 0.25;
+    color: var(--color-dark-inactive);
+    background-color: transparent;
+    opacity: 0.5;
     border: none;
   }
 
   &.selected {
-    // background-color: #0074D9;
+    border: none;
+    background-color: var(--color-dark-inactive);
+    //color: var(--color-dark);
   }
 }
 

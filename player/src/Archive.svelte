@@ -86,6 +86,10 @@
       letter-spacing: var(--letter-spacing-bold);
     }
 
+    button.island {
+      background-color: var(--color-bright);
+    }
+
     > * {
       margin-bottom: 24px;
       border: 0px solid black;
@@ -94,6 +98,9 @@
 
     .player {
       padding: 0 24px 24px 24px;
+      &:empty {
+        display: none;
+      }
     }
     .boat {
       padding: 24px 24px 24px 24px;
@@ -145,7 +152,7 @@
         flex-direction: row;
         flex-wrap: wrap;
         li {
-          width: 64px;
+          width: 66px;
           margin-right: 12px;
           box-sizing: border-box;
           button {
@@ -205,7 +212,7 @@
         flex-direction: row;
         flex-wrap: wrap;
         li {
-          width: 102px;
+          width: 104px;
           margin-right: 12px;
           box-sizing: border-box;
           button {
@@ -253,6 +260,34 @@
       }
     }
 
+    .audios {
+      padding: 0 24px 24px 24px;
+      position: relative;
+      .headline {
+        margin-bottom: 18px;
+      }
+
+      ul {
+        overflow: hidden;
+      }
+
+      li {
+        float: left;
+        margin: 0 12px 12px 0;
+      }
+      button {    
+        border-radius: 6px 0;
+        width: 100px;
+        height: 80px;
+        overflow: hidden;
+        display: block;
+        padding: 6px;
+        font-weight: 300;
+        color: var(--color-bright);
+        background-color: var(--color-dark);            
+        border-bottom: 2px var(--color-bright) dotted;
+      }
+    }
 
   }
 

@@ -36,9 +36,12 @@
   --color-blue: #EAFEFF;
   --color-orange: #FF7758;
   --color-dark: #2B100D;
+  --color-dark-shade: #2B100D77;
+  --color-dark-inactive: #2B100D38;
 
   --color-white-bright: #FFFEFD;
   --color-blue-dark: #D2E8EB; 
+  --color-blue-2: rgb(202,215,216);
 
   --letter-spacing-bold: 2px;
 
@@ -92,4 +95,22 @@
   font-size: 15px;
   line-height: 16px;
   padding: var(--bubble-border-radius);
+}
+
+img.spinner {
+  width: 100%;
+  height: calc(1em + 30px);
+  object-fit: contain;
+}
+
+button {
+  cursor: pointer;
+  background-color: var(--color-bright);
+  /*font-weight: bold;
+  letter-spacing: var(--letter-spacing-bold);*/
+}
+
+button.inverted {
+  background-color: var(--color-dark);
+  color: var(--color-bright);
 }

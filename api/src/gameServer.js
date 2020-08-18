@@ -347,7 +347,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
     
     if(result.interfaceCommands.length) {
 
-        result.interfaceCommands.forEach(async entry=> {
+        for (let entry of result.interfaceCommands) {
 
           let msgObj = {
             params: entry, 
@@ -359,14 +359,14 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           } else {
             await db.scheduleMessage(formatDelay(entry.delay), msgObj); // send later
           }
-        })
+        }
     }
 
     // handle forwards
 
     if(result.forwards.length) {
 
-      result.forwards.forEach(async forward=>{
+      for (let forward of result.forwards) {
 
         console.log("forward", forward)
 
@@ -392,7 +392,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
             await abortTooManyMoves(playerId, node, board)        
           }
         }
-      })
+      }
     }
 
 
@@ -400,7 +400,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
 
     if(result.moveTos.length) {
 
-        result.moveTos.forEach(async moveTo => {
+      for (let moveTo of result.moveTos) {
         
           // find destination via name and board
           let destinations = await RestHapi.list(RestHapi.models.scriptNode, {
@@ -457,7 +457,7 @@ async function handleScript(currentNode, playerId, hook, msgData) {
             }
           }
 
-        })
+        }
 
     }
 

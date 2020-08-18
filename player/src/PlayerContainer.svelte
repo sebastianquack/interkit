@@ -98,15 +98,24 @@
 
     const res = await fetch("/api/boardLog?player=" + playerId + "&project=" + projectId + "&listed=true&$embed=board");
     const json = await res.json();
-    console.log("loadListedBoards", json);
-    boards = json.docs.map(log=>log.board).filter(b=>b).sort(function(a, b){return a.order-b.order}); 
+    console.log("loadListedBoards", json, boards);
+    
+    function getUnseenMessages(id) {
+      const foundBoard = boards.find(b => b._id === id)
+      return foundBoard ? foundBoard.unSeenMessages : 0
+    }
+    const newBoards = json.docs.map(log=>log.board).filter(b=>b).sort(function(a, b){return a.order-b.order}); 
+    boards = newBoards.map(b => ({
+      ...b,
+      unSeenMessages: getUnseenMessages(b._id)
+    }))
   
     if(boards.length == 1) {
       console.log("project has only 1 listed board, using that", boards[0].name);
       currentBoard = boards[0];
-    } 
+    }
 
-    await checkForUnseenMessages();    
+    await checkForUnseenMessages();
   }
 
   const checkForUnseenMessages = async (log = undefined) => {
@@ -222,7 +231,11 @@
   }
 
   const openChat = async () => {
-    mainView = "chat"
+    //if (mainView == "chat" && boards.length > 1) {
+    //  currentBoard = null; loadListedBoards()
+    //} else {
+      mainView = "chat"
+    //}
   }
   
   const openMap = async () => {
@@ -467,7 +480,7 @@
 
 {#if !loading}
 
-  <div class="top-menu {mainView == "chat" ? "highlight" : ""}">
+  <div class="top-menu highlight">
   
     {#if currentBoard && mainView == "chat" && boards.length > 1}
       <div class="breadcrumbs">
@@ -482,13 +495,17 @@
         </span>
       </div>
     {:else}
-      <button class="menu-button" on:click={toggleMenu}>
-        <span>{"menu"}</span>
-      </button>
+       {#if mainView == "chat"}
+        <button class="menu-button {menuOpen && "active"}" on:click={toggleMenu}>
+          <span>{"menu"}</span>
+        </button>
+        {:else}
+        <span></span>
+      {/if}
     {/if}
 
     <div class="menu-buttons-right">
-      <button class="button-chat" disabled={mainView == "chat"} on:touchstart={openChat} on:click={openChat}>
+      <button class="button-chat {mainView == "chat" && "active"}" on:touchstart={openChat} on:click={openChat}>
         <span>
           chat 
         </span>
@@ -515,21 +532,21 @@
           {#each boards as board}
             {#if board}
             <li class="board" on:click={()=>{launch(board)}}>
-              <h3 class="board-name">
-                {board.name} 
-              </h3>
-              {#if board.description}
-                <p class="board-description">
-                  {board.description} 
-                </p>
-              {/if}
-              <small class="board-unseen {board.unSeenMessages || "no-messages"}">
-                {#if board.unSeenMessages } 
+              <div class="board-name-description">
+                <h3 class="board-name">
+                  {board.name} 
+                </h3>     
+                {#if board.description}
+                  <p class="board-description">
+                    {board.description} 
+                  </p>
+                {/if}           
+              </div>
+              {#if board.unSeenMessages } 
+                <small class="board-unseen {board.unSeenMessages || "no-messages"}">
                   {board.unSeenMessages} neue Nachrichten
-                {:else}
-                  Keine neuen Nachrichten
-                {/if} 
-              </small> 
+                </small>
+              {/if} 
             </li>
             {/if}
           {/each}
@@ -620,12 +637,12 @@
   {/if}
 
   {#if menuOpen}
-  <Menu
-    {projectId}
-    {playerId}
-    onClose={()=>menuOpen=false}
-    {handleHtmlClicks}
-  />
+    <Menu
+      {projectId}
+      {playerId}
+      onClose={()=>menuOpen=false}
+      {handleHtmlClicks}
+    />
   {/if}
 
   {#if debugPanelOpen && playerId}
@@ -639,9 +656,9 @@
   {/if}
 
 {:else}
-
-  <WelcomeScreen buttonHidden message={ playerId ? "Loading..." : "missing playerId" } />
-
+  {#if !authoring}
+    <WelcomeScreen buttonHidden message={ playerId ? "Loading Player..." : "missing playerId" } />
+  {/if}
 {/if}
 
 </div>
@@ -685,6 +702,7 @@
 
   .highlight {
     border-bottom: 1px solid;
+    background-color: var(--color-bright);
   }
 
   .menu-buttons-right {
@@ -695,7 +713,7 @@
       border: none;
       background-color: transparent;
       background-image: url("/assets/Menu-bg-Normal.svg");
-      &:active, &[disabled] {
+      &:active, &[disabled], &.active {
         background-image: url("/assets/Menu-bg-Active.svg");
       }
       background-size: cover;
@@ -747,7 +765,7 @@
         top: 0.05em;
         left: 0.4em;
       }
-      /*&:hover span,*/ &:active span,  &[disabled] span {
+      /*&:hover span,*/ &:active span, &.active span,  &[disabled] span {
         background-image: url("/assets/icons/Chat-white.svg");
       }   
     }
@@ -790,8 +808,11 @@
     border: none;
     background: transparent url("/assets/icons/Menu.svg") no-repeat 0 50%;
     padding-left: 30px;
-    margin-left: 25px;
+    margin-left: 12px;
     cursor: pointer;
+    &.active {
+      background: transparent url("/assets/icons/Close.svg") no-repeat 0 50%;
+    }
   }
 
   .breadcrumbs {
@@ -803,6 +824,11 @@
       border: none;
       margin: 0;
       cursor: pointer;
+
+      & + .breadcrumb {
+        position: relative;
+        left: -1em;
+      }
     }
   }
 
@@ -832,7 +858,7 @@
     cursor: pointer;
 
     +.board {
-      border-top: 1px solid lightgray;
+      border-top: 1px solid var(--color-dark);
     }
 
     position: relative;
@@ -848,25 +874,39 @@
     &:nth-child(3) { background-position: 31% 77%; }
     &:nth-child(4) { background-position: 40% 40%; }
 
-    .board-name {
+    .board-name-description {
+      margin: 0 0 3px 0;
+      background-position: 0% 0%;
+      background-repeat: no-repeat;
+      background-image: url("/assets/picto/Botboot.svg");
+      .board-name {
       font-weight: bold;
       letter-spacing: var(--letter-spacing-bold);
       text-transform: uppercase;
       font-size: 18px;
       line-height: 21px;
-      margin: 0 0 3px 0;
-      padding-top: 65px;
-      background-position: 0% 0%;
-      background-repeat: no-repeat;
-      background-image: url("/assets/picto/Botboot.svg");
+      padding-left: 65px;
+      padding-bottom: 6px; 
+      hyphens: auto;
+      }
+      .board-description {
+      padding-left: 65px; 
+      min-height: 65px;   
+      font-size: 15px;
+      line-height: 18px;
+      padding-right: 24px;
+      max-width: 500px;
+      padding-bottom: 6px; 
+      box-sizing: border-box;
+      }
     }
 
-    &:nth-child(1) .board-name { background-image: url("/assets/picto/Intro.svg") }
-    &:nth-child(2) .board-name { background-image: url("/assets/picto/Fools.svg") }
-    &:nth-child(3) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
-    &:nth-child(4) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
-    &:nth-child(5) .board-name { background-image: url("/assets/picto/Waterworld.svg") }
-    &:nth-child(6) .board-name { background-image: url("/assets/picto/Dryland.svg") }
+    &:nth-child(1) .board-name-description { background-image: url("/assets/picto/Intro.svg") }
+    &:nth-child(2) .board-name-description { background-image: url("/assets/picto/Fools.svg") }
+    &:nth-child(3) .board-name-description { background-image: url("/assets/picto/Odyssee.svg") }
+    &:nth-child(4) .board-name-description { background-image: url("/assets/picto/Gesellschaft.svg") }
+    &:nth-child(5) .board-name-description { background-image: url("/assets/picto/Waterworld.svg") }
+    &:nth-child(6) .board-name-description { background-image: url("/assets/picto/Dryland.svg") }
 
     .board-unseen {
       display: block;
