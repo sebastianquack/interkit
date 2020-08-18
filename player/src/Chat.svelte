@@ -178,6 +178,14 @@
     scrollUp();
 
     await updateInputInterface();  
+
+    setTimeout(async ()=>{
+      if(chatItems.length == 0) {
+        //alert("no chat items loaded, polliing server")
+        showItemsSince = null;
+        await loadMoreItems(currentBoard); 
+      }
+    }, 4000)
     
   }
   
