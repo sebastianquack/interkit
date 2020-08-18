@@ -532,19 +532,21 @@
           {#each boards as board}
             {#if board}
             <li class="board" on:click={()=>{launch(board)}}>
-              <h3 class="board-name">
-                {board.name} 
-              </h3>
-              {#if board.description}
-                <p class="board-description">
-                  {board.description} 
-                </p>
-              {/if}
-                {#if board.unSeenMessages } 
-                  <small class="board-unseen {board.unSeenMessages || "no-messages"}">
-                    {board.unSeenMessages} neue Nachrichten
-                  </small>
-                {/if} 
+              <div class="board-name-description">
+                <h3 class="board-name">
+                  {board.name} 
+                </h3>     
+                {#if board.description}
+                  <p class="board-description">
+                    {board.description} 
+                  </p>
+                {/if}           
+              </div>
+              {#if board.unSeenMessages } 
+                <small class="board-unseen {board.unSeenMessages || "no-messages"}">
+                  {board.unSeenMessages} neue Nachrichten
+                </small>
+              {/if} 
             </li>
             {/if}
           {/each}
@@ -654,9 +656,9 @@
   {/if}
 
 {:else}
-
-  <WelcomeScreen buttonHidden message={ playerId ? "Loading Player..." : "missing playerId" } />
-
+  {#if !authoring}
+    <WelcomeScreen buttonHidden message={ playerId ? "Loading Player..." : "missing playerId" } />
+  {/if}
 {/if}
 
 </div>
@@ -869,25 +871,39 @@
     &:nth-child(3) { background-position: 31% 77%; }
     &:nth-child(4) { background-position: 40% 40%; }
 
-    .board-name {
+    .board-name-description {
+      margin: 0 0 3px 0;
+      background-position: 0% 0%;
+      background-repeat: no-repeat;
+      background-image: url("/assets/picto/Botboot.svg");
+      .board-name {
       font-weight: bold;
       letter-spacing: var(--letter-spacing-bold);
       text-transform: uppercase;
       font-size: 18px;
       line-height: 21px;
-      margin: 0 0 3px 0;
-      padding-top: 65px;
-      background-position: 0% 0%;
-      background-repeat: no-repeat;
-      background-image: url("/assets/picto/Botboot.svg");
+      padding-left: 65px;
+      padding-bottom: 6px; 
+      hyphens: auto;
+      }
+      .board-description {
+      padding-left: 65px; 
+      min-height: 65px;   
+      font-size: 15px;
+      line-height: 18px;
+      padding-right: 24px;
+      max-width: 500px;
+      padding-bottom: 6px; 
+      box-sizing: border-box;
+      }
     }
 
-    &:nth-child(1) .board-name { background-image: url("/assets/picto/Intro.svg") }
-    &:nth-child(2) .board-name { background-image: url("/assets/picto/Fools.svg") }
-    &:nth-child(3) .board-name { background-image: url("/assets/picto/Odyssee.svg") }
-    &:nth-child(4) .board-name { background-image: url("/assets/picto/Gesellschaft.svg") }
-    &:nth-child(5) .board-name { background-image: url("/assets/picto/Waterworld.svg") }
-    &:nth-child(6) .board-name { background-image: url("/assets/picto/Dryland.svg") }
+    &:nth-child(1) .board-name-description { background-image: url("/assets/picto/Intro.svg") }
+    &:nth-child(2) .board-name-description { background-image: url("/assets/picto/Fools.svg") }
+    &:nth-child(3) .board-name-description { background-image: url("/assets/picto/Odyssee.svg") }
+    &:nth-child(4) .board-name-description { background-image: url("/assets/picto/Gesellschaft.svg") }
+    &:nth-child(5) .board-name-description { background-image: url("/assets/picto/Waterworld.svg") }
+    &:nth-child(6) .board-name-description { background-image: url("/assets/picto/Dryland.svg") }
 
     .board-unseen {
       display: block;
