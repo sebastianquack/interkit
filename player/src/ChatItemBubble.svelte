@@ -241,13 +241,21 @@ article.option span {
   cursor: pointer;
   //word-break: break-all;
 
+  &.inactive, &.selected {
+    cursor: default;
+  }
+
   &.inactive {
-    opacity: 0.25;
+    color: var(--color-dark-inactive);
+    background-color: transparent;
+    opacity: 0.5;
     border: none;
   }
 
   &.selected {
-    // background-color: #0074D9;
+    border: none;
+    background-color: var(--color-dark-inactive);
+    //color: var(--color-dark);
   }
 }
 
