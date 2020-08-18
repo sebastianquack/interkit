@@ -56,7 +56,7 @@
   let archiveButtonLabel = null;
   let loading = true;
   let fileServerURL = "";
-  let menuOpen = true;
+  let menuOpen = false;
   let debugPanelOpen = false;
   let socketConnectionStatus = null;
   const updateConnectionStatus = (s)=>socketConnectionStatus=s;
