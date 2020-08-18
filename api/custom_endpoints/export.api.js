@@ -148,7 +148,7 @@ const importData = async (request, mongoose, logger) => {
 
   //console.log(request.payload)
 
-  return new Promise( resolve => {
+  //return new Promise( resolve => {
 
     const errorMessages = []
 
@@ -238,7 +238,9 @@ const importData = async (request, mongoose, logger) => {
       resolve({ errorMessages })
     });
 
-  })
+  //})
+
+  return true
 
 
   //const payload = {
