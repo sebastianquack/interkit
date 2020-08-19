@@ -37,7 +37,7 @@ const init = ()=> {
     });
 
     function tick() {
-      loadingMessage.innerText = "⌛ Loading video..."
+      loadingMessage.innerText = "⌛ Warte auf Kamera..."
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         loadingMessage.hidden = true;
         canvasElement.hidden = false;
@@ -83,7 +83,7 @@ onDestroy(()=>{
 </script>
 
 <div id="scanner-container">
-  <div id="loadingMessage" hidden="">⌛ Loading video...</div>
+  <div id="loadingMessage" hidden="">⌛ Warte auf Kamera...</div>
   <canvas id="canvas"></canvas>
   <div id="output">
     <div id="outputMessage">Searching for QR Code...</div>
