@@ -269,6 +269,7 @@
   const resetClient = (resetPlayer = false) => {
     if (resetPlayer) {
       localStorage.removeItem("playerId");
+      localStorage.removeItem("locationPermissionState");
     }
     location.reload();
   }
