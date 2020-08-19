@@ -4,6 +4,8 @@
 
 <script>
   import { onMount } from 'svelte';
+  import { polyfill } from "seamless-scroll-polyfill";
+
   import { getConfig, findOrCreatePlayer } from '../../shared/util.js';
   import PlayerContainer from './PlayerContainer.svelte';
   import WelcomeScreen from './WelcomeScreen.svelte'
@@ -21,6 +23,8 @@
     console.log("googleReady");
     googleReady = true;
   }
+
+  polyfill();
 
   onMount(async () => {    
 
