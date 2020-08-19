@@ -894,6 +894,7 @@
     left: 0;
     right: 0;
     padding: 12px 12px 24px 12px;
+    scroll-behavior: smooth;
   }
 
   .no-inputs {

@@ -34,7 +34,7 @@
 </script>
 
 <div id="modal-container" on:click={onClose} style="visibility: {visible ? 'visible' : 'hidden'}">     
-  <div class="modal-content" on:click|stopPropagation>
+  <div class="modal-content {!item.value.imageAsset && "no-image"}" on:click|stopPropagation>
     <button id="modal-close" on:click={onClose}>close</button>
     {#if item}
       {#if item.value.image}
@@ -42,6 +42,8 @@
       {/if}
       {#if item.value.imageAsset}
         <img src={"/assets/" + item.value.imageAsset} alt="image of {item.key}"/>
+      {:else}
+        <br />
       {/if}
       <h2>{item.value.name}</h2>
       <p>{item.value.description ? item.value.description : ""}</p>
@@ -51,7 +53,6 @@
         </audio>
       {/if}
       {#if item.value.buttons}
-        <br><br>
         {#each item.value.buttons as button}
           <button on:click={debounce(()=>{buttonPress(button)}, 5000, true)}>{button.label}</button>
         {/each}
@@ -82,12 +83,21 @@
       background-color: var(--color-bright);
       width: calc(100% - 2 * 24px);
       margin: 24px;
-      max-height: calc(100vh - 4 * 24px);
+      //max-height: calc(100vh - 4 * 24px);
       position: relative;
       box-sizing: border-box;
       flex-direction: column;
+      @media (orientation: landscape) {
+        body {
+          flex-direction: row;
+        }
+      }
       border-radius: 12px;
       border: 1px var(--color-dark) solid;
+
+      &.no-image {
+        background: transparent url(/assets/insel_dither_farbig.png);
+      }
      img {
         &:first-of-type {
           border-radius: 12px 12px 0 0;

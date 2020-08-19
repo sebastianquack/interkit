@@ -30,6 +30,7 @@
     "debounce": "^1.2.0",
     "easyqrcodejs": "^3.7.1",
     "marked": "^1.1.0",
-    "mobile-device-detect": "^0.4.3"
+    "mobile-device-detect": "^0.4.3",
+    "seamless-scroll-polyfill": "^1.1.0"
   }
 }

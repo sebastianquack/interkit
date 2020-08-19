@@ -239,14 +239,18 @@
   }
   
   const openMap = async () => {
-    await loadMarkers();
-    mapItem = null;
-    mainView = "map";
+    if (mainView != "map") {
+      await loadMarkers();
+      mapItem = null;
+      mainView = "map";
+    }
   }
 
   const openArchive = async () => {
-    await loadDocuments();
-    mainView = "archive";
+    if (mainView != "archive") {
+      await loadDocuments();
+      mainView = "archive";
+    }
   }
 
   const toggleMenu = () => {
@@ -505,6 +509,7 @@
     {/if}
 
     <div class="menu-buttons-right">
+      <!--{/* not using disabled because double-tap on disabled element zooms in on ios safari */}-->
       <button class="button-chat {mainView == "chat" && "active"}" on:touchstart={openChat} on:click={openChat}>
         <span>
           chat 
@@ -516,11 +521,13 @@
         {/if}        
       </button>
       {#if archiveButtonLabel}
-        <button class="button-archive" disabled={mainView == "archive"} on:touchstart={openArchive} on:click={openArchive}>
+        <!--{/* not using disabled because double-tap on disabled element zooms in on ios safari */}-->
+        <button class="button-archive {mainView == "archive" && "active"}" on:touchstart={openArchive} on:click={openArchive}>
           <span>{archiveButtonLabel}</span>
         </button>
       {/if}
-      <button class="button-map" disabled={mainView == "map"} on:touchstart={openMap} on:click={openMap}>
+      <!--{/* not using disabled because double-tap on disabled element zooms in on ios safari */}-->
+      <button class="button-map {mainView == "map" && "active"}" on:touchstart={openMap} on:click={openMap}>
         <span>map</span>
       </button>
     </div>
@@ -777,7 +784,7 @@
       top: 0em;
       left: 0.4em;    
     }
-    /*&:hover span,*/ &:active span, &[disabled] span {
+    /*&:hover span,*/ &:active span, &.active span, &[disabled] span {
       background-image: url("/assets/icons/Boat-white.svg");
     }    
   }
@@ -788,7 +795,7 @@
       top: 0;
       left: 0.2em;
     }
-    /*&:hover span,*/ &:active span, &[disabled] span {
+    /*&:hover span,*/ &:active span, &.active span, &[disabled] span {
       background-image: url("/assets/icons/Map-white.svg");
     }   
   }
