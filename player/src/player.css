@@ -66,11 +66,6 @@
 
 }
 
-input, button {
-  touch-action: manipulation;
-}
-
-
 .main-container {
   color: var(--color-dark);
   border-color: var(--color-dark);

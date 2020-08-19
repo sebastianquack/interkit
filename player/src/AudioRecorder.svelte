@@ -429,7 +429,6 @@ const cancel = ()=>{
   stopRecording();
 }
 
-
 </script>
 
 <div id="container">
@@ -437,7 +436,7 @@ const cancel = ()=>{
     {#if !singleTool}<button on:click={onClose}>cancel</button>{/if}
 
     {#if status == "idle"}
-      <button on:click={startRecording}>start recording</button>
+      <button on:click={startRecording}>Sprachaufnahme starten</button>
     {/if}
 
     {#if status == "recording"}
