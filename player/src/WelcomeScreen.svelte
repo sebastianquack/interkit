@@ -33,7 +33,11 @@
 <div class="container" style={`background-image: url(/assets/boats/${window.randomImage})`}>
 
   <div class="header">
-    <h1>Willkommen bei<br/><b>Botboot</b></h1>
+    <h1>Willkommen bei<br/><b>Botboot</b>
+    <br />
+    <img class="logo" src="/assets/itc_powered.png" alt="powered by Imagine The City"/>
+    </h1>
+
   </div>
 
   <div class="content" style="visibility: { buttonHidden ? "hidden" : "visible"}">
@@ -73,21 +77,26 @@
   }
 
   .message {
-    opacity: 0.2;
+    opacity: 0.7;
     position: fixed;
-    top: 12px;
+    bottom: 12px;
     font-size: 12px;
     line-height: 12px;
-    text-align: left;
+    text-align: center;
     box-sizing: border-box;
     width: 100%;
+    color: white;
   }
 
   .header {
     display: flex;
     flex: 1;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
+    flex-direction: column;
+    padding-top: 12px;
+    padding-left: 4px;
+    overflow: hidden;
 
     h1 {
       font-family: EurostyleLTStd;
@@ -108,13 +117,25 @@
     }
   }
 
+    .logo {
+      filter: invert(1);
+      width: auto;
+      height: 100px;
+      object-fit: contain;
+      opacity: 1;
+      position: relative;
+      margin-top: 0px;
+      ;
+    }
+
   .content {
-    flex: 3;
+    flex: 2;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     justify-items: flex-start;
     align-items: flex-start;
+    overflow: hidden;
 
     > * {
       margin-bottom: 12px;
@@ -144,10 +165,15 @@
     .bubble {
       display: inline;
       box-sizing: border-box;
-      // animation-name: appear;
-      // animation-duration: 1s;
-      // animation-iteration-count: 1;
-      // animation-fill-mode: forwards;
+    }
+
+    .bubble, .author {
+       animation-name: appear;
+       animation-duration: 1s;
+       animation-delay: 2s;
+       animation-iteration-count: 1;
+       animation-fill-mode: both;
+       animation-timing-function: ease-out;
     }
 
     .button {
@@ -160,11 +186,11 @@
       line-height: 16px;
       font-weight: bold;
       text-transform: uppercase;
-      animation-name: appear;
-      animation-duration: 1s;
-      animation-duration: 0.5s;
-      animation-iteration-count: 1;
-      animation-fill-mode: forwards;      
+      //animation-name: appear;
+      //animation-duration: 1s;
+      //animation-delay: 1.5s;
+      //animation-iteration-count: 1;
+      //animation-fill-mode: both;      
       user-select: none;      
       &:hover, &:active {
         background-color: var(--color-bright);
@@ -176,8 +202,9 @@
   }
 
   @keyframes appear {
-    from   {opacity: 0; }
-    to     {opacity: 1;}
+    0%   {transform: translateY(100%); opacity: 0; }
+    100%     {transform: translateY(0%); opacity: 1;}
+
   }
 
 </style>

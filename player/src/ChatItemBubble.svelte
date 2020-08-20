@@ -248,7 +248,7 @@ article.option span {
   &.inactive {
     color: var(--color-dark-inactive);
     background-color: transparent;
-    opacity: 0.5;
+    opacity: 0.7;
     border: none;
   }
 

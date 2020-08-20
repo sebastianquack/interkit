@@ -429,20 +429,19 @@ const cancel = ()=>{
   stopRecording();
 }
 
-
 </script>
 
 <div id="container">
 
-    {#if !singleTool}<button on:click={onClose}>cancel</button>{/if}
+    {#if !singleTool}<button on:click={onClose}>Abbrechen</button>{/if}
 
     {#if status == "idle"}
-      <button on:click={startRecording}>start recording</button>
+      <button on:click={startRecording}>Sprachaufnahme starten</button>
     {/if}
 
     {#if status == "recording"}
-      {#if singleTool}<button on:click={cancel}>cancel</button>{/if}
-      <button on:click={stopRecording}>finish recording</button>
+      {#if singleTool}<button on:click={cancel}>Abbrechen</button>{/if}
+      <button on:click={stopRecording}>Aufnahme beenden</button>
       {timeDisplay}
     {/if}
 
@@ -465,6 +464,12 @@ const cancel = ()=>{
     width: 100%;
     background-color: white;
     box-sizing: border-box;
+  }
+
+  button {
+    position: relative;
+    top: -5px;
+
   }
 
 </style>

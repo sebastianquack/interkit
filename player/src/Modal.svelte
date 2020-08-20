@@ -115,7 +115,7 @@
         }
       }
 
-      h2, h3, p {
+      h2, h3, p, audio {
         display: block;
         margin-left:24px;
         margin-right:24px;
