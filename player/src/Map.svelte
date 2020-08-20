@@ -203,7 +203,7 @@ function positionSuccess(pos) {
     lat: pos.coords.latitude,
     lng: pos.coords.longitude
   };
-  locationIssue = false // prevent recurring failure notifications triggered by system
+  //locationIssue = false // prevent recurring failure notifications triggered by system
 
   if (navigatorPermissionsNotAvailable) localStorage.setItem("locationPermissionState", "granted") // persist
 
@@ -219,8 +219,8 @@ function positionSuccess(pos) {
 
 function positionError() {
   if(!locationIssue) {
-    //alert("couldn't get location");
     locationIssue = true;  
+    alert("Dein Gerät erlaubt BOTBOOT keinen Zugriff auf die GPS-Position. Zum Aktivieren auf iOS: Geräte-Einstellungen > Datenschutz > Ortungsdienste > Safari > Fragen. Android: Settings -> Advanced -> Location Access -> Chrome.");
   }
   if (navigatorPermissionsNotAvailable) permissionState="do-not-ask" // do not persist
 }
@@ -238,6 +238,10 @@ const getUserPosition = (pan = false)=> {
       alert("Falls du die Lokalisierung später aktivieren willst, lade die Seite neu oder wende dich an den Support.")
       permissionState = "do-not-ask"
     }
+  }
+
+  if(permissionState == "denied") {
+    positionError()
   }
 
   if(permissionState == "ok-ask" || permissionState == "granted") {
