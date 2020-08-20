@@ -22,6 +22,11 @@ export const initSocket = async (playerId, updateConnectionStatus, apiUrlPrefix=
     return;
   }
 
+  console.log("initSocket")
+  if(socket) {
+    socket.close()
+  }
+
   socket = io(socketURL);
 
   socket.on('disconnect', function(){

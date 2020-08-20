@@ -204,11 +204,25 @@ exports.init = (listener) => {
     // - limitation for now, player can only have one socket (cannot play with multiple tabs open)
     
     socket.on('registerPlayer', async (data) => {
+      console.log("registerPlayer", data.playerId)
       
       if(!playerSockets[data.playerId]) {
         playerSockets[data.playerId] = []
       }
 
+      // make sure that 
+      // one playerId can have many sockets, but one socket only one playerId
+
+      // remove this socket from any player that has it
+      for(let playerId of Object.keys(playerSockets)) {
+        //console.log("checking", playerSockets[playerId], socket.id)
+        let index = playerSockets[playerId].indexOf(socket.id)
+        if(index != -1) {
+          playerSockets[playerId].splice(index, 1);
+        }
+      } 
+
+      // add this socket to this player
       if(playerSockets[data.playerId].indexOf(socket.id) == -1) {
         playerSockets[data.playerId].push(socket.id);  
       }
@@ -313,6 +327,9 @@ async function handleScript(currentNode, playerId, hook, msgData) {
             recipients.others = recipients.all.filter(r=>r!=playerId); 
           }
         }
+
+        //console.log(recipients)
+        //console.log(output.to)
 
         // specify custom group of players as recipients if requested
         if(output.to == "custom" && output.players) {
