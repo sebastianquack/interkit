@@ -184,7 +184,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         })},              
         
         image: async (keyOrName, params={}) => { 
-            result.outputs.push({
+          result.outputs.push({
             attachment: {
               mediatype: "image", 
               keyOrName,
@@ -193,6 +193,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             }, 
             label: params.label ? params.label : varCache.board.narrator,
             to: params.to ? params.to : "sender",
+            channel: params.channel,
             delay: params.delay ? params.delay : null,
             forceOpen: params.forceOpen
         })},
@@ -206,6 +207,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           params: params,
           label: params.label ? params.label : varCache.board.narrator,
           to: params.to ? params.to : "sender",
+          channel: params.channel,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen,
         })},  
@@ -219,6 +221,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
               lng: latlng.lng,
             }, 
             to: params.to ? params.to : "sender",
+            channel: params.channel,
             delay: params.delay ? params.delay : null,
             forceOpen: params.forceOpen,
             label: params.label ? params.label : varCache.board.narrator
