@@ -292,6 +292,11 @@
           loadMarkers();
         }
 
+        if(message.params.interfaceCommand == "switchBoard" && message.params.interfaceOptions.boardKey) {
+          console.log("switchBoard command")
+          switchBoard(message.params.interfaceOptions.boardKey)
+        }
+
         if(message.params.interfaceCommand == "map") {
           console.log("map command", message.params.interfaceOptions)
           arrowMode = message.params.interfaceOptions.arrowMode;
@@ -389,18 +394,7 @@
     let boardKey = target.getAttribute('data-board');
     if(boardKey) {
       console.log("opening board " + boardKey)
-      
-      let boardRes = await fetch("/api/board?key=" + boardKey + "&project=" + projectId);
-      let boardJSON = await boardRes.json();
-
-      if(boardJSON.docs.length != 1) {
-        console.log("board not found", parts[0])
-        return;
-      }
-      currentBoard = boardJSON.docs[0];
-      menuOpen = false;
-      dynamicModalPage = null;
-      mainView = "chat"
+      switchBoard(boardKey)
     }
 
     // button to open dynamicModal (handlebars)
@@ -435,6 +429,20 @@
       debugPanelOpen = true;
     }
 
+  }
+
+  const switchBoard = async (boardKey) => {
+    let boardRes = await fetch("/api/board?key=" + boardKey + "&project=" + projectId);
+    let boardJSON = await boardRes.json();
+
+    if(boardJSON.docs.length != 1) {
+      console.log("board not found", parts[0])
+      return;
+    }
+    currentBoard = boardJSON.docs[0];
+    menuOpen = false;
+    dynamicModalPage = null;
+    mainView = "chat"
   }
 
   // reactive & lifecycle calls

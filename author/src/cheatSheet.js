@@ -122,6 +122,11 @@ interface("map", {arrowMode: true, arrowTarget: item}) // set map arrow to point
 interface("map", {arrowMode: true, arrowDirection: 45}) // set map arrow to point to a specific direction
 interface("map", {arrowMode: false}) // turn off arrow
 
+// switch view to a different board
+interface("switchBoard", {
+  boardKey: "unterwegs"
+})
+
 interface("request-geoposition") // client responds with coordinates (use with caution)
 
 // turn on or off input elements in the interface - this is persisted per board
