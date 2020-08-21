@@ -328,6 +328,22 @@ async function handleScript(currentNode, playerId, hook, msgData) {
           }
         }
 
+        // message to a board channel
+        if((output.to == "boardAll" || output.to == "boardOthers") && output.channel) {
+
+          // load 
+          const BoardLog = mongoose.model("boardLog");
+          let boardLogs = await BoardLog.find({
+            subscribedChannels: output.channel, 
+            board: mongoose.Types.ObjectId(board)
+          })
+          console.log("boardLogs subscribed to channel", output.channel, boardLogs.length)  
+
+          // send message to everyone subscribed to this channel
+          recipients.boardAll = boardLogs.map(bl=>bl.player)
+          recipients.boardOthers = recipients.boardAll.filter(r=>r!=playerId); 
+        }
+
         //console.log(recipients)
         //console.log(output.to)
 
