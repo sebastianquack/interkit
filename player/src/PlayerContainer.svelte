@@ -298,6 +298,11 @@
           arrowTarget = message.params.interfaceOptions.arrowTarget
           arrowDirection = message.params.interfaceOptions.arrowDirection;
         }
+
+        if (message.params.interfaceCommand && message.params.interfaceCommand == "setPlayerId") {
+          alert(JSON.stringify(message))
+          playerId = message.params.playerId
+        }        
       }
 
       if(chatMessageHandler) {
