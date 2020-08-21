@@ -44,7 +44,8 @@ onMount(async ()=>{
         <audio controls>
           <source src={entry.audioSrc} type={"audio/mp3"}>
         </audio><br>
-        <small on:click={()=>attachPlayer(entry.playerId)}>{entry.playerId}</small>        
+        <small on:click={()=>attachPlayer(entry.playerId)}>{entry.playerId}</small>
+        <small>vor {((Date.now() - entry.timestamp) / 86400000.0).toFixed(1) } Tagen</small>        
     {:else}            
       not recorded
     {/if}

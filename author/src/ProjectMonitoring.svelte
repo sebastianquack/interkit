@@ -133,21 +133,21 @@ const reset = ()=>{
   {#if dreams.length} 
     <h4>Dreams</h4>
     {#each dreams as collection}
-      <TextCollection {collection}/>
+      <TextCollection {collection} {attachPlayer}/>
     {/each}
   {/if}
 
   {#if audioCollections.length} 
     <h4>Audio Collections</h4>
     {#each audioCollections as collection}
-      <AudioCollection {collection}/>
+      <AudioCollection {collection} {attachPlayer}/>
     {/each}
   {/if}
 
   {#if textCollections.length} 
     <h4>Text Collections</h4>
     {#each textCollections as collection}
-      <TextCollection {collection}/>
+      <TextCollection {collection} {attachPlayer}/>
     {/each}
   {/if}
 
