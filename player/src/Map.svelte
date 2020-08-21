@@ -207,10 +207,13 @@ function positionSuccess(pos) {
 
   if (navigatorPermissionsNotAvailable) localStorage.setItem("locationPermissionState", "granted") // persist
 
-  if(panToUser) {
-    map.panTo(userPosition);
-    map.setZoom(18);
-    panToUser = false;
+  if(panToUser && !mapItem) {
+    console.log("pan to user")
+    if(map) {
+     map.panTo(userPosition);
+     map.setZoom(18);
+      panToUser = false;
+    }
   }
 
   updateUserMarker(userPosition)
@@ -220,13 +223,14 @@ function positionSuccess(pos) {
 function positionError() {
   if(!locationIssue) {
     locationIssue = true;  
-    alert("Dein Gerät erlaubt BOTBOOT keinen Zugriff auf die GPS-Position. Zum Aktivieren auf iOS: Geräte-Einstellungen > Datenschutz > Ortungsdienste > Safari > Fragen. Android: Settings -> Advanced -> Location Access -> Chrome.");
+    alert("BOTBOOT bekommt gerade keinen Zugriff auf deine GPS-Position. Vielleicht hast du das generell deaktiviert. Schaue im Menü unter Einstellungen, um herauszufinden, wie du das auf deinem Gerät erlauben kannst.");
   }
   if (navigatorPermissionsNotAvailable) permissionState="do-not-ask" // do not persist
 }
 
 const getUserPosition = (pan = false)=> {
   panToUser = pan
+  //mapItem = null;
   // prompt -> ok-ask -> ... -> granted
   // prompt -> ok-ask -> ... -> denied
   // prompt -> do-no-ask
@@ -397,7 +401,10 @@ onDestroy(()=>{
 
 <div id="map-container" style="display: {visible ? 'block' : 'none'}">     
   <div id="map" bind:this={mapContainer}></div>
-  <img id="locate-button" alt="locat button" src="locate.png" on:click={()=>getUserPosition(true)} />
+  <img id="locate-button" alt="locat button" src="locate.png" on:click={()=>{
+    mapItem = null;
+    getUserPosition(true);
+  }} />
   {#if arrowMode}
     <div class="windicator">
       <img alt="Wind Direction Indicator" style="transform: rotate({arrowDirection}deg)" src="/assets/icons/Wind.svg" />
