@@ -1,5 +1,6 @@
 <script>
 
+import { onMount } from 'svelte';
 import { token } from './stores.js';  
 import { getPlayerVar, getConfig, loadBoard, loadBoardVariable, loadNodeVariable, getProjectVar } from '../../shared/util.js'
 
@@ -101,12 +102,19 @@ const reset = ()=>{
   dreams = [];
 }
 
+let playerCounter
+onMount(async ()=>{
+  playerCounter = await getProjectVar({projectId}, "playerCounter");
+})
+
 
 </script>
 
 <div class="scroll-container">
 
   <h3>project monitoring</h3> 
+
+  <p>playerCounter: {playerCounter}</p>
 
   <button on:click={()=>loadMessages("support")}>load support</button>  
   <button on:click={loadItems}>load islands</button>
