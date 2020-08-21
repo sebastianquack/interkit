@@ -169,6 +169,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
             key: params.key ? params.key : undefined
           },
           to: params.to ? params.to : "sender",
+          channel: params.channel,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen
         })},
@@ -256,6 +257,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           label: params.label ? params.label : varCache.player.name,
           system: params.system ? true : false,
           to: params.to ? params.to : "others",
+          channel: params.channel,
           delay: params.delay ? params.delay : null,
           attachment: input.filename ? {
             mediatype: input.type,
