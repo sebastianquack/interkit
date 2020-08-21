@@ -899,7 +899,7 @@
       }
       .board-description {
       padding-left: 65px; 
-      min-height: 65px;   
+      // min-height: 65px;   
       font-size: 15px;
       line-height: 18px;
       padding-right: 24px;
@@ -927,7 +927,7 @@
   }
 
   ul.board-select li:last-child {
-    border-bottom: 1px solid lightgray; 
+    border-bottom: 1px solid var(--color-dark); 
   }
 
 
