@@ -85,7 +85,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         id: playerId,
         set: async function (key, value) { 
           this[key] = value;
-          await db.setVar("player", {player: playerId, project: project._id}, key, value); 
+          return await db.setVar("player", {player: playerId, project: project._id}, key, value); 
         },
       },
       here: {
@@ -127,8 +127,9 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
         }
       },
       vars: {
+        find: async (query) => { return await db.findVars({ ...query, project: project._id }) },
         get: async (scope, ids, key) => { return await db.getVar(scope, {project: project._id, ...ids}, key) },
-        set: async (scope, ids, key, value) => {await db.setVar(scope, {project: project._id, ...ids}, key, value) }
+        set: async (scope, ids, key, value) => {return await db.setVar(scope, {project: project._id, ...ids}, key, value) }
       },
       
       send: {

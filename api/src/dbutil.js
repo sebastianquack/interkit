@@ -49,7 +49,8 @@ const makeQuery = (scope, refs, key) => {
   if(refs.node && (scope == "node" || scope == "playerNode")) 
     where.node = mongoose.Types.ObjectId(refs.node);
 
-  if(refs.board && scope == "board") where.board = mongoose.Types.ObjectId(refs.board);
+  if(refs.board && scope == "board") 
+    where.board = mongoose.Types.ObjectId(refs.board);
   
   return where;
 }
@@ -140,6 +141,11 @@ exports.getVar = async (scope, refs, key) => {
   } else {
     console.log("getVar got wrong refs", scope, refs)
   }
+}
+
+exports.findVars = async (query) => {
+  const result = await mongoose.model("variable").find(query)
+  return result
 }
 
 exports.embedVars = async (content, projectId, playerId=null) => {
