@@ -300,7 +300,6 @@
         }
 
         if (message.params.interfaceCommand && message.params.interfaceCommand == "setPlayerId") {
-          alert(JSON.stringify(message))
           playerId = message.params.playerId
         }        
       }
