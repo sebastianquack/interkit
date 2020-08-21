@@ -257,6 +257,47 @@ exports.listBoardForPlayer = async (playerId, boardKey, projectId, listed=true) 
 
 }
 
+// subscribe a player to a notification channel on a board
+exports.boardSubscribe = async (playerId, boardId, channelKey) => {
+  const BoardLog = mongoose.model("boardLog");
+  let boardLogs = await BoardLog.find({
+    player: mongoose.Types.ObjectId(playerId), 
+    board: mongoose.Types.ObjectId(boardId)
+  })
+  if(boardLogs.length) {
+    let boardLog = boardLogs[0];
+    let subscribedChannels = boardLog.subscribedChannels;
+    if(!subscribedChannels) {
+      subscribedChannels = [channelKey]
+    } else {
+      if(subscribedChannels.indexOf(channelKey) == -1) {
+        subscribedChannels.push(channelKey)
+      }
+    }
+    let bl = await BoardLog.update({_id: boardLog._id}, {subscribedChannels})
+  }
+}
+
+// unsubscribe from a notification channel on a board        
+exports.boardUnsubscribe = async (playerId, boardId, channelKey) => {
+  const BoardLog = mongoose.model("boardLog");
+  let boardLogs = await BoardLog.find({
+    player: mongoose.Types.ObjectId(playerId), 
+    board: mongoose.Types.ObjectId(boardId)
+  })
+  if(boardLogs.length) {
+    let boardLog = boardLogs[0];
+
+    let subscribedChannels = boardLog.subscribedChannels;
+    if(subscribedChannels) {
+      let index = subscribedChannels.indexOf(channelKey)
+      if(index != -1) {
+        subscribedChannels.splice(index, 1)
+        await BoardLog.update({_id: boardLog._id}, {subscribedChannels})
+      }
+    }
+  }
+}
 
 
 /* PLAYER MOVEMENT, NODELOGS */

@@ -21,6 +21,11 @@ module.exports = function (mongoose) {
     // save each players current node for a board here for easy reference
     currentNode: {
       type: Types.ObjectId
+    },
+    // save each players subscribed notification channels for this board
+    subscribedChannels: {
+      type: [String],
+      default: []
     }
   });
   

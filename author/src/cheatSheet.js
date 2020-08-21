@@ -43,6 +43,11 @@ send.text("hello", {to: "all"}) // specify that all players in this node should 
 send.text("hello", {to: "others"}) // specify that only the other players should get it
 send.text("hello", {to: "custom", players: ["id1", "id2"]}) // send to custom list of players identified by id
 
+board.subscribe("channelName") // subscribe player to receive messages send to board channel
+board.unsubscribe("channelName") // unsubscribe
+send.text("hello", {to: "boardAll"}) // send message to all players on baord subscribed to channel (including self)
+send.text("hello", {to: "boardOthers"}) // send only to others subscribed to channel
+
 echo(input, {to: "others"}) // send a received input to the other players in this node (useful for multiplayer)
 echo(input) // short form, {to: "others"} is default 
 

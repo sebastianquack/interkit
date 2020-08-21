@@ -108,6 +108,12 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           this[key] = value;
           await db.setVar("board", {board: node.board, project: project._id}, key, value); 
         },
+        subscribe: async function (channelKey) {
+          await db.boardSubscribe(playerId, node.board, channelKey)
+        },
+        unsubscribe: async function (channelKey) {
+          await db.boardUnsubscribe(playerId, node.board, channelKey)
+        }
       },
       project: {
         ...varCache.project,
@@ -137,6 +143,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           label: params.label ? params.label : varCache.board.narrator, 
           to: params.to ? params.to : "sender",
           players: params.players ? params.players : undefined,
+          channel: params.channel,
           system: params.system ? true : false,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen
@@ -147,6 +154,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           system: true,
           to: params.to ? params.to : "sender",
           players: params.players ? params.players : undefined,
+          channel: params.channel,
           delay: params.delay ? params.delay : null,
           forceOpen: params.forceOpen,
           params: {...params}
