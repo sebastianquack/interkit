@@ -296,7 +296,7 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           gps: true,
           image: true,
           audio: true,
-          qr: true
+          qr: true,
         }
         if(key == "inputs") params = {...defaultInputs, ...params}
         result.interfaceCommands.push({
@@ -305,6 +305,13 @@ module.exports.run = async function(node, playerId, hook, msgData, callback) {
           delay: params.delay ? params.delay : null,
         }); 
         await db.persistPlayerInterface(project._id, playerId, key, params, node.board); 
+      },
+
+      setPlayerId: async (playerId) => {
+        result.interfaceCommands.push({
+          interfaceCommand: "setPlayerId",
+          playerId
+        })
       },
 
       // deprecated / broken - take out soon

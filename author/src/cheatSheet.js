@@ -136,6 +136,8 @@ interface("inputs", {
   }
 )       
 
+// change player
+setPlayerId(playerId) 
 
 // deprecated
 
