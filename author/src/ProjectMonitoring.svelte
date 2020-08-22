@@ -28,7 +28,7 @@ const loadBoardStats = async  () => {
   for(let board of boardsJSON.docs) {
 
     // get boardlogs for this board
-    let res = await fetch("api/boardLog?board=" + board._id + "&project=" + projectId)
+    let res = await fetch("/api/boardLog?board=" + board._id + "&project=" + projectId)
     let json = await res.json()
 
     // count unique players
