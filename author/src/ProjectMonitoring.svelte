@@ -17,6 +17,31 @@ const attachPlayer = (id) => {
   setPlayerId(id);
 }
 
+
+let boardStats = {}
+const loadBoardStats = async  () => {
+  
+  let res = await fetch("/api/board?project=" + projectId + "&$sort=order")  
+  let boardsJSON = await res.json()
+  console.log(boardsJSON)
+
+  for(let board of boardsJSON.docs) {
+
+    // get boardlogs for this board
+    let res = await fetch("api/boardLog?board=" + board._id + "&project=" + projectId)
+    let json = await res.json()
+
+    // count unique players
+    let countObj = {};
+    let counter = 0;
+    for (let i = 0; i < json.docs.length; i++)
+      if(!countObj[json.docs[i].player] && json.docs[i].currentNode) counter++;
+
+    boardStats[board.key] = counter
+  }  
+}
+
+
 let dreams = []
 const loadDreams = async () => {
   reset()
@@ -105,6 +130,7 @@ const reset = ()=>{
 let playerCounter
 onMount(async ()=>{
   playerCounter = await getProjectVar({projectId}, "playerCounter");
+  await loadBoardStats()
 })
 
 
@@ -115,6 +141,12 @@ onMount(async ()=>{
   <h3>project monitoring</h3> 
 
   <p>playerCounter: {playerCounter}</p>
+
+  <ul>
+  {#each Object.keys(boardStats) as boardKey}
+    <li>{boardKey}: {boardStats[boardKey]}</li>
+  {/each}
+  </ul>
 
   <button on:click={()=>loadMessages("support")}>load support</button>  
   <button on:click={loadItems}>load islands</button>
