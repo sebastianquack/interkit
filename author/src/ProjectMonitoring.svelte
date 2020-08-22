@@ -37,7 +37,7 @@ const loadBoardStats = async  () => {
     for (let i = 0; i < json.docs.length; i++)
       if(!countObj[json.docs[i].player] && json.docs[i].currentNode) counter++;
 
-    boardStats[board.key] = counter
+    boardStats[board.name] = counter
   }  
 }
 
