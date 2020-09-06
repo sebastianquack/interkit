@@ -22,3 +22,6 @@ public/
 
 # reports
 report.*.json
+
+# db dunps
+tmp

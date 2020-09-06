@@ -9,7 +9,7 @@ const aws = require('aws-sdk');
 
 const Auth = require("../plugins/auth.plugin.js");
 const { s3config, S3_BUCKET } = require('../src/s3')
-const { getAllOfProject, insertProjectAsDuplicate } = require('../src/dbutil')
+const { getAllOfProject, insertProjectAsDuplicate, updateProjectData } = require('../src/dbutil')
 const { generateFilename } = require('../../shared/common')
 
 var dir = './public/tmp'
@@ -114,12 +114,16 @@ const exportData = async (request, mongoose, logger) => {
     archive.append(JSON.stringify(out), { name: 'project.json' });
     archive.append(BSON.serialize(out), { name: 'project.bson' });
     
-    // add files to zip archive
-    const s3 = new aws.S3();
-    for (const file of out.data.files) {
-      // TODO make this run sequentially !!
-      var s3Stream = s3.getObject({Bucket: S3_BUCKET, Key: file.path}).createReadStream();
-      archive.append(s3Stream, { name: "files/" + file.path })
+    if(request.query.withFiles == "true") {
+
+      // add files to zip archive
+      const s3 = new aws.S3();
+      for (const file of out.data.files) {
+        // TODO make this run sequentially !!
+        var s3Stream = s3.getObject({Bucket: S3_BUCKET, Key: file.path}).createReadStream();
+        archive.append(s3Stream, { name: "files/" + file.path })
+      }
+
     }
     
     await archive.finalize();
@@ -252,6 +256,47 @@ const importData = async (request, mongoose, logger) => {
   
 }
 
+
+const updateProject = async (request, mongoose, logger) => {
+  
+  //console.log(request.payload)
+
+  return new Promise( resolve => {
+
+    const errorMessages = []
+
+    const zip = new StreamZip({
+        file: request.payload.path,
+        storeEntries: true
+    });
+    
+    // Handle errors
+    zip.on('error', err => { console.log(err) });
+
+    zip.on('ready', async () => {
+      // list entries
+      console.log('Entries read: ' + zip.entriesCount);
+      for (const entry of Object.values(zip.entries())) {
+          const desc = entry.isDirectory ? 'directory' : `${entry.size} bytes`;
+          console.log(`Entry ${entry.name}: ${desc}`);
+      }
+
+      // unzip
+      const bson = zip.entryDataSync('project.bson')//.toString();
+      const obj = BSON.deserialize(bson)
+      let data = obj.data
+
+      const updateStatus = await updateProjectData(data, request.query.doUpdates == "true")
+    
+      // Do not forget to close the file once you're done
+      zip.close()
+
+      resolve({ updateStatus, errorMessages })
+    });
+
+  })
+}
+
 module.exports = function (server, mongoose, logger) {
 
     server.route({
@@ -285,6 +330,25 @@ module.exports = function (server, mongoose, logger) {
       path: '/export',
       config: {
         handler: request => importData(request, mongoose, logger),
+        auth: false,
+        tags: ['api'],
+        payload: {
+          output: 'file',
+          parse: false,
+          allow: 'application/zip',
+          maxBytes: 1000000000, // 1G
+        },        
+        plugins: {
+          'hapi-swagger': {}
+        }
+      }
+    })    
+
+    server.route({
+      method: 'PUT',
+      path: '/updateProject',
+      config: {
+        handler: updateProject,
         auth: false,
         tags: ['api'],
         payload: {

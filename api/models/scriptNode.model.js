@@ -1,5 +1,6 @@
 const RestHapi = require('rest-hapi')
 const Log = RestHapi.getLogger('connections');
+const db = require("../src/dbutil")
 
 const beautify = require('js-beautify');
 
@@ -42,27 +43,8 @@ module.exports = function (mongoose) {
       // beautify
       payload.script = beautify(payload.script, { indent_size: 2 });
 
-      let connectedNodeNames = [];
-      let connectedNodeIds = [];
-
-      let regex1 = /(?:moveTo\(\")(.+)(?:\")/g    
-      while ((array1 = regex1.exec(payload.script)) !== null) {
-        connectedNodeNames.push(array1[1]);
-      } 
-      console.log("found connections: ", connectedNodeNames);
-
-      for(let i = 0; i < connectedNodeNames.length; i++) {
-        let n = await RestHapi.list(RestHapi.models.scriptNode, {
-          name: connectedNodeNames[i],
-          board: payload.board
-        }, Log);
-        if(n.docs.length == 1) {
-          connectedNodeIds.push(n.docs[0]._id);
-        }
-      }
-      console.log("found ids:", connectedNodeIds);
-
-      payload.connectionIds = connectedNodeIds;
+      // update connections
+      payload.connectionIds = await db.getConnectedNodeIds(payload);
     }
 
     return payload;

@@ -25,6 +25,8 @@
 
   let googleReady = false;
 
+  let doUpdates = false;
+
   window.googleReady = ()=>{
     console.log("googleReady");
     googleReady = true;
@@ -137,9 +139,9 @@
     editProject = null
   }
 
-  const exportProject = async event => {
+  const exportProject = async (event, withFiles=true) => {
     // trigger export and get download url and filename
-    const res = await fetch("/api/export?projectId=" + editProject._id, {
+    const res = await fetch("/api/export?projectId=" + editProject._id + "&withFiles=" + withFiles, {
       headers: {'authorization': $token},
     });
     const {downloadUrl, filename} =  await res.json();
@@ -153,14 +155,26 @@
     child.setAttribute('download', filename);
     child.click()
   }
-    
-  const handleFilesSubmit = async event => {
+
+  let updateStatus = null
+
+  const handleFilesSubmit = async (event, updateProject=false) => {
     event.preventDefault();
     const file = event.target.files[0]
     console.log(file)
 
     var xhr = new XMLHttpRequest(); 
+
+    xhr.addEventListener("load", (evt)=>{
+      if(updateProject) {
+        console.log(xhr.response)
+        updateStatus = JSON.parse(xhr.response)
+        doUpdates = false
+      }
+    });
+
     xhr.onload = (evt) => {
+      console.log(evt)
       event.target.value = null;
       uploadProgress = null
       loadProjectList(); 
@@ -176,9 +190,14 @@
       headers: {'authorization': $token},
     });
     let json = await res.json();
-    const uploadToken = json.uploadToken;
+    
     // generate download url
-    var url = "/api/export?uploadToken=" + uploadToken
+    const uploadToken = json.uploadToken;
+    const endPoint = updateProject ? "updateProject" : "export";
+
+    var url = "/api/"+endPoint+"?uploadToken=" + uploadToken
+
+    if(endPoint == "updateProject" && doUpdates) url += "&doUpdates=true"
 
     xhr.open('PUT', url, true);
     uploadProgress = 0
@@ -304,9 +323,25 @@
       <h3>Project Actions</h3>
 
       <h4>Export</h4>
-      <button on:click={exportProject}>
-        export "{editProject.name}"
+      <button on:click={(event)=>{exportProject(event, true)}}>
+        export "{editProject.name}" (with files)
       </button>
+
+      <button on:click={(event)=>{exportProject(event, false)}}>
+        export "{editProject.name}" (without files)
+      </button>
+
+      <h4>Update</h4>
+      <label>import data into "{editProject.name}"</label>
+      <input type="file" on:change={(event) => {handleFilesSubmit(event, true)}}/>
+      <label>Check to perform updates (unchecked just compares)</label> 
+      <input type=checkbox bind:checked={doUpdates}>
+
+      <h5>Update Diffs</h5>
+      {#if updateStatus}
+        {JSON.stringify(updateStatus)}
+      {/if}
+      
 
       <h4>Duplicate</h4>
       <button on:click={duplicateProject}>

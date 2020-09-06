@@ -8,6 +8,9 @@ const gameServer = require('./gameServer.js');
 const {s3copy} = require('./s3')
 const {generateFilename} = require('../../shared/common')
 
+const Diff = require('diff');
+const deepEqual = require('deep-equal');
+
 Log.logLevel = 'WARNING';
 
 
@@ -396,6 +399,31 @@ exports.getPlayersForNode = async (nodeId) => {
   //console.log("result", result)
 
   return result;
+}
+
+exports.getConnectedNodeIds = async (node) => {
+
+  let connectedNodeNames = [];
+  let connectedNodeIds = [];
+
+  let regex1 = /(?:moveTo\(\")(.+)(?:\")/g    
+  while ((array1 = regex1.exec(node.script)) !== null) {
+    connectedNodeNames.push(array1[1]);
+  } 
+  console.log("found connections: ", connectedNodeNames);
+
+  for(let i = 0; i < connectedNodeNames.length; i++) {
+    let n = await RestHapi.list(RestHapi.models.scriptNode, {
+      name: connectedNodeNames[i],
+      board: node.board
+    }, Log);
+    if(n.docs.length == 1) {
+      connectedNodeIds.push(n.docs[0]._id);
+    }
+  }
+  console.log("found ids:", connectedNodeIds);
+
+  return connectedNodeIds;
 }
 
 // creates a nodelog for a move scheduled in the future
@@ -826,4 +854,93 @@ exports.duplicateProject = async function (projectId) {
 
   return await exports.insertProjectAsDuplicate(projectData)
 }
+
+exports.updateProjectData = async (data, doUpdates=false) => {
+
+  console.log("updateProjectData", doUpdates)
+
+  const Project = mongoose.model("project");
+    
+  // grab mongoose models for exported data we want to compare
+  const compareConfig = {
+    boards: {model: mongoose.model("board"), fields: ["name", "description", "library"]},
+    scriptNodes: {model: mongoose.model("scriptNode"), fields: ["name", "script"]},    
+    items: {model: mongoose.model("item"), fields: ["value", "name"]},
+    pages: {model: mongoose.model("page"), fields: ["menuEntry", "content"]},
+    variables: {model: mongoose.model("variable"), fields: ["name", "value"]}
+  }
+
+  const diffs = [];
+  function addDiff(path, v1, v2) {
+    let d;
+    if(typeof v1 == "string" && typeof v2 == "string") {
+      d = {
+        path,
+        diffs: Diff.diffChars(v1, v2).filter(d => d.added || d.removed)
+      } 
+      if(d.diffs.length) {
+        diffs.push(d)
+      }
+    } else {
+      // save new value for non-string changes
+      d = {path, diffs: [], newValue: v2}
+      diffs.push(d)
+    }
+    return d
+  }
+
+  // check if we have the specified project
+  let project = await Project.findById(data.project._id)
+
+  let updateCounter = 0;
+
+  if(project) {
+    let d = addDiff("project/" + project._id + "/library", project.library, data.project.library)
+    if(doUpdates && d.diffs.length) {
+      console.log("updating project library")
+      await Project.updateOne({_id: project._id}, {$set: {library: data.project.library}})
+      updateCounter++;
+    }
+
+    for(let key of Object.keys(compareConfig)) {
+      const model = compareConfig[key].model
+      //console.log(key)
+      for(let newObject of data[key]) {
+        let currentObject = await model.findById(newObject._id)
+        if(!currentObject) {
+          console.log("new object found: ", key, newObject)
+          diffs.push({path: key + "/" + newObject._id, newObject: newObject})
+          if(doUpdates) {
+            await model.create(newObject)
+            updateCounter++;
+          }
+        } else {
+          //console.log("comparing", newObject, currentObject)
+          for(let field of compareConfig[key].fields) {
+            if(!deepEqual(currentObject[field], newObject[field])) {
+              addDiff(key + "/" + currentObject._id + "/" + field, currentObject[field], newObject[field])
+              
+              if(doUpdates) {
+                console.log("updating " + key + "/" + currentObject._id + "/" + field)
+                await model.updateOne({_id: currentObject._id}, {$set: {[field]: newObject[field]}})
+                updateCounter++;
+
+                // update connections for nodes if needed
+                if(key == "scriptNodes" && field ==  "script") {
+                  let ids = await exports.getConnectedNodeIds(newObject)
+                  await model.updateOne({_id: currentObject._id}, {$set: {connectionIds: ids}})    
+                }
+              }
+            }
+          }          
+        }
+      }
+    }
+    
+    return {"documentsUpdated": updateCounter, diffs}
+  } 
+
+  return "project not found"
+}
+
 
