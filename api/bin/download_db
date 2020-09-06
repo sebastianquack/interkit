@@ -1,0 +1,26 @@
+#!/bin/bash
+    
+echo "check heroku config MONGODB_URI for the following values <db_user>:<password>@<db_host>/<db_name>"
+
+echo enter remote db_host 
+read db_host
+
+echo enter remote db_name
+read db_name
+
+echo enter remote db_user
+read db_user
+
+echo enter remote db_password
+read db_password
+
+echo Warning: this will overwrite previous dump in ./tmp/dump!
+read -p "Press enter to continue"
+
+mongodump -h $db_host -d $db_name -u $db_user -p $db_password -o ./tmp/dump
+
+echo restoring from ./tmp/dump 
+
+mongorestore ./tmp/dump
+
+echo to use this database set local env variable MONGODB_URI to mongodb://localhost:27017/$db_name
