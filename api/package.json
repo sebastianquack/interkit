@@ -35,7 +35,7 @@
         "rest-hapi": "^2.2.0",
         "slugify": "^1.4.4",
         "socket.io": "^2.3.0",
-        "vm2": "^3.9.2"
+        "vm2": "^3.9.6"
     },
     "devDependencies": {
         "nodemon": "^1.19.4"
