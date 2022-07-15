@@ -13,7 +13,7 @@
     "serve": "^11.0.0",
     "source-map-support": "^0.5.19",
     "style-loader": "^0.23.1",
-    "svelte": "^3.0.0",
+    "svelte": "^3.49.0",
     "svelte-loader": "2.13.3",
     "svelte-preprocess": "^4.0.10",
     "webpack": "^4.30.0",
